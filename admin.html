@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gestión interna | Byte Bay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="stylesheet" href="admin.css?v=3">
+  <script>try{if(localStorage.getItem('beruTema')==='noche')document.documentElement.classList.add('dark-mode')}catch(e){}</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="admin-body">
+  <main id="adminLogin" class="admin-login-shell">
+    <section class="admin-login-card">
+      <img src="byte-bay-logo-transparent.png" alt="Byte Bay">
+      <span class="section-kicker">ACCESO INTERNO</span>
+      <h1>Panel de gestión</h1>
+      <p>Exclusivo para personal autorizado de Byte Bay.</p>
+      <form id="adminLoginForm">
+        <label><span>Correo laboral</span><input id="adminEmail" type="email" autocomplete="username" required></label>
+        <label><span>Contraseña</span><input id="adminPassword" type="password" autocomplete="current-password" required></label>
+        <button class="btn primary" type="submit">Ingresar</button>
+      </form>
+      <div id="adminLoginStatus" class="admin-status" aria-live="polite"></div>
+      <button class="theme-toggle admin-theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche"><span aria-hidden="true">☾</span></button>
+      <a href="index.html" class="admin-store-link">Volver a la tienda</a>
+    </section>
+  </main>
+
+  <div id="adminApp" class="admin-app hidden">
+    <aside class="admin-sidebar">
+      <a href="index.html" class="admin-brand"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></a>
+      <p id="adminRole"></p>
+      <nav class="admin-nav" aria-label="Gestión interna">
+        <button class="active" data-admin-tab="resumen">Resumen</button>
+        <button data-admin-tab="productos">Productos</button>
+        <button data-admin-tab="inventario">Inventario</button>
+        <button data-admin-tab="ofertas">Ofertas</button>
+        <button data-admin-tab="movimientos">Movimientos</button>
+        <button data-admin-tab="personal" id="adminPeopleTab">Personal</button>
+      </nav>
+      <button id="adminLogout" class="admin-logout">Cerrar sesión</button>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header"><div><span class="section-kicker">BYTE BAY</span><h1>Gestión interna</h1></div><div class="admin-header-actions"><div id="adminStatus" class="admin-status" aria-live="polite"></div><button class="theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche"><span aria-hidden="true">☾</span></button></div></header>
+
+      <section data-admin-section="resumen">
+        <div class="admin-section-head"><div><h2>Resumen operativo</h2><p>Ventas, pagos e inventario.</p></div><button class="btn secondary" id="adminRefreshReports">Actualizar</button></div>
+        <div class="admin-metrics" id="managementSummary"></div>
+        <div class="admin-metrics" id="inventorySummary"></div>
+        <div class="admin-filters"><input id="inventorySearch" type="search" placeholder="Buscar producto o lote"><select id="inventoryStatusFilter"><option value="">Todos los estados</option><option value="disponible">Disponible</option><option value="daniado">Dañado</option><option value="agotado">Agotado</option><option value="vencido">Vencido</option><option value="devuelto">Devuelto</option></select></div>
+        <div id="inventoryReportList" class="admin-list"></div>
+      </section>
+
+      <section class="hidden" data-admin-section="productos">
+        <div class="admin-section-head"><div><h2>Productos</h2><p>Registra, consulta y edita el catálogo.</p></div><button class="btn secondary" id="adminRefreshCatalog">Actualizar</button></div>
+        <div class="admin-two-columns">
+          <form id="adminProductForm" class="admin-card admin-form"><h3 id="adminProductHeading">Nuevo producto</h3><input id="adminProductId" type="hidden">
+            <label><span>Código</span><input id="adminProductCode" required></label><label><span>Producto</span><input id="adminProductName" required></label>
+            <div class="admin-form-row"><label><span>Categoría</span><input id="adminProductCategory" required></label><label><span>Marca</span><input id="adminProductBrand"></label></div>
+            <label><span>URL de imagen</span><input id="adminProductImage" type="url"></label><div class="admin-product-preview"><img id="adminProductPreview" src="imagen-producto-predeterminada.svg" alt="Vista previa del producto" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"><span id="adminProductPreviewEmpty">Selecciona un producto o escribe la URL de su imagen</span></div><div class="admin-form-row"><label><span>Precio</span><input id="adminProductPrice" type="number" min="0" step="0.01" required></label><label><span>Existencias</span><input id="adminProductStock" type="number" min="0" required></label></div>
+            <label><span>Fecha de vencimiento</span><input id="adminProductExpiry" type="date"></label><button class="btn primary" type="submit">Guardar producto</button>
+          </form>
+          <div><div class="admin-filters"><input id="productSearch" type="search" placeholder="Buscar código, producto o marca"><select id="productCategoryFilter"><option value="">Todas las categorías</option></select></div><div id="adminCatalogList" class="admin-list admin-card"></div></div>
+        </div>
+      </section>
+
+      <section class="hidden" data-admin-section="inventario">
+        <div class="admin-section-head"><div><h2>Inventario y proveedores</h2><p>Registra entradas por lote y controla vencimientos.</p></div></div>
+        <div class="admin-two-columns">
+          <form id="adminProviderForm" class="admin-card admin-form"><h3>Nuevo proveedor</h3><label><span>Razón social</span><input id="providerName" required></label><label><span>RUC o documento</span><input id="providerDocument"></label><label><span>Teléfono</span><input id="providerPhone"></label><label><span>Correo</span><input id="providerEmail" type="email"></label><button class="btn primary" type="submit">Guardar proveedor</button></form>
+          <form id="adminLotForm" class="admin-card admin-form"><h3>Registrar lote</h3><label><span>Producto</span><select id="lotProduct" required></select></label><label><span>Proveedor</span><select id="lotProvider"></select></label><div class="admin-form-row"><label><span>Código de lote</span><input id="lotCode" required></label><label><span>Cantidad</span><input id="lotQuantity" type="number" min="1" required></label></div><div class="admin-form-row"><label><span>Costo unitario</span><input id="lotCost" type="number" min="0" step="0.01"></label><label><span>Vencimiento</span><input id="lotExpiry" type="date"></label></div><label><span>Estado</span><select id="lotStatus"><option value="disponible">Disponible</option><option value="daniado">Dañado</option><option value="devuelto">Devuelto</option></select></label><label><span>Observación</span><input id="lotNote"></label><button class="btn primary" type="submit">Registrar lote</button></form>
+        </div>
+      </section>
+
+      <section class="hidden" data-admin-section="ofertas"><div class="admin-section-head"><div><h2>Ofertas</h2><p>Programa descuentos por producto.</p></div></div><div class="admin-two-columns"><form id="adminOfferForm" class="admin-card admin-form"><h3>Nueva oferta</h3><label><span>Producto</span><select id="offerProduct" required></select></label><div class="admin-product-preview admin-product-preview-small"><img id="offerProductPreview" src="imagen-producto-predeterminada.svg" alt="Producto de la oferta" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"><span id="offerProductPreviewEmpty">Selecciona un producto</span></div><label><span>Nombre de la oferta</span><input id="offerName" required></label><label><span>Precio de oferta</span><input id="offerPrice" type="number" min="0" step="0.01" required></label><div class="admin-form-row"><label><span>Inicia</span><input id="offerStart" type="datetime-local" required></label><label><span>Termina</span><input id="offerEnd" type="datetime-local"></label></div><button class="btn primary" type="submit">Guardar oferta</button></form><div><div class="admin-filters"><input id="offerSearch" type="search" placeholder="Buscar producto u oferta"><select id="offerStatusFilter"><option value="">Todas</option><option value="activa">Activas</option><option value="inactiva">Inactivas</option></select></div><div id="adminOffersList" class="admin-list admin-card"></div></div></div></section>
+
+      <section class="hidden" data-admin-section="movimientos"><div class="admin-section-head"><div><h2>Movimientos</h2><p>Entradas, ventas, ajustes y devoluciones.</p></div><button class="btn secondary" id="adminRefreshMovements">Actualizar</button></div><div class="admin-filters"><input id="movementSearch" type="search" placeholder="Buscar producto"><select id="movementTypeFilter"><option value="">Todos los tipos</option><option value="entrada">Entrada</option><option value="venta">Venta</option><option value="ajuste">Ajuste</option><option value="devolucion">Devolución</option></select></div><div id="adminMovementsList" class="admin-list admin-card"></div></section>
+
+      <section class="hidden" data-admin-section="personal">
+        <div class="admin-section-head"><div><h2>Gestión de personal</h2><p>Acceso exclusivo del jefe. Las cuentas se crean mediante invitación segura.</p></div><button class="btn secondary" id="adminRefreshStaff" type="button">Actualizar lista</button></div>
+        <div class="admin-two-columns staff-layout">
+          <form id="adminStaffForm" class="admin-card admin-form">
+            <h3 id="adminStaffHeading">Registrar empleado</h3><input id="staffUserId" type="hidden">
+            <p class="admin-help">Registro interno temporal: crea las credenciales del empleado sin enviar correo. Entrégale la contraseña inicial de forma privada.</p>
+            <div class="admin-form-row"><label><span>Nombres</span><input id="newStaffNames" required></label><label><span>Apellidos</span><input id="newStaffLastNames" required></label></div>
+            <label><span>Correo laboral</span><input id="newStaffEmail" type="email" required></label>
+            <label id="newStaffPasswordLabel"><span>Contraseña inicial</span><input id="newStaffPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+            <label><span>Rol asignado</span><input value="Empleado" disabled></label>
+            <div class="staff-form-actions"><button class="btn primary" id="staffSubmit" type="submit">Registrar empleado</button><button class="btn secondary hidden" id="staffCancelEdit" type="button">Cancelar edición</button></div>
+          </form>
+          <div class="admin-card"><div class="admin-filters"><input id="staffSearch" type="search" placeholder="Buscar nombre, correo o rol"><select id="staffStatusFilter"><option value="">Todos los estados</option><option value="activo">Activos</option><option value="anulado">Anulados</option></select></div><div id="adminStaffList" class="admin-list"></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="admin.js?v=7"></script>
+</body>
+</html>

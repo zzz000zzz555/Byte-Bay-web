@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="240" viewBox="0 0 360 240" role="img" aria-labelledby="titulo">
+  <title id="titulo">Imagen de categoría disponible</title>
+  <rect width="360" height="240" rx="24" fill="#f1f6f4"/>
+  <rect x="92" y="62" width="176" height="118" rx="18" fill="#d9f45b"/>
+  <path d="M118 111h124l-10 62h-104z" fill="#103940"/>
+  <path d="M144 111V95c0-20 16-36 36-36s36 16 36 36v16" fill="none" stroke="#103940" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="152" cy="141" r="7" fill="#d9f45b"/><circle cx="208" cy="141" r="7" fill="#d9f45b"/>
+</svg>
