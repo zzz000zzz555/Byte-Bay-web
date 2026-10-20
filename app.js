@@ -448,6 +448,9 @@ function updateAccountHeader(){
   account.querySelector('small').textContent=saved?.verified?'Hola, '+(saved.username||saved.name?.split(' ')[0]||'cliente'):'Hola, ingresa';
   account.querySelector('strong').textContent=saved?.verified?'Mi cuenta':'Crear cuenta / Ingresar';
   document.querySelector('#accountLogout').classList.toggle('hidden',!saved?.verified);
+  const accesoMovil=document.querySelector('#mobileAccountAccess span'),salidaMovil=document.querySelector('#mobileAccountLogout');
+  if(accesoMovil) accesoMovil.textContent=saved?.verified?`Mi cuenta · ${saved.name?.split(' ')[0]||'cliente'}`:'Crear cuenta / Ingresar';
+  if(salidaMovil) salidaMovil.classList.toggle('hidden',!saved?.verified);
 }
 function setAccountMode(mode){
   accountMode=mode;
@@ -466,6 +469,8 @@ function setAccountMode(mode){
 }
 document.querySelector('#accountClose').onclick=closeAccountModal;
 document.querySelector('#accountModeToggle').onclick=()=>setAccountMode(accountMode==='login'?'register':'login');
+document.querySelector('#mobileAccountAccess').onclick=openAccountModal;
+document.querySelector('#mobileAccountLogout').onclick=()=>document.querySelector('#accountLogout').click();
 document.querySelector('#accountLogout').onclick=async()=>{
   const cuenta=JSON.parse(localStorage.getItem('beruAccount')||'null');
   if(cuenta?.provider==='google'&&supabaseClient) await supabaseClient.auth.signOut();
