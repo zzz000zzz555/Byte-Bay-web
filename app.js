@@ -137,6 +137,54 @@ const productTemplates={
 
 // El catálogo se carga exclusivamente desde Supabase.
 let products=[];
+const HERO_RESPALDO=[
+  {title:'Todo lo que necesitas, más cerca.',description:'Encuentra marcas, novedades y productos para tu día a día.',image:'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1100&q=85',badgeTop:'DESTACADO',badgeValue:'HOY',badgeBottom:'para ti',label:'Compra fácil',cardTitle:'Recíbelo hoy',cardText:'Explora el catálogo Byte Bay'},
+  {title:'Tecnología que se adapta a ti.',description:'Descubre equipos y accesorios para estudiar, trabajar y disfrutar.',image:'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=1100&q=85',badgeTop:'NUEVO',badgeValue:'VER',badgeBottom:'tecnología',label:'Selección Byte Bay',cardTitle:'Compra inteligente',cardText:'Mira productos disponibles'},
+  {title:'Renueva cada rincón de tu hogar.',description:'Ideas prácticas para crear un espacio más cómodo.',image:'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1100&q=85',badgeTop:'HOGAR',badgeValue:'TOP',badgeBottom:'selección',label:'Para tu hogar',cardTitle:'Encuentra inspiración',cardText:'Productos para cada ambiente'},
+  {title:'Lo mejor para tu compra diaria.',description:'Elige productos que hacen más simple tu rutina.',image:'https://images.unsplash.com/photo-1610348725531-843dff563e2c?auto=format&fit=crop&w=1100&q=85',badgeTop:'BYTE',badgeValue:'BAY',badgeBottom:'selección',label:'Compra segura',cardTitle:'Todo en un lugar',cardText:'Revisa el catálogo disponible'},
+  {title:'Encuentra tu próxima recomendación.',description:'Explora categorías y descubre favoritos de Byte Bay.',image:'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1100&q=85',badgeTop:'NUEVO',badgeValue:'5',badgeBottom:'destacados',label:'Para ti',cardTitle:'Explora sin prisa',cardText:'Tenemos opciones para ti'}
+];
+let heroSlides=[];
+let heroSlideIndex=0;
+let heroTimer=null;
+function crearSlidesHero(){
+  const disponibles=products.filter(producto=>producto.stock>0);
+  const ordenados=[...disponibles.filter(producto=>Number(producto.discount)>0),...disponibles.filter(producto=>Number(producto.discount)<=0)];
+  return (ordenados.length?ordenados.slice(0,5):HERO_RESPALDO).map(producto=>{
+    if(!producto.id) return producto;
+    const esOferta=Number(producto.discount)>0;
+    return {id:producto.id,isOffer:esOferta,title:producto.name,description:`${producto.brand} · ${producto.category}. ${esOferta?'Precio especial por tiempo limitado.':'Disponible en el catálogo Byte Bay.'}`,image:imagenSegura(producto.img),badgeTop:esOferta?'AHORRA':'DESTACADO',badgeValue:esOferta?`-${producto.discount}%`:'VER',badgeBottom:esOferta?'de descuento':'producto',label:esOferta?'Oferta activa':'Producto destacado',cardTitle:money(producto.price),cardText:`${producto.stock} disponibles`};
+  });
+}
+function mostrarSlideHero(index){
+  if(!heroSlides.length) return;
+  heroSlideIndex=(index+heroSlides.length)%heroSlides.length;
+  const slide=heroSlides[heroSlideIndex],carrusel=document.querySelector('#heroCarousel');
+  if(!carrusel) return;
+  carrusel.classList.add('hero-changing');
+  setTimeout(()=>{
+    document.querySelector('#heroEyebrow').textContent=slide.isOffer?'OFERTA BYTE BAY':'BYTE BAY DESTACADO';
+    document.querySelector('#heroTitle').textContent=slide.title;
+    document.querySelector('#heroDescription').textContent=slide.description;
+    document.querySelector('#heroBadge').innerHTML=`<strong>${slide.badgeTop}</strong><b>${slide.badgeValue}</b><span>${slide.badgeBottom}</span>`;
+    const imagen=document.querySelector('#heroImage');imagen.src=imagenSegura(slide.image);imagen.alt=slide.title;
+    document.querySelector('#heroCardLabel').textContent=slide.label;
+    document.querySelector('#heroCardTitle').textContent=slide.cardTitle;
+    document.querySelector('#heroCardText').textContent=slide.cardText;
+    const accion=document.querySelector('#heroPrimaryAction');accion.textContent=slide.id?'Ver producto':'Explorar catálogo';accion.onclick=evento=>{if(!slide.id) return;evento.preventDefault();openProductModal(slide.id);};
+    document.querySelector('#heroDots').innerHTML=heroSlides.map((_,position)=>`<button type="button" class="hero-dot ${position===heroSlideIndex?'active':''}" data-hero-slide="${position}" aria-label="Mostrar destacado ${position+1}" aria-current="${position===heroSlideIndex}"></button>`).join('');
+    document.querySelectorAll('[data-hero-slide]').forEach(boton=>boton.onclick=()=>{mostrarSlideHero(Number(boton.dataset.heroSlide));reiniciarCarruselHero();});
+    carrusel.classList.remove('hero-changing');
+  },150);
+}
+function reiniciarCarruselHero(){clearInterval(heroTimer);heroTimer=setInterval(()=>mostrarSlideHero(heroSlideIndex+1),6000);}
+function iniciarCarruselHero(){
+  heroSlides=crearSlidesHero();heroSlideIndex=0;mostrarSlideHero(0);reiniciarCarruselHero();
+}
+document.querySelector('#heroPrevious').onclick=()=>{mostrarSlideHero(heroSlideIndex-1);reiniciarCarruselHero();};
+document.querySelector('#heroNext').onclick=()=>{mostrarSlideHero(heroSlideIndex+1);reiniciarCarruselHero();};
+document.querySelector('#heroCarousel').addEventListener('mouseenter',()=>clearInterval(heroTimer));
+document.querySelector('#heroCarousel').addEventListener('mouseleave',reiniciarCarruselHero);
 
 let cart=[];
 let start=0;
@@ -222,6 +270,7 @@ async function loadCatalogFromSupabase(){
   actualizarOpcionesCategorias();
   renderProducts();
   renderizarPersonalizacion();
+  iniciarCarruselHero();
 }
 
 async function cargarComentariosProducto(idProducto){
@@ -915,6 +964,7 @@ showNotificationStatus();
 updateAccountHeader();
 configurarConsentimientoPersonalizacion();
 configurarAsistenteIA();
+iniciarCarruselHero();
 renderProducts();
 renderizarPersonalizacion();
 loadCatalogFromSupabase();
