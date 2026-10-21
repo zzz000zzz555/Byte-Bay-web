@@ -150,7 +150,9 @@ let heroTimer=null;
 function crearSlidesHero(){
   const disponibles=products.filter(producto=>producto.stock>0);
   const ordenados=[...disponibles.filter(producto=>Number(producto.discount)>0),...disponibles.filter(producto=>Number(producto.discount)<=0)];
-  return (ordenados.length?ordenados.slice(0,5):HERO_RESPALDO).map(producto=>{
+  // La campaña principal siempre es la primera; los otros cuatro espacios se llenan con el catálogo.
+  const seleccion=ordenados.length?[HERO_RESPALDO[0],...ordenados.slice(0,4)]:HERO_RESPALDO;
+  return seleccion.map(producto=>{
     if(!producto.id) return producto;
     const esOferta=Number(producto.discount)>0;
     return {id:producto.id,isOffer:esOferta,title:producto.name,description:`${producto.brand} · ${producto.category}. ${esOferta?'Precio especial por tiempo limitado.':'Disponible en el catálogo Byte Bay.'}`,image:imagenSegura(producto.img),badgeTop:esOferta?'AHORRA':'DESTACADO',badgeValue:esOferta?`-${producto.discount}%`:'VER',badgeBottom:esOferta?'de descuento':'producto',label:esOferta?'Oferta activa':'Producto destacado',cardTitle:money(producto.price),cardText:`${producto.stock} disponibles`};
