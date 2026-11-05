@@ -4,6 +4,10 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+type GeminiGenerateContentResponse = {
+  error?: { message?: string }
+  candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>
+}
 const consultasPorOrigen = new Map<string, { cantidad: number; reiniciaEn: number }>()
 
 function limitarConsulta(request: Request) {
@@ -19,6 +23,81 @@ function limitarConsulta(request: Request) {
 
 function limpiarMensaje(valor: unknown) {
   return typeof valor === 'string' ? valor.trim().slice(0, 500) : ''
+}
+
+class ErrorGemini extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message)
+  }
+}
+
+const esperar = (milisegundos: number) => new Promise(resolve => setTimeout(resolve, milisegundos))
+
+async function generarContenidoGemini(apiKey: string, contenido: unknown) {
+  const modeloPrincipal = (Deno.env.get('GEMINI_MODEL') || 'gemini-3.8-flash').replace(/^models\//, '')
+  const modeloAlternativo = (Deno.env.get('GEMINI_FALLBACK_MODEL') || 'gemini-3.6-flash').replace(/^models\//, '')
+  const modelos = [...new Set([modeloPrincipal, modeloAlternativo])]
+  let ultimoError = new Error('Gemini no pudo responder en este momento')
+  let ultimoEstado = 503
+
+  for (const modelo of modelos) {
+    for (let intento = 0; intento < 2; intento++) {
+      let respuesta: Response
+      try {
+        respuesta = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+            body: JSON.stringify(contenido),
+            signal: AbortSignal.timeout(15000),
+          },
+        )
+      } catch {
+        ultimoError = new Error('No se pudo conectar con Gemini')
+        ultimoEstado = 503
+        if (intento === 0) await esperar(700)
+        continue
+      }
+
+      let resultado: GeminiGenerateContentResponse
+      try {
+        resultado = await respuesta.json()
+      } catch {
+        ultimoError = new Error('Gemini devolvió una respuesta no válida')
+        ultimoEstado = 502
+        break
+      }
+
+      if (respuesta.ok) return resultado
+
+      ultimoEstado = respuesta.status
+      ultimoError = new Error(resultado.error?.message || 'Gemini no pudo responder en este momento')
+      if (respuesta.status === 401 || respuesta.status === 403) {
+        throw new ErrorGemini('La clave de Gemini no es válida o no tiene permisos.', 502)
+      }
+
+      const reintentable = [408, 429, 500, 502, 503, 504].includes(respuesta.status)
+      const modeloNoDisponible = respuesta.status === 404
+      if (reintentable && intento === 0) {
+        const segundos = Number(respuesta.headers.get('retry-after'))
+        await esperar(Number.isFinite(segundos) && segundos > 0
+          ? Math.min(segundos * 1000, 2000)
+          : 700)
+        continue
+      }
+      if (!reintentable && !modeloNoDisponible) {
+        throw new ErrorGemini('No se pudo procesar la solicitud con Gemini. Revisa la configuración del asistente.', 502)
+      }
+      break
+    }
+  }
+
+  console.error('Gemini no respondió con los modelos configurados:', ultimoEstado, ultimoError.message)
+  if ([408, 429, 500, 502, 503, 504].includes(ultimoEstado)) {
+    throw new ErrorGemini('El asistente está recibiendo muchas consultas. Inténtalo de nuevo en un momento.', 503)
+  }
+  throw new ErrorGemini('No se pudo conectar con un modelo disponible de Gemini. Revisa GEMINI_MODEL y GEMINI_FALLBACK_MODEL.', 502)
 }
 
 Deno.serve(async (request) => {
@@ -44,23 +123,19 @@ Deno.serve(async (request) => {
     const productos = catalogo?.length ? catalogo : (await db.from('catalogo_productos').select('id,nombre,categoria,marca,precio_venta,existencias,disponibilidad,porcentaje_descuento').limit(20)).data || []
     const contexto = productos.map(producto => `#${producto.id} | ${producto.nombre} | ${producto.categoria} | ${producto.marca || 'Sin marca'} | S/${producto.precio_venta} | stock ${producto.existencias} | ${producto.disponibilidad} | descuento ${producto.porcentaje_descuento}%`).join('\n')
 
-    const respuesta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${Deno.env.get('GEMINI_MODEL') || 'gemini-3.8-flash'}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify({
+    const resultado = await generarContenidoGemini(apiKey, {
         systemInstruction: { parts: [{ text: 'Eres Asistente Byte, asesor de compras de Byte Bay. Responde siempre en español peruano, de forma amable y breve. No saludes de nuevo: responde directamente la pregunta. Solo usa el catálogo proporcionado: no inventes precio, stock ni características. Recomienda máximo 3 productos, indica nombre y precio. Si preguntan por ofertas y no hay descuento, dilo claramente y luego sugiere productos disponibles de la categoría consultada. Si no existe una coincidencia, dilo y sugiere categoría o búsqueda. No solicites contraseñas, tarjetas, DNI ni datos sensibles.' }] },
         contents: [{ role: 'user', parts: [{ text: `Pregunta del cliente: ${mensaje}\n\nCatálogo disponible:\n${contexto}` }] }],
         generationConfig: { maxOutputTokens: 1024, temperature: 0.4 },
-      }),
     })
-    const resultado = await respuesta.json()
-    if (!respuesta.ok) throw new Error(resultado?.error?.message || 'Gemini no pudo responder en este momento')
     const texto = resultado.candidates?.[0]?.content?.parts?.map((parte: { text?: string }) => parte.text || '').join('').trim()
     if (!texto) throw new Error('La IA no devolvió una respuesta')
     const recomendados = productos.filter(producto => Number(producto.existencias) > 0).slice(0, 3)
     const detalleCatalogo = recomendados.length ? `\n\nOpciones disponibles en Byte Bay:\n${recomendados.map(producto => `• ${producto.nombre} — S/${producto.precio_venta} (${producto.existencias} disponibles)`).join('\n')}` : ''
     return Response.json({ respuesta: texto + detalleCatalogo, productos: recomendados }, { headers: corsHeaders })
   } catch (error) {
-    return Response.json({ error: error.message || 'Error inesperado' }, { status: 400, headers: corsHeaders })
+    const mensaje = error instanceof Error ? error.message : 'Error inesperado'
+    const estado = error instanceof ErrorGemini ? error.status : 400
+    return Response.json({ error: mensaje }, { status: estado, headers: corsHeaders })
   }
 })
