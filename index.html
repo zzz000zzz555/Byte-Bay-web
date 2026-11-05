@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20">
+  <link rel="stylesheet" href="site-enhancements.css?v=1">
   <script>try{if(localStorage.getItem('beruTema')==='noche')document.documentElement.classList.add('dark-mode')}catch(e){}</script>
   <!-- EmailJS permite enviar el correo desde la página sin exponer la contraseña de Gmail. -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -23,12 +24,17 @@
       <form class="search" id="searchForm"><input id="searchInput" type="search" placeholder="Busca productos, marcas y más" aria-label="Buscar productos"><button type="submit" aria-label="Buscar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg></button></form>
       <button class="location header-action" data-action="location"><span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg></span><span><small>Enviar a</small><strong>Lima, Perú</strong></span></button>
       <button class="account header-action" data-action="account"><span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span><span><small>Mi cuenta</small><strong>Ingresar</strong></span></button><button class="account-logout hidden" id="accountLogout" type="button">Salir</button>
+      <button class="offers-notification-toggle" id="offersNotificationToggle" type="button" aria-expanded="false" aria-controls="offersNotificationPanel">Avisos <span id="offersNotificationCount" class="notification-count">0</span></button>
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche" title="Cambiar apariencia"><span aria-hidden="true">☾</span></button>
       <button class="cart-button" id="cartOpen" aria-label="Abrir carrito"><svg class="cart-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 1.9-1.5L21 8H6"></path></svg><span class="cart-count" id="cartCount">0</span></button>
     </div>
     <nav class="nav wrap" id="mainNav"><button class="departments" id="departmentsBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg> Departamentos <span>⌄</span></button><a href="#ofertas">Ofertas</a><a href="#novedades">Novedades</a><a href="#" data-category="Supermercado">Supermercado</a><a href="#" data-category="Tecnología">Tecnología</a><a href="#" data-category="Hogar">Hogar</a><a class="nav-special" href="#">Byte Bay Plus</a><div class="mobile-account-zone"><button id="mobileAccountAccess" class="mobile-account-link" type="button">👤 <span>Crear cuenta / Ingresar</span></button><button id="mobileAccountLogout" class="mobile-account-logout hidden" type="button">Cerrar sesión</button></div></nav>
     <div class="mega-menu" id="megaMenu"><div class="wrap mega-grid"><div><strong>Supermercado</strong><a href="#ofertas" data-category="Supermercado">Frutas y verduras</a><a href="#ofertas" data-category="Supermercado">Despensa</a><a href="#ofertas" data-category="Supermercado">Bebidas</a></div><div><strong>Tecnología</strong><a href="#ofertas" data-category="Tecnología">Celulares</a><a href="#ofertas" data-category="Tecnología">Computación</a><a href="#ofertas" data-category="Audio">Audio</a></div><div><strong>Hogar</strong><a href="#ofertas" data-category="Electrohogar">Electrodomésticos</a><a href="#ofertas" data-category="Hogar">Muebles</a><a href="#ofertas" data-category="Hogar">Decoración</a></div><div><strong>Más categorías</strong><a href="#ofertas" data-category="Moda">Moda</a><a href="#ofertas" data-category="Deportes">Deportes</a><a href="#ofertas" data-category="Belleza">Belleza</a></div></div></div>
   </header>
+  <aside class="offers-notification-panel hidden" id="offersNotificationPanel" aria-label="Notificaciones de ofertas">
+    <div class="offers-notification-heading"><strong>Ofertas y novedades</strong><button id="offersNotificationClose" type="button" aria-label="Cerrar avisos">×</button></div>
+    <div id="offersNotificationList" aria-live="polite">Cargando avisos…</div>
+  </aside>
 
   <main>
     <section class="hero hero-carousel wrap" id="heroCarousel" aria-label="Ofertas y productos destacados">
@@ -151,7 +157,7 @@
     <section class="newsletter"><div class="wrap newsletter-inner"><div><span class="section-kicker">BENEFICIOS EXCLUSIVOS</span><h2>Lo mejor de Byte Bay, directo a tu correo</h2><p>Recibe descuentos, novedades y recomendaciones hechas para ti.</p></div><form id="newsletterForm"><input type="email" required placeholder="Tu correo electrónico"><button class="btn primary">Quiero recibir ofertas</button><small>Al suscribirte aceptas nuestra política de privacidad.</small></form></div></section>
   </main>
 
-  <footer id="ayuda"><div class="wrap footer-grid"><div><a class="brand footer-brand" href="#"><span class="brand-logo"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></span></a><p>Comprar y vender debería sentirse fácil. Por eso reunimos variedad, buenos precios y una experiencia en la que puedes confiar.</p></div><div><h5>Acerca de Byte Bay</h5><a href="#">Quiénes somos</a><a href="#">Trabaja con nosotros</a><a href="#">Sostenibilidad</a></div><div><h5>Compra con confianza</h5><a href="#">Cómo comprar</a><a href="#">Medios de pago</a><a href="#">Envíos y devoluciones</a></div><div><h5>Redes oficiales</h5><a href="https://tiktok.com/@bytebayperu" target="_blank" rel="noopener noreferrer">TikTok · @bytebayperu</a><a href="https://www.instagram.com/bytebayperu?stkn=b2Zlc3c4M2lrcjJw" target="_blank" rel="noopener noreferrer">Instagram · @bytebayperu</a><a href="https://youtube.com/@bytebayperu?si=4nyrzBNYliTeMwbu" target="_blank" rel="noopener noreferrer">YouTube · @bytebayperu</a><a href="https://x.com/bytebayperu" target="_blank" rel="noopener noreferrer">X · @bytebayperu</a><a href="https://www.facebook.com/share/19SYEVhY7c/" target="_blank" rel="noopener noreferrer">Facebook · Byte Bay Perú</a></div><div><h5>¿Necesitas ayuda?</h5><a href="#">Centro de ayuda</a><a href="#">Contáctanos</a><a href="#">Libro de reclamaciones</a></div></div><div class="wrap footer-bottom"><span>© 2026 Byte Bay. Todos los derechos reservados.</span><div><a href="#">Privacidad</a><a href="#">Términos</a><span>Yape</span></div></div></footer>
+  <footer id="ayuda"><div class="wrap footer-grid"><div><a class="brand footer-brand" href="#"><span class="brand-logo"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></span></a><p>Comprar y vender debería sentirse fácil. Por eso reunimos variedad, buenos precios y una experiencia en la que puedes confiar.</p></div><div><h5>Acerca de Byte Bay</h5><a href="#">Quiénes somos</a><a href="#">Trabaja con nosotros</a><a href="#">Sostenibilidad</a></div><div><h5>Compra con confianza</h5><a href="#">Cómo comprar</a><a href="#">Medios de pago</a><a href="#">Envíos y devoluciones</a></div><div><h5>Redes oficiales</h5><a href="https://tiktok.com/@bytebayperu" target="_blank" rel="noopener noreferrer">TikTok · @bytebayperu</a><a href="https://www.instagram.com/bytebayperu?stkn=b2Zlc3c4M2lrcjJw" target="_blank" rel="noopener noreferrer">Instagram · @bytebayperu</a><a href="https://youtube.com/@bytebayperu?si=4nyrzBNYliTeMwbu" target="_blank" rel="noopener noreferrer">YouTube · @bytebayperu</a><a href="https://x.com/bytebayperu" target="_blank" rel="noopener noreferrer">X · @bytebayperu</a><a href="https://www.facebook.com/share/19SYEVhY7c/" target="_blank" rel="noopener noreferrer">Facebook · Byte Bay Perú</a></div><div><h5>¿Necesitas ayuda?</h5><a href="#">Centro de ayuda</a><a href="#">Contáctanos</a><a href="#" id="openClaimsForm">Libro de reclamaciones</a></div></div><div class="wrap footer-bottom"><span>© 2026 Byte Bay. Todos los derechos reservados.</span><div><a href="#">Privacidad</a><a href="#">Términos</a><span>Yape</span></div></div></footer>
 
   <aside class="cart-drawer" id="cartDrawer" aria-hidden="true"><div class="cart-header"><div><small>TU COMPRA</small><h2>Carrito <span id="cartTitleCount">(0)</span></h2></div><button id="cartClose" aria-label="Cerrar carrito">×</button></div><div class="cart-items" id="cartItems"><div class="empty-cart"><span>▱</span><h3>Tu carrito está vacío</h3><p>Agrega productos para ver tu resumen de compra.</p></div></div><div class="cart-summary"><div><span>Subtotal</span><strong id="cartSubtotal">S/ 0.00</strong></div><p>El envío, el cupón y el total final se calculan al instante.</p><button class="btn primary checkout" id="openCheckout">Continuar compra</button></div></aside><div class="overlay" id="overlay"></div>
   <div class="product-modal" id="productModal" aria-hidden="true">
@@ -208,10 +214,35 @@
       <div class="account-status" id="accountStatus"></div>
     </div>
   </div>
+  <section class="claims-modal" id="claimsModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="claimsTitle">
+      <div class="claims-card">
+        <button class="account-close" id="claimsClose" type="button" aria-label="Cerrar">×</button>
+        <span class="section-kicker">ATENCIÓN AL CLIENTE</span>
+        <h2 id="claimsTitle">Libro de reclamaciones</h2>
+        <p>Completa tus datos y describe lo ocurrido. Guarda el código de seguimiento que recibirás al enviar.</p>
+        <form id="claimsForm">
+          <div class="claims-form-grid">
+            <label><span>Nombres y apellidos</span><input name="nombre" maxlength="200" autocomplete="name" required></label>
+            <label><span>DNI o CE</span><input name="documento" minlength="6" maxlength="20" required></label>
+            <label><span>Correo electrónico</span><input name="correo" type="email" maxlength="254" autocomplete="email" required></label>
+            <label><span>Teléfono (opcional)</span><input name="telefono" type="tel" maxlength="30" autocomplete="tel"></label>
+            <label><span>Tipo</span><select name="tipo" required><option value="reclamo">Reclamo</option><option value="queja">Queja</option></select></label>
+            <label><span>Categoría</span><select name="categoria" required><option value="servicio">Queja de servicio</option><option value="producto">Defecto de producto</option><option value="facturacion">Facturación</option><option value="entrega">Entrega</option></select></label>
+            <label><span>Número de pedido (opcional)</span><input name="pedido" maxlength="40"></label>
+            <label><span>Monto involucrado (opcional)</span><input name="monto" type="number" min="0" step="0.01"></label>
+          </div>
+          <label><span>Describe los hechos</span><textarea name="descripcion" minlength="10" maxlength="10000" rows="5" required></textarea></label>
+          <label><span>Adjuntar evidencia (opcional)</span><input name="evidencia" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"><small>JPG, PNG, WEBP o PDF · máximo 5 MB. No adjuntes datos de tarjetas ni contraseñas.</small></label>
+          <button class="btn primary" id="claimsSubmit" type="submit">Enviar reclamación</button>
+          <p id="claimsStatus" class="claims-status" aria-live="polite"></p>
+        </form>
+      </div>
+  </section>
   <div class="toast" id="toast">Producto agregado al carrito</div>
   <section class="cookie-banner hidden" id="personalizationConsent" role="dialog" aria-labelledby="consentTitle" aria-describedby="consentDescription"><div><span class="section-kicker">TU PRIVACIDAD</span><h2 id="consentTitle">¿Quieres recomendaciones personalizadas?</h2><p id="consentDescription">Con tu permiso, Byte Bay recuerda los productos que ves en este dispositivo para mostrarte artículos similares y tu historial reciente. No vendemos esta información.</p></div><div class="cookie-actions"><button class="btn secondary" id="rejectPersonalization" type="button">No aceptar</button><button class="btn primary" id="acceptPersonalization" type="button">Aceptar y personalizar</button></div></section>
   <button id="aiAssistantToggle" class="ai-assistant-toggle" type="button" aria-label="Abrir Asistente Byte"><span>✦</span> Asistente Byte</button>
   <section id="aiAssistantPanel" class="ai-assistant-panel hidden" aria-label="Asistente Byte"><header><div><span class="section-kicker">IA DE BYTE BAY</span><h2>¿Qué estás buscando?</h2></div><button id="aiAssistantClose" type="button" aria-label="Cerrar asistente">×</button></header><div class="ai-chat" id="aiChat"><article class="ai-message assistant">Hola, soy Asistente Byte. Puedo ayudarte a encontrar productos, ofertas y opciones similares.</article></div><div class="ai-suggestions"><button type="button" data-ai-question="¿Qué ofertas de tecnología tienen stock?">Ofertas de tecnología</button><button type="button" data-ai-question="Recomiéndame productos para el hogar">Para el hogar</button></div><form id="aiAssistantForm"><input id="aiAssistantInput" maxlength="500" placeholder="Ej.: Recomiéndame una laptop económica" required><button class="btn primary" type="submit">Enviar</button></form><small>Respuestas generadas con IA según el catálogo disponible.</small></section>
-  <script src="app.js?v=42"></script>
+  <script src="app.js?v=43"></script>
+  <script src="site-enhancements.js?v=1"></script>
 </body>
 </html>

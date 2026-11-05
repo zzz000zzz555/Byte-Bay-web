@@ -474,6 +474,7 @@ function openFooterInfo(info){
   modal.querySelector('h2').textContent=info.title;modal.querySelector('article div').innerHTML=info.body;modal.classList.add('open');
 }
 document.querySelectorAll('#ayuda a[href="#"]').forEach(link=>link.addEventListener('click',event=>{
+  if(link.id==='openClaimsForm') return;
   const info=footerInfo[link.textContent.trim()];
   if(!info) return;
   event.preventDefault();openFooterInfo(info);

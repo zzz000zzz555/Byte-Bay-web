@@ -45,6 +45,12 @@ async function validarSesion(){
   mostrarSeccion('resumen');
 }
 function mostrarAcceso(mensaje=''){$('#adminLogin').classList.remove('hidden');$('#adminApp').classList.add('hidden');$('#adminLoginStatus').textContent=mensaje;}
+function mostrarFormularioRecuperacion(){
+  $('#adminLoginForm').classList.add('hidden');
+  $('#adminForgotPassword').classList.add('hidden');
+  $('#adminRecoveryForm').classList.remove('hidden');
+  $('#adminLoginStatus').textContent='Crea una contraseña nueva para tu cuenta.';
+}
 function mostrarSeccion(seccion){
   document.querySelectorAll('[data-admin-section]').forEach(elemento=>elemento.classList.toggle('hidden',elemento.dataset.adminSection!==seccion));
   document.querySelectorAll('[data-admin-tab]').forEach(boton=>boton.classList.toggle('active',boton.dataset.adminTab===seccion));
@@ -60,6 +66,31 @@ $('#adminLoginForm').onsubmit=async event=>{
   event.preventDefault();$('#adminLoginStatus').textContent='Validando credenciales…';
   const {error}=await supabaseClient.auth.signInWithPassword({email:$('#adminEmail').value.trim(),password:$('#adminPassword').value});
   if(error){$('#adminLoginStatus').textContent='Correo o contraseña incorrectos.';return;}
+  await validarSesion();
+};
+$('#adminForgotPassword').onclick=async()=>{
+  const correo=$('#adminEmail').value.trim();
+  if(!correo){$('#adminLoginStatus').textContent='Escribe tu correo laboral para enviarte el enlace.';$('#adminEmail').focus();return;}
+  $('#adminForgotPassword').disabled=true;
+  const redirectTo=`${window.location.origin}${window.location.pathname}`;
+  const {error}=await supabaseClient.auth.resetPasswordForEmail(correo,{redirectTo});
+  $('#adminForgotPassword').disabled=false;
+  $('#adminLoginStatus').textContent=error
+    ? `No se pudo enviar el enlace: ${error.message}`
+    : 'Si el correo corresponde a una cuenta, recibirás un enlace para cambiar la contraseña.';
+};
+supabaseClient.auth.onAuthStateChange(event=>{
+  if(event==='PASSWORD_RECOVERY') mostrarFormularioRecuperacion();
+});
+$('#adminRecoveryForm').onsubmit=async event=>{
+  event.preventDefault();
+  const password=$('#adminNewPassword').value;
+  if(password.length<8){$('#adminLoginStatus').textContent='La contraseña debe tener al menos 8 caracteres.';return;}
+  if(password!==$('#adminConfirmPassword').value){$('#adminLoginStatus').textContent='Las contraseñas no coinciden.';return;}
+  const {error}=await supabaseClient.auth.updateUser({password});
+  if(error){$('#adminLoginStatus').textContent=`No se pudo cambiar la contraseña: ${error.message}`;return;}
+  window.history.replaceState({},document.title,`${window.location.pathname}${window.location.search}`);
+  $('#adminLoginStatus').textContent='Contraseña actualizada. Iniciando sesión…';
   await validarSesion();
 };
 $('#adminLogout').onclick=async()=>{await supabaseClient.auth.signOut();rolPersonal='';mostrarAcceso('Sesión cerrada correctamente.');};
@@ -120,16 +151,27 @@ function renderizarPersonal(){
   lista.querySelectorAll('[data-toggle-staff]').forEach(b=>b.onclick=()=>cambiarEstadoPersonal(b.dataset.toggleStaff));
   lista.querySelectorAll('[data-delete-staff]').forEach(b=>b.onclick=()=>eliminarPersonal(b.dataset.deleteStaff));
 }
-function editarPersonal(id){const p=personalRegistrado.find(x=>x.id_usuario===id);if(!p)return;$('#staffUserId').value=p.id_usuario;$('#newStaffNames').value=p.nombres;$('#newStaffLastNames').value=p.apellidos;$('#newStaffEmail').value=p.correo;$('#newStaffEmail').readOnly=true;$('#newStaffPassword').required=false;$('#newStaffPasswordLabel').classList.add('hidden');$('#adminStaffHeading').textContent=`Editar: ${p.nombres} ${p.apellidos}`;$('#staffSubmit').textContent='Guardar cambios';$('#staffCancelEdit').classList.remove('hidden');}
-function limpiarFormularioPersonal(){const f=$('#adminStaffForm');f.reset();$('#staffUserId').value='';$('#newStaffEmail').readOnly=false;$('#newStaffPassword').required=true;$('#newStaffPasswordLabel').classList.remove('hidden');$('#adminStaffHeading').textContent='Registrar empleado';$('#staffSubmit').textContent='Registrar empleado';$('#staffCancelEdit').classList.add('hidden');}
+function contrasenaEmpleadoFuerte(contrasena){
+  return contrasena.length>=8&&/[a-z]/.test(contrasena)&&/[A-Z]/.test(contrasena)&&/\d/.test(contrasena)&&/[@$!%*#?&.]/.test(contrasena);
+}
+$('#newStaffPassword').addEventListener('input',event=>{
+  const password=event.currentTarget.value;
+  const cumple=contrasenaEmpleadoFuerte(password);
+  const estado=$('#staffPasswordStrength');
+  estado.textContent=cumple?'Contraseña segura: cumple todos los requisitos.':'Debe tener 8 caracteres, mayúscula, minúscula, número y un símbolo permitido.';
+  estado.classList.toggle('is-valid',cumple);
+  estado.classList.toggle('is-invalid',Boolean(password)&&!cumple);
+});
+function editarPersonal(id){const p=personalRegistrado.find(x=>x.id_usuario===id);if(!p)return;$('#staffUserId').value=p.id_usuario;$('#newStaffNames').value=p.nombres;$('#newStaffLastNames').value=p.apellidos;$('#newStaffEmail').value=p.correo;$('#newStaffEmail').readOnly=true;$('#newStaffPassword').required=false;$('#newStaffPasswordLabel').classList.add('hidden');$('#staffPasswordFeedback').classList.add('hidden');$('#adminStaffHeading').textContent=`Editar: ${p.nombres} ${p.apellidos}`;$('#staffSubmit').textContent='Guardar cambios';$('#staffCancelEdit').classList.remove('hidden');}
+function limpiarFormularioPersonal(){const f=$('#adminStaffForm');f.reset();$('#staffPasswordStrength').textContent='Aún no cumple los requisitos.';$('#staffPasswordStrength').classList.remove('is-valid','is-invalid');$('#staffUserId').value='';$('#newStaffEmail').readOnly=false;$('#newStaffPassword').required=true;$('#newStaffPasswordLabel').classList.remove('hidden');$('#staffPasswordFeedback').classList.remove('hidden');$('#adminStaffHeading').textContent='Registrar empleado';$('#staffSubmit').textContent='Registrar empleado';$('#staffCancelEdit').classList.add('hidden');}
 async function cambiarEstadoPersonal(id){const p=personalRegistrado.find(x=>x.id_usuario===id);if(!p)return;let motivo=null;if(p.activo){motivo=window.prompt('Motivo de la anulación (obligatorio):');if(!motivo?.trim())return;}try{await llamarGestionPersonal('cambiar_estado',{id_usuario:id,activo:!p.activo,motivo_anulacion:motivo?.trim()||null});informar(p.activo?'Personal anulado.':'Personal reactivado.');cargarPersonal();}catch(error){informar(error.message);}}
 async function eliminarPersonal(id){const p=personalRegistrado.find(x=>x.id_usuario===id);if(!p||!window.confirm(`¿Eliminar definitivamente a ${p.nombres} ${p.apellidos}? Esta acción no se puede deshacer.`))return;try{await llamarGestionPersonal('eliminar',{id_usuario:id});informar('Personal eliminado.');cargarPersonal();}catch(error){informar(error.message);}}
 
 $('#adminProductForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim();const {error}=await supabaseClient.rpc('guardar_producto_personal',{p_id:valor('adminProductId')?Number(valor('adminProductId')):null,p_codigo:valor('adminProductCode'),p_nombre:valor('adminProductName'),p_categoria:valor('adminProductCategory'),p_marca:valor('adminProductBrand')||null,p_precio:Number(valor('adminProductPrice')),p_existencias:Number(valor('adminProductStock')),p_url_imagen:valor('adminProductImage')||null,p_descripcion:null,p_fecha_vencimiento:valor('adminProductExpiry')||null});if(error)return informar(error.message);informar('Producto guardado.');event.target.reset();$('#adminProductId').value='';$('#adminProductHeading').textContent='Nuevo producto';mostrarVistaPrevia('#adminProductPreview','#adminProductPreviewEmpty');cargarCatalogo();};
 $('#adminProviderForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim();const {error}=await supabaseClient.rpc('guardar_proveedor_personal',{p_id:null,p_razon_social:valor('providerName'),p_documento:valor('providerDocument')||null,p_contacto_nombre:null,p_correo:valor('providerEmail')||null,p_telefono:valor('providerPhone')||null,p_direccion:null,p_notas:null});if(error)return informar(error.message);informar('Proveedor guardado.');event.target.reset();cargarOpciones();};
 $('#adminLotForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim(),estado=valor('lotStatus');const {error}=await supabaseClient.rpc('registrar_lote_personal',{p_id_producto:Number(valor('lotProduct')),p_id_proveedor:valor('lotProvider')?Number(valor('lotProvider')):null,p_codigo_lote:valor('lotCode'),p_cantidad:Number(valor('lotQuantity')),p_costo_unitario:valor('lotCost')?Number(valor('lotCost')):null,p_fecha_vencimiento:valor('lotExpiry')||null,p_estado:estado,p_motivo_danio:estado==='daniado'?valor('lotNote'):null,p_observacion:estado!=='daniado'?valor('lotNote'):null});if(error)return informar(error.message);informar('Lote registrado.');event.target.reset();cargarReportes();};
-$('#adminOfferForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim();const {error}=await supabaseClient.rpc('guardar_oferta_personal',{p_id_producto:Number(valor('offerProduct')),p_nombre:valor('offerName'),p_precio_oferta:Number(valor('offerPrice')),p_inicia_en:new Date(valor('offerStart')).toISOString(),p_termina_en:valor('offerEnd')?new Date(valor('offerEnd')).toISOString():null});if(error)return informar(error.message);informar('Oferta guardada.');event.target.reset();cargarOfertas();};
-$('#adminStaffForm').onsubmit=async event=>{event.preventDefault();const id=$('#staffUserId').value;const datos={nombres:$('#newStaffNames').value.trim(),apellidos:$('#newStaffLastNames').value.trim(),correo:$('#newStaffEmail').value.trim().toLowerCase()};try{const data=await llamarGestionPersonal(id?'actualizar':'registrar_empleado',id?{...datos,id_usuario:id}:{...datos,contrasena:$('#newStaffPassword').value});informar(id?'Datos del personal actualizados.':`Empleado registrado: ${data.correo}. Entrégale su contraseña inicial de forma privada.`);limpiarFormularioPersonal();cargarPersonal();}catch(error){informar(error.message);}};
+$('#adminOfferForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim(),superOferta=$('#offerSuperSale').checked,liquidacion=$('#offerClearance').checked;const {data,error}=await supabaseClient.rpc('guardar_oferta_personal',{p_id_producto:Number(valor('offerProduct')),p_nombre:valor('offerName'),p_precio_oferta:Number(valor('offerPrice')),p_inicia_en:new Date(valor('offerStart')).toISOString(),p_termina_en:valor('offerEnd')?new Date(valor('offerEnd')).toISOString():null});if(error)return informar(error.message);if(superOferta||liquidacion){const {error:errorMarca}=await supabaseClient.rpc('marcar_oferta_especial_jefe',{p_id_oferta:Number(data),p_super_oferta:superOferta,p_liquidacion_stock:liquidacion});if(errorMarca){informar(`Oferta guardada, pero no se pudo activar el aviso: ${errorMarca.message}`);event.target.reset();cargarOfertas();return;}}informar('Oferta guardada.');event.target.reset();cargarOfertas();};
+$('#adminStaffForm').onsubmit=async event=>{event.preventDefault();const id=$('#staffUserId').value;if(!id&&!contrasenaEmpleadoFuerte($('#newStaffPassword').value)){informar('La contraseña inicial debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo (@$!%*#?&.).');$('#newStaffPassword').focus();return;}const datos={nombres:$('#newStaffNames').value.trim(),apellidos:$('#newStaffLastNames').value.trim(),correo:$('#newStaffEmail').value.trim().toLowerCase()};try{const data=await llamarGestionPersonal(id?'actualizar':'registrar_empleado',id?{...datos,id_usuario:id}:{...datos,contrasena:$('#newStaffPassword').value});informar(id?'Datos del personal actualizados.':`Empleado registrado: ${data.correo}. Entrégale su contraseña inicial de forma privada.`);limpiarFormularioPersonal();cargarPersonal();}catch(error){informar(error.message);}};
 $('#adminRefreshReports').onclick=cargarReportes;$('#adminRefreshCatalog').onclick=cargarCatalogo;$('#adminRefreshMovements').onclick=cargarMovimientos;$('#adminRefreshStaff').onclick=cargarPersonal;$('#staffCancelEdit').onclick=limpiarFormularioPersonal;
 $('#adminProductImage').addEventListener('input',event=>mostrarVistaPrevia('#adminProductPreview','#adminProductPreviewEmpty',event.target.value.trim()));
 $('#offerProduct').addEventListener('change',event=>mostrarVistaPrevia('#offerProductPreview','#offerProductPreviewEmpty',imagenProducto(event.target.value)));
@@ -138,4 +180,5 @@ $('#inventorySearch').addEventListener('input',renderizarInventario);$('#invento
 $('#offerSearch').addEventListener('input',renderizarOfertas);$('#offerStatusFilter').addEventListener('change',renderizarOfertas);
 $('#movementSearch').addEventListener('input',renderizarMovimientos);$('#movementTypeFilter').addEventListener('change',renderizarMovimientos);
 $('#staffSearch').addEventListener('input',renderizarPersonal);$('#staffStatusFilter').addEventListener('change',renderizarPersonal);
-validarSesion();
+const esEnlaceRecuperacion=/[?&]code=|type=recovery/.test(`${window.location.search}${window.location.hash}`);
+if(!esEnlaceRecuperacion) validarSesion();

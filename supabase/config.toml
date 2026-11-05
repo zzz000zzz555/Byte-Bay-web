@@ -1,0 +1,4 @@
+project_id = "inwugycvtaaceugvtfpv"
+
+[functions.reclamos-publicos]
+verify_jwt = false

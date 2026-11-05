@@ -6,7 +6,8 @@
   <title>Gestión interna | Byte Bay</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="styles.css?v=13">
-  <link rel="stylesheet" href="admin.css?v=3">
+  <link rel="stylesheet" href="admin.css?v=4">
+  <link rel="stylesheet" href="admin-enhancements.css?v=1">
   <script>try{if(localStorage.getItem('beruTema')==='noche')document.documentElement.classList.add('dark-mode')}catch(e){}</script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -21,6 +22,12 @@
         <label><span>Correo laboral</span><input id="adminEmail" type="email" autocomplete="username" required></label>
         <label><span>Contraseña</span><input id="adminPassword" type="password" autocomplete="current-password" required></label>
         <button class="btn primary" type="submit">Ingresar</button>
+      </form>
+      <button id="adminForgotPassword" class="admin-store-link" type="button">Olvidé mi contraseña</button>
+      <form id="adminRecoveryForm" class="hidden">
+        <label><span>Nueva contraseña</span><input id="adminNewPassword" type="password" autocomplete="new-password" minlength="8" required></label>
+        <label><span>Confirmar contraseña</span><input id="adminConfirmPassword" type="password" autocomplete="new-password" minlength="8" required></label>
+        <button class="btn primary" type="submit">Guardar contraseña</button>
       </form>
       <div id="adminLoginStatus" class="admin-status" aria-live="polite"></div>
       <button class="theme-toggle admin-theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche"><span aria-hidden="true">☾</span></button>
@@ -37,7 +44,11 @@
         <button data-admin-tab="productos">Productos</button>
         <button data-admin-tab="inventario">Inventario</button>
         <button data-admin-tab="ofertas">Ofertas</button>
+        <button data-admin-tab="avisos" id="adminNotificationsTab">Avisos</button>
         <button data-admin-tab="movimientos">Movimientos</button>
+        <button data-admin-tab="reclamos">Reclamaciones</button>
+        <button data-admin-tab="auditoria" id="adminAuditTab">Auditoría</button>
+        <button data-admin-tab="marca" id="adminBrandTab">Marca</button>
         <button data-admin-tab="personal" id="adminPeopleTab">Personal</button>
       </nav>
       <button id="adminLogout" class="admin-logout">Cerrar sesión</button>
@@ -49,6 +60,15 @@
       <section data-admin-section="resumen">
         <div class="admin-section-head"><div><h2>Resumen operativo</h2><p>Ventas, pagos e inventario.</p></div><button class="btn secondary" id="adminRefreshReports">Actualizar</button></div>
         <div class="admin-metrics" id="managementSummary"></div>
+        <div id="userLifecyclePanel" class="user-lifecycle-panel hidden">
+          <div class="admin-section-head"><div><h3>Ciclo de vida de clientes</h3><p>Altas y solicitudes de baja lógica.</p></div></div>
+          <div class="admin-filters admin-filters-wide">
+            <label>Desde<input id="userLifecycleFrom" type="date"></label>
+            <label>Hasta<input id="userLifecycleTo" type="date"></label>
+            <button class="btn secondary" id="refreshUserLifecycle" type="button">Consultar</button>
+          </div>
+          <div class="admin-metrics" id="userLifecycleSummary"></div>
+        </div>
         <div class="admin-metrics" id="inventorySummary"></div>
         <div class="admin-filters"><input id="inventorySearch" type="search" placeholder="Buscar producto o lote"><select id="inventoryStatusFilter"><option value="">Todos los estados</option><option value="disponible">Disponible</option><option value="daniado">Dañado</option><option value="agotado">Agotado</option><option value="vencido">Vencido</option><option value="devuelto">Devuelto</option></select></div>
         <div id="inventoryReportList" class="admin-list"></div>
@@ -75,9 +95,70 @@
         </div>
       </section>
 
-      <section class="hidden" data-admin-section="ofertas"><div class="admin-section-head"><div><h2>Ofertas</h2><p>Programa descuentos por producto.</p></div></div><div class="admin-two-columns"><form id="adminOfferForm" class="admin-card admin-form"><h3>Nueva oferta</h3><label><span>Producto</span><select id="offerProduct" required></select></label><div class="admin-product-preview admin-product-preview-small"><img id="offerProductPreview" src="imagen-producto-predeterminada.svg" alt="Producto de la oferta" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"><span id="offerProductPreviewEmpty">Selecciona un producto</span></div><label><span>Nombre de la oferta</span><input id="offerName" required></label><label><span>Precio de oferta</span><input id="offerPrice" type="number" min="0" step="0.01" required></label><div class="admin-form-row"><label><span>Inicia</span><input id="offerStart" type="datetime-local" required></label><label><span>Termina</span><input id="offerEnd" type="datetime-local"></label></div><button class="btn primary" type="submit">Guardar oferta</button></form><div><div class="admin-filters"><input id="offerSearch" type="search" placeholder="Buscar producto u oferta"><select id="offerStatusFilter"><option value="">Todas</option><option value="activa">Activas</option><option value="inactiva">Inactivas</option></select></div><div id="adminOffersList" class="admin-list admin-card"></div></div></div></section>
+      <section class="hidden" data-admin-section="ofertas">
+        <div class="admin-section-head"><div><h2>Ofertas</h2><p>Programa descuentos y revisa las ofertas que activan avisos automáticos.</p></div></div>
+        <div id="automaticOffersDashboard" class="admin-card automatic-offers-dashboard hidden">
+          <div class="admin-section-head"><div><h3>Ofertas automáticas del sistema</h3><p>Avisos creados al marcar una oferta como super oferta o liquidación.</p></div><button class="btn secondary" id="refreshAutomaticOffers" type="button">Actualizar</button></div>
+          <div id="automaticOffersMetrics" class="admin-metrics"></div>
+          <div id="automaticOffersList" class="admin-list" aria-live="polite"></div>
+        </div>
+        <div class="admin-two-columns">
+          <form id="adminOfferForm" class="admin-card admin-form"><h3>Nueva oferta</h3><label><span>Producto</span><select id="offerProduct" required></select></label><div class="admin-product-preview admin-product-preview-small"><img id="offerProductPreview" src="imagen-producto-predeterminada.svg" alt="Producto de la oferta" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"><span id="offerProductPreviewEmpty">Selecciona un producto</span></div><label><span>Nombre de la oferta</span><input id="offerName" required></label><label><span>Precio de oferta</span><input id="offerPrice" type="number" min="0" step="0.01" required></label><div class="admin-form-row"><label><span>Inicia</span><input id="offerStart" type="datetime-local" required></label><label><span>Termina</span><input id="offerEnd" type="datetime-local"></label></div><fieldset id="specialOfferOptions" class="admin-checkboxes"><legend>Oferta especial (solo jefe)</legend><label><input id="offerSuperSale" type="checkbox"> Super oferta</label><label><input id="offerClearance" type="checkbox"> Liquidación de stock</label></fieldset><button class="btn primary" type="submit">Guardar oferta</button></form><div><div class="admin-filters"><input id="offerSearch" type="search" placeholder="Buscar producto u oferta"><select id="offerStatusFilter"><option value="">Todas</option><option value="activa">Activas</option><option value="inactiva">Inactivas</option></select></div><div id="adminOffersList" class="admin-list admin-card"></div></div></div>
+      </section>
+
+      <section class="hidden" data-admin-section="avisos">
+        <div class="admin-section-head"><div><h2>Avisos y promociones</h2><p>Programa mensajes visibles en la tienda. El envío por correo requiere un proveedor configurado.</p></div></div>
+        <form id="adminNotificationForm" class="admin-card admin-form admin-form-narrow">
+          <label><span>Título</span><input id="notificationTitle" maxlength="200" required></label>
+          <label><span>Mensaje</span><textarea id="notificationMessage" maxlength="5000" rows="4" required></textarea></label>
+          <div class="admin-form-row"><label><span>Publicar desde</span><input id="notificationStart" type="datetime-local"></label><label><span>Válido hasta</span><input id="notificationEnd" type="datetime-local"></label></div>
+          <label><span>Banner HTTPS (opcional)</span><input id="notificationBanner" type="url"></label>
+          <button class="btn primary" type="submit">Programar aviso</button>
+          <p id="notificationStatus" class="admin-status" aria-live="polite"></p>
+        </form>
+      </section>
 
       <section class="hidden" data-admin-section="movimientos"><div class="admin-section-head"><div><h2>Movimientos</h2><p>Entradas, ventas, ajustes y devoluciones.</p></div><button class="btn secondary" id="adminRefreshMovements">Actualizar</button></div><div class="admin-filters"><input id="movementSearch" type="search" placeholder="Buscar producto"><select id="movementTypeFilter"><option value="">Todos los tipos</option><option value="entrada">Entrada</option><option value="venta">Venta</option><option value="ajuste">Ajuste</option><option value="devolucion">Devolución</option></select></div><div id="adminMovementsList" class="admin-list admin-card"></div></section>
+
+      <section class="hidden" data-admin-section="reclamos">
+        <div class="admin-section-head"><div><h2>Libro de reclamaciones</h2><p>Revisa, responde y exporta las solicitudes recibidas.</p></div><button class="btn secondary" id="exportClaims" type="button">Exportar Excel</button></div>
+        <div class="admin-filters admin-filters-wide">
+          <label>Estado<select id="claimStatusFilter"><option value="">Todos</option><option value="pendiente">Pendiente</option><option value="en_revision">En revisión</option><option value="resuelto">Resuelto</option></select></label>
+          <label>Categoría<select id="claimCategoryFilter"><option value="">Todas</option><option value="servicio">Servicio</option><option value="producto">Producto</option><option value="facturacion">Facturación</option><option value="entrega">Entrega</option></select></label>
+          <label>Desde<input id="claimFromFilter" type="date"></label><label>Hasta<input id="claimToFilter" type="date"></label>
+          <button class="btn secondary" id="refreshClaims" type="button">Aplicar filtros</button>
+        </div>
+        <div id="adminClaimsList" class="admin-list admin-card" aria-live="polite"></div>
+      </section>
+
+      <section class="hidden" data-admin-section="auditoria">
+        <div class="admin-section-head"><div><h2>Auditoría</h2><p>Trazabilidad de cambios en productos y reclamaciones.</p></div><button class="btn secondary" id="exportAudit" type="button">Exportar Excel</button></div>
+        <div class="admin-filters admin-filters-wide">
+          <label>Desde<input id="auditFromFilter" type="date"></label><label>Hasta<input id="auditToFilter" type="date"></label>
+          <label>Acción<select id="auditActionFilter"><option value="">Todas</option><option value="REGISTRO_PRODUCTO">Alta de producto</option><option value="EDICION_PRODUCTO">Edición de producto</option><option value="ELIMINACION_LOGICA_USUARIO">Baja lógica de cliente</option><option value="RESPUESTA_RECLAMO">Respuesta a reclamo</option></select></label>
+          <label>Módulo<select id="auditModuleFilter"><option value="">Todos</option><option value="productos">Productos</option><option value="cuentas_clientes">Clientes</option><option value="libro_reclamaciones">Reclamaciones</option></select></label>
+          <button class="btn secondary" id="refreshAudit" type="button">Aplicar filtros</button>
+        </div>
+        <details class="admin-user-filter"><summary>Seleccionar responsables</summary><div id="auditUserOptions"></div></details>
+        <div id="adminAuditList" class="admin-list admin-card" aria-live="polite"></div>
+      </section>
+
+      <section class="hidden" data-admin-section="marca">
+        <div class="admin-section-head"><div><h2>Marca y empresa</h2><p>Configuración maestra exclusiva del jefe.</p></div></div>
+        <form id="adminBrandForm" class="admin-card admin-form admin-form-narrow">
+          <label><span>Nombre comercial</span><input id="brandName" maxlength="100" required></label>
+          <label><span>URL del logotipo (HTTPS)</span><input id="brandLogo" type="url" placeholder="https://..." required></label>
+          <label><span>Subir logotipo</span><input id="brandLogoFile" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG o WEBP. Se ajusta y comprime antes de guardarlo.</small></label>
+          <label><span>URL del favicon (HTTPS)</span><input id="brandFavicon" type="url" placeholder="https://..."></label>
+          <label><span>Subir favicon</span><input id="brandFaviconFile" type="file" accept="image/jpeg,image/png,image/webp"><small>Imagen cuadrada PNG, JPG o WEBP.</small></label>
+          <label><span>Título SEO</span><input id="brandSeoTitle" maxlength="160"></label>
+          <label><span>Lema</span><input id="brandSlogan" maxlength="200"></label>
+          <label><span>Contacto de soporte</span><input id="brandSupport" maxlength="200" placeholder="correo o teléfono"></label>
+          <label><span>Texto de pie de página</span><textarea id="brandFooter" maxlength="2000" rows="4"></textarea></label>
+          <button class="btn primary" type="submit">Guardar configuración</button>
+          <p id="brandStatus" class="admin-status" aria-live="polite"></p>
+        </form>
+      </section>
 
       <section class="hidden" data-admin-section="personal">
         <div class="admin-section-head"><div><h2>Gestión de personal</h2><p>Acceso exclusivo del jefe. Las cuentas se crean mediante invitación segura.</p></div><button class="btn secondary" id="adminRefreshStaff" type="button">Actualizar lista</button></div>
@@ -87,7 +168,8 @@
             <p class="admin-help">Registro interno temporal: crea las credenciales del empleado sin enviar correo. Entrégale la contraseña inicial de forma privada.</p>
             <div class="admin-form-row"><label><span>Nombres</span><input id="newStaffNames" required></label><label><span>Apellidos</span><input id="newStaffLastNames" required></label></div>
             <label><span>Correo laboral</span><input id="newStaffEmail" type="email" required></label>
-            <label id="newStaffPasswordLabel"><span>Contraseña inicial</span><input id="newStaffPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+            <label id="newStaffPasswordLabel"><span>Contraseña inicial</span><input id="newStaffPassword" type="password" minlength="8" autocomplete="new-password" aria-describedby="staffPasswordHelp staffPasswordStrength" required></label>
+            <div id="staffPasswordFeedback" class="staff-password-feedback"><p id="staffPasswordHelp" class="admin-help">Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo (@$!%*#?&amp;.).</p><p id="staffPasswordStrength" class="admin-help" aria-live="polite">Aún no cumple los requisitos.</p></div>
             <label><span>Rol asignado</span><input value="Empleado" disabled></label>
             <div class="staff-form-actions"><button class="btn primary" id="staffSubmit" type="submit">Registrar empleado</button><button class="btn secondary hidden" id="staffCancelEdit" type="button">Cancelar edición</button></div>
           </form>
@@ -96,6 +178,8 @@
       </section>
     </main>
   </div>
-  <script src="admin.js?v=7"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="admin.js?v=10"></script>
+  <script src="admin-enhancements.js?v=2"></script>
 </body>
 </html>

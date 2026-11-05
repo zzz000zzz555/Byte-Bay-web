@@ -1,0 +1,50 @@
+.admin-filters-wide{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:end}
+.admin-filters-wide label{display:grid;gap:6px;color:var(--muted);font-size:11px;font-weight:700}
+.admin-filters-wide input,.admin-filters-wide select{width:100%;height:42px}
+.admin-form textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fff;color:inherit;font:inherit;resize:vertical}
+.admin-checkboxes{display:grid;gap:8px;border:1px solid var(--line);border-radius:9px;padding:10px}
+.admin-checkboxes label{display:flex;align-items:center;gap:8px}
+.admin-checkboxes input{width:auto;height:auto}
+.admin-user-filter{margin:8px 0 12px;font-size:12px}
+.user-lifecycle-panel{margin:18px 0}
+.user-lifecycle-panel h3{margin:0;font:700 18px Manrope}
+.admin-user-filter>div{display:grid;gap:5px;max-height:160px;overflow:auto;padding:10px;background:#fff;border:1px solid var(--line);border-radius:8px}
+.admin-user-filter label{display:flex;align-items:center;gap:8px}
+.admin-audit-row,.admin-claim-row{display:grid;gap:10px;padding:14px 4px;border-bottom:1px solid var(--line)}
+.admin-audit-row:last-child,.admin-claim-row:last-child{border-bottom:0}
+.admin-audit-meta,.admin-claim-meta{display:flex;flex-wrap:wrap;gap:8px 16px;color:var(--muted);font-size:11px}
+.admin-audit-row details{font-size:12px}
+.admin-audit-row pre{max-width:100%;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6f4;border-radius:8px;padding:10px}
+.admin-claim-row h3{margin:0;font-size:15px}
+.admin-claim-form{display:grid;grid-template-columns:minmax(150px,220px) 1fr auto;gap:10px;align-items:end}
+.admin-claim-form label{display:grid;gap:6px;font-size:11px;font-weight:700}
+.admin-claim-form select,.admin-claim-form textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px;background:#fff;color:inherit;font:inherit}
+.admin-claim-form textarea{min-height:70px;resize:vertical}
+.admin-claim-description{white-space:pre-wrap;overflow-wrap:anywhere}
+.admin-claim-evidence{font-size:12px}
+.dark-mode .admin-form textarea,.dark-mode .admin-claim-form select,.dark-mode .admin-claim-form textarea{background:#152126;color:#e7f0ed;border-color:#3a4c50}
+.dark-mode .admin-audit-row pre{background:#152126}
+.dark-mode .admin-user-filter>div{background:#1c2a2f;border-color:#304247}
+@media(max-width:700px){.admin-claim-form{grid-template-columns:1fr}.admin-filters-wide{grid-template-columns:1fr 1fr}}
+.automatic-offers-dashboard{margin:18px 0}
+.automatic-offers-dashboard h3{margin:0 0 4px;font:700 18px Manrope}
+.automatic-offers-dashboard .admin-metrics{margin:12px 0}
+.automatic-offer-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:14px 4px;border-bottom:1px solid var(--line)}
+.automatic-offer-row:last-child{border-bottom:0}
+.automatic-offer-row>div{min-width:0}
+.automatic-offer-row strong,.automatic-offer-row span,.automatic-offer-row small{display:block}
+.automatic-offer-row span,.automatic-offer-row small,.automatic-offer-row p{font-size:12px;color:var(--muted)}
+.automatic-offer-row p{margin:8px 0}
+.automatic-offer-status{flex:none;padding:6px 9px;border-radius:999px;background:#edf2f2;font-size:11px;text-transform:capitalize}
+.automatic-offer-status.status-publicada{background:#e8f4dd;color:#426313}
+.automatic-offer-status.status-programada{background:#e5efff;color:#2455a3}
+.automatic-offer-status.status-finalizada{background:#f0eeee;color:#686868}
+.staff-password-feedback{display:grid;gap:3px}
+.staff-password-feedback p{margin:0}
+.staff-password-feedback .is-valid{color:#55730d}
+.staff-password-feedback .is-invalid{color:#a5342e}
+.dark-mode .automatic-offer-status{background:#304247;color:#e7f0ed}
+.dark-mode .automatic-offer-status.status-publicada{background:#304234;color:#d4efa4}
+.dark-mode .automatic-offer-status.status-programada{background:#263c5c;color:#c0d7ff}
+.dark-mode .automatic-offer-status.status-finalizada{background:#353b3d;color:#d4d9da}
+@media(max-width:600px){.automatic-offer-row{flex-direction:column}}

@@ -1,0 +1,26 @@
+.offers-notification-toggle{height:40px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:#fff;color:var(--ink);font-weight:700;white-space:nowrap}
+.notification-count{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:4px;border-radius:20px;background:#2563eb;color:#fff;font-size:11px}
+.offers-notification-panel{position:fixed;z-index:90;top:82px;right:max(20px,calc((100vw - 1280px)/2));width:min(380px,calc(100vw - 24px));max-height:70vh;overflow:auto;padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);box-shadow:0 18px 48px #071b2030}
+.offers-notification-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.offers-notification-heading button{border:0;background:transparent;font-size:22px}
+.offer-notification-card{padding:12px 0;border-top:1px solid var(--line)}
+.offer-notification-card strong,.offer-notification-card small{display:block}
+.offer-notification-card p{margin:6px 0;font-size:13px}
+.offer-notification-card small{color:var(--muted)}
+.claims-modal{position:fixed;z-index:120;inset:0;display:none;place-items:center;padding:18px;background:#071b20b8}
+.claims-modal.open{display:grid}
+.claims-card{position:relative;width:min(760px,100%);max-height:92vh;overflow:auto;border-radius:18px;background:#fff;padding:30px;color:var(--ink)}
+.claims-card h2{margin:4px 36px 8px 0;font:800 26px Manrope}
+.claims-card>p{color:var(--muted);font-size:13px}
+.claims-card form{display:grid;gap:14px}
+.claims-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.claims-card label{display:grid;gap:6px;font-size:12px;font-weight:700}
+.claims-card input,.claims-card select,.claims-card textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fff;color:inherit;font:inherit}
+.claims-card input,.claims-card select{height:42px}
+.claims-card input[type="file"]{height:auto;min-height:42px;padding:8px}
+.claims-card textarea{resize:vertical}
+.claims-card small,.claims-status{font-size:12px;color:var(--muted)}
+.claims-status{min-height:18px}
+.dark-mode .offers-notification-toggle,.dark-mode .offers-notification-panel,.dark-mode .claims-card{background:#1c2a2f;color:#e7f0ed;border-color:#304247}
+.dark-mode .claims-card input,.dark-mode .claims-card select,.dark-mode .claims-card textarea{background:#152126;color:#e7f0ed;border-color:#3a4c50}
+@media(max-width:700px){.claims-card{padding:22px 18px}.claims-form-grid{grid-template-columns:1fr}.offers-notification-toggle{padding:0 8px}}

@@ -3,6 +3,13 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const corsHeaders = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' }
 const rolesValidos = ['jefe', 'empleado']
 const texto = (valor: unknown) => typeof valor === 'string' ? valor.trim() : ''
+const contrasenaSegura = (valor: unknown): valor is string =>
+  typeof valor === 'string' &&
+  valor.length >= 8 &&
+  /[a-z]/.test(valor) &&
+  /[A-Z]/.test(valor) &&
+  /\d/.test(valor) &&
+  /[@$!%*#?&.]/.test(valor)
 
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -26,8 +33,11 @@ Deno.serve(async (request) => {
 
     // Modo temporal sin servicio de correo: solo el jefe registra empleados.
     if (accion === 'registrar_empleado') {
-      const nombres = texto(cuerpo.nombres), apellidos = texto(cuerpo.apellidos), correo = texto(cuerpo.correo).toLowerCase(), contrasena = texto(cuerpo.contrasena)
-      if (!nombres || !apellidos || !correo || contrasena.length < 8) throw new Error('Completa los datos y usa una contraseña de al menos 8 caracteres')
+      const nombres = texto(cuerpo.nombres), apellidos = texto(cuerpo.apellidos), correo = texto(cuerpo.correo).toLowerCase()
+      const contrasena = cuerpo.contrasena
+      if (!nombres || !apellidos || !correo || !contrasenaSegura(contrasena)) {
+        throw new Error('Completa los datos y usa una contraseña de al menos 8 caracteres, con mayúscula, minúscula, número y un símbolo (@$!%*#?&.)')
+      }
       const { data: usuariosAuth, error: usuariosError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
       if (usuariosError) throw usuariosError
       if (usuariosAuth.users.some(usuario => usuario.email?.toLowerCase() === correo)) throw new Error('Este correo ya está registrado en Supabase Auth')
