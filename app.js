@@ -1,20 +1,25 @@
 const categories=[
-  {name:'Supermercado',count:'2,480 productos',img:'https://images.unsplash.com/photo-1610348725531-843dff563e2c?auto=format&fit=crop&w=300&q=80'},
-  {name:'Tecnología',count:'1,250 productos',img:'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=300&q=80'},
-  {name:'Electrohogar',count:'860 productos',img:'https://images.unsplash.com/photo-1570222094114-d054a817e56b?auto=format&fit=crop&w=300&q=80'},
-  {name:'Hogar',count:'1,720 productos',img:'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=300&q=80'},
-  {name:'Moda',count:'3,140 productos',img:'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=300&q=80'},
-  {name:'Belleza',count:'920 productos',img:'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=300&q=80'},
-  {name:'Deportes',count:'690 productos',img:'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=300&q=80'},
-  {name:'Bebés',count:'540 productos',img:'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=300&q=80'},
-  {name:'Mascotas',count:'380 productos',img:'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=300&q=80'},
-  {name:'Juguetes',count:'620 productos',img:'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=300&q=80'},
-  {name:'Ferretería',count:'910 productos',img:'https://images.unsplash.com/photo-1581147036324-c3f2d9b2f6aa?auto=format&fit=crop&w=300&q=80'}
+  {name:'Supermercado',count:'2,480 productos',icon:'<path d="M4 5h2l2 10h10l2-7H7"></path><circle cx="9" cy="19" r="1.4"></circle><circle cx="17" cy="19" r="1.4"></circle>'},
+  {name:'Tecnología',count:'1,250 productos',icon:'<rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8M12 17v4"></path>'},
+  {name:'Electrohogar',count:'860 productos',icon:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"></path>'},
+  {name:'Hogar',count:'1,720 productos',icon:'<path d="m3 11 9-7 9 7"></path><path d="M5 10v10h14V10"></path><path d="M10 20v-6h4v6"></path>'},
+  {name:'Moda',count:'3,140 productos',icon:'<path d="M9 4 4 7l2 5 3-1v9h6v-9l3 1 2-5-5-3a3 3 0 0 1-6 0z"></path>'},
+  {name:'Belleza',count:'920 productos',icon:'<path d="M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"></path><path d="M10 14a2 2 0 0 0 2 2"></path>'},
+  {name:'Deportes',count:'690 productos',icon:'<path d="M6 7v10M18 7v10M6 12h12"></path><rect x="3" y="7" width="3" height="10" rx="1"></rect><rect x="18" y="7" width="3" height="10" rx="1"></rect>'},
+  {name:'Bebés',count:'540 productos',icon:'<path d="M9 3h6"></path><path d="M10 6h4v3h-4z"></path><path d="M8 9h8a4 4 0 0 1 4 4v5a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-5a4 4 0 0 1 4-4z"></path>'},
+  {name:'Mascotas',count:'380 productos',icon:'<circle cx="8" cy="7" r="2"></circle><circle cx="16" cy="7" r="2"></circle><circle cx="5" cy="13" r="2"></circle><circle cx="19" cy="13" r="2"></circle><path d="M12 11c3 0 5 2.5 5 5a3 3 0 0 1-3 3 5 5 0 0 1-4 0 3 3 0 0 1-3-3c0-2.5 2-5 5-5z"></path>'},
+  {name:'Juguetes',count:'620 productos',icon:'<rect x="4" y="9" width="7" height="7" rx="1"></rect><rect x="13" y="4" width="7" height="7" rx="1"></rect><path d="M13 13h7v7h-7z"></path>'},
+  {name:'Ferretería',count:'910 productos',icon:'<path d="M14 6a4 4 0 0 0 5 5l-8 8a2.8 2.8 0 0 1-4-4z"></path><path d="m15 5 4 4"></path>'}
 ];
 const IMAGEN_PRODUCTO_RESPALDO='imagen-producto-predeterminada.svg';
 const IMAGEN_CATEGORIA_RESPALDO='imagen-categoria-predeterminada.svg';
 const IMAGEN_QR_RESPALDO='yape-qr-pendiente.svg';
-const imagenSegura=(url,respaldo=IMAGEN_PRODUCTO_RESPALDO)=>url||respaldo;
+const imagenSegura=(url,respaldo=IMAGEN_PRODUCTO_RESPALDO)=>{
+  const valor=String(url||'').trim();
+  if(!valor) return respaldo;
+  const permitida=/^(https?:\/\/|\/|\.\/|\.\.\/|data:image\/|[a-z0-9._-]+\.(png|jpe?g|webp|gif|svg|avif)(\?|#|$))/i;
+  return permitida.test(valor)&&!/^(javascript|vbscript):/i.test(valor)?valor:respaldo;
+};
 const atributoRespaldo=archivo=>`onerror="this.onerror=null;this.src='${archivo}'"`;
 
 document.addEventListener('error',evento=>{
@@ -168,7 +173,7 @@ function mostrarSlideHero(index){
     document.querySelector('#heroEyebrow').textContent=slide.isOffer?'OFERTA BYTE BAY':'BYTE BAY DESTACADO';
     document.querySelector('#heroTitle').textContent=slide.title;
     document.querySelector('#heroDescription').textContent=slide.description;
-    document.querySelector('#heroBadge').innerHTML=`<strong>${slide.badgeTop}</strong><b>${slide.badgeValue}</b><span>${slide.badgeBottom}</span>`;
+    document.querySelector('#heroBadge').innerHTML=`<strong>${escapeHtml(slide.badgeTop)}</strong><b>${escapeHtml(slide.badgeValue)}</b><span>${escapeHtml(slide.badgeBottom)}</span>`;
     const imagen=document.querySelector('#heroImage');imagen.src=imagenSegura(slide.image);imagen.alt=slide.title;
     document.querySelector('#heroCardLabel').textContent=slide.label;
     document.querySelector('#heroCardTitle').textContent=slide.cardTitle;
@@ -188,9 +193,36 @@ document.querySelector('#heroNext').onclick=()=>{mostrarSlideHero(heroSlideIndex
 document.querySelector('#heroCarousel').addEventListener('mouseenter',()=>clearInterval(heroTimer));
 document.querySelector('#heroCarousel').addEventListener('mouseleave',reiniciarCarruselHero);
 
-let cart=[];
+const mercadoPagoReturn=new URLSearchParams(window.location.search).get('pago');
+const mercadoPagoCartState=(()=>{
+  try{
+    const saved=sessionStorage.getItem('bbMercadoPagoCheckout');
+    sessionStorage.removeItem('bbMercadoPagoCheckout');
+    if(!saved||mercadoPagoReturn==='exito') return {cart:[],coupon:''};
+    const state=JSON.parse(saved);
+    if(!Array.isArray(state.cart)) return {cart:[],coupon:''};
+    const restoredCart=state.cart.filter(item=>
+      Number.isInteger(Number(item.id))&&Number(item.id)>0&&
+      Number.isInteger(Number(item.qty))&&Number(item.qty)>0&&
+      Number.isFinite(Number(item.price))&&Number(item.price)>=0
+    ).map(item=>({
+      id:Number(item.id),
+      name:typeof item.name==='string'?item.name.slice(0,200):'Producto',
+      price:Number(item.price),
+      img:imagenSegura(item.img),
+      brand:typeof item.brand==='string'?item.brand.slice(0,100):'BYTE BAY',
+      category:typeof item.category==='string'?item.category.slice(0,100):'',
+      qty:Number(item.qty)
+    }));
+    return {cart:restoredCart,coupon:typeof state.coupon==='string'?state.coupon:''};
+  }catch(error){
+    console.error('No se pudo restaurar el carrito después del pago:',error);
+    return {cart:[],coupon:''};
+  }
+})();
+let cart=mercadoPagoCartState.cart;
 let start=0;
-let discountRate=0;
+let discountRate=['BERU10','BYTE10'].includes(mercadoPagoCartState.coupon)?0.1:mercadoPagoCartState.coupon==='HOGAR15'?0.15:0;
 let shippingValue=18;
 let activeCategory='all';
 let activeQuery='';
@@ -199,40 +231,29 @@ let activeFilter='all';
 let soloOfertas=false;
 let lastViewedProduct=null;
 const favorites=new Set(JSON.parse(localStorage.getItem('beruFavorites')||'[]'));
-const PERSONALIZATION_CONSENT_KEY='byteBayPersonalizationConsent';
-const VIEWED_PRODUCTS_KEY='byteBayViewedProducts';
-let personalizationConsent=localStorage.getItem(PERSONALIZATION_CONSENT_KEY);
-
-function puedePersonalizar(){return personalizationConsent==='aceptado';}
-function historialVistos(){try{return JSON.parse(localStorage.getItem(VIEWED_PRODUCTS_KEY)||'[]');}catch(e){return [];}}
-function registrarProductoVisto(id){
-  if(!puedePersonalizar()) return;
-  const historial=historialVistos().filter(item=>Number(item.id)!==Number(id));
-  historial.unshift({id:Number(id),visto_en:Date.now()});
-  localStorage.setItem(VIEWED_PRODUCTS_KEY,JSON.stringify(historial.slice(0,12)));
-  renderizarPersonalizacion();
+// La personalización real vive en site-privacy.js (servidor + tokens).
+// Aquí solo se delega; localStorage nunca habilita el algoritmo por sí solo.
+function puedePersonalizar(){return Boolean(window.BBPrivacy?.personalizacionActiva?.());}
+function registrarProductoVisto(id){window.BBPrivacy?.registrarVista?.(Number(id));}
+function tarjetaProducto(producto,motivo=''){
+  const agotado=Number(producto.stock)<=0;
+  const stock=Number(producto.stock)||0;
+  const descuento=Number(producto.discount)||0;
+  const id=Number(producto.id);
+  const categoria=escapeHtml(producto.category||'');
+  const nombre=escapeHtml(producto.name||'');
+  const marca=escapeHtml(producto.brand||'');
+  const calificacion=escapeHtml(producto.rating??'');
+  return `<article class="product-card ${agotado?'sold-out':''}" data-id="${id}" data-category="${categoria}">${descuento>0?`<span class="discount">-${descuento}%</span>`:''}<button class="wish ${favorites.has(id)?'active':''}" data-fav="${id}" aria-label="Guardar producto">${favorites.has(id)?'♥':'♡'}</button><div class="product-image"><img src="${escapeHtml(imagenSegura(producto.img))}" alt="${nombre}" loading="lazy" decoding="async" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}></div><span class="product-meta">${marca} · ${categoria}</span><h3>${nombre}</h3>${motivo?`<span class="product-reason">¿Por qué veo este producto? · ${escapeHtml(motivo)}</span>`:''}<div class="rating">★★★★★ <span>${calificacion}</span></div>${descuento>0?`<span class="old-price">${money(Number(producto.old)||0)}</span>`:''}<div class="price-row"><strong class="price">${money(Number(producto.price)||0)}</strong><button class="add" data-id="${id}" aria-label="Agregar al carrito" ${agotado?'disabled':''}>${agotado?'Agotado':'+'}</button></div><div class="availability ${agotado?'unavailable':stock<=5?'low-stock':''}">${agotado?'Producto agotado':stock<=5?`Últimas ${stock} unidades`:'Disponible'}</div></article>`;
 }
-function tarjetaProducto(producto){return `<article class="product-card ${producto.stock<=0?'sold-out':''}" data-id="${producto.id}" data-category="${producto.category}">${Number(producto.discount)>0?`<span class="discount">-${producto.discount}%</span>`:''}<button class="wish ${favorites.has(producto.id)?'active':''}" data-fav="${producto.id}" aria-label="Guardar producto">${favorites.has(producto.id)?'♥':'♡'}</button><div class="product-image"><img src="${imagenSegura(producto.img)}" alt="${producto.name}" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}></div><span class="product-meta">${producto.brand} · ${producto.category}</span><h3>${producto.name}</h3><div class="rating">★★★★★ <span>${producto.rating}</span></div>${Number(producto.discount)>0?`<span class="old-price">${money(producto.old)}</span>`:''}<div class="price-row"><strong class="price">${money(producto.price)}</strong><button class="add" data-id="${producto.id}" aria-label="Agregar al carrito" ${producto.stock<=0?'disabled':''}>${producto.stock<=0?'Agotado':'+'}</button></div><div class="availability ${producto.stock<=0?'unavailable':producto.stock<=5?'low-stock':''}">${producto.stock<=0?'Producto agotado':producto.stock<=5?`Últimas ${producto.stock} unidades`:'Disponible'}</div><div class="installments">Hasta 12 cuotas sin intereses</div></article>`;}
 function renderizarPersonalizacion(){
-  const recientes=document.querySelector('#recentlyViewedSection'),recomendaciones=document.querySelector('#recommendationsSection');
-  if(!recientes||!recomendaciones||!puedePersonalizar()||!products.length){recientes?.classList.add('hidden');recomendaciones?.classList.add('hidden');return;}
-  const vistos=historialVistos().map(item=>products.find(producto=>producto.id===Number(item.id))).filter(Boolean);
-  recientes.classList.toggle('hidden',!vistos.length);
-  document.querySelector('#recentlyViewedGrid').innerHTML=vistos.slice(0,4).map(tarjetaProducto).join('');
-  const referencia=vistos[0];
-  const idsVistos=new Set(vistos.map(producto=>producto.id));
-  const similares=referencia?products.filter(producto=>!idsVistos.has(producto.id)&&producto.stock>0&&(producto.category===referencia.category||producto.brand===referencia.brand)).sort((a,b)=>Number(b.rating)-Number(a.rating)).slice(0,4):[];
-  recomendaciones.classList.toggle('hidden',!similares.length);
-  document.querySelector('#recommendationsGrid').innerHTML=similares.map(tarjetaProducto).join('');
-  bindCards();
+  if(window.BBPrivacy?.renderizarRecomendaciones){window.BBPrivacy.renderizarRecomendaciones();return;}
+  document.querySelector('#recentlyViewedSection')?.classList.add('hidden');
+  document.querySelector('#recommendationsSection')?.classList.add('hidden');
 }
 function configurarConsentimientoPersonalizacion(){
-  const aviso=document.querySelector('#personalizationConsent');
-  if(!aviso) return;
-  aviso.classList.toggle('hidden',Boolean(personalizationConsent));
-  document.querySelector('#acceptPersonalization').onclick=()=>{personalizationConsent='aceptado';localStorage.setItem(PERSONALIZATION_CONSENT_KEY,personalizationConsent);aviso.classList.add('hidden');renderizarPersonalizacion();showToast('Personalización activada para este dispositivo.');};
-  document.querySelector('#rejectPersonalization').onclick=()=>{personalizationConsent='rechazado';localStorage.setItem(PERSONALIZATION_CONSENT_KEY,personalizationConsent);localStorage.removeItem(VIEWED_PRODUCTS_KEY);aviso.classList.add('hidden');renderizarPersonalizacion();showToast('Seguiremos mostrando el catálogo general.');};
-  document.querySelector('#clearViewed').onclick=()=>{localStorage.removeItem(VIEWED_PRODUCTS_KEY);renderizarPersonalizacion();showToast('Historial de productos eliminado.');};
+  // site-privacy.js controla el banner, los modales y la auditoría del consentimiento.
+  window.BBPrivacy?.inicializarBanner?.();
 }
 
 // Configuración pública de EmailJS. El Public Key y el Template ID se generan
@@ -287,7 +308,7 @@ async function cargarComentariosProducto(idProducto){
   const comentarios=data||[];
   const promedio=comentarios.length?comentarios.reduce((total,item)=>total+Number(item.calificacion),0)/comentarios.length:0;
   resumen.innerHTML=comentarios.length?`<strong>${promedio.toFixed(1)}</strong><span aria-label="${promedio.toFixed(1)} de 5 estrellas">${'★'.repeat(Math.round(promedio))}${'☆'.repeat(5-Math.round(promedio))}</span><small>${comentarios.length} ${comentarios.length===1?'reseña':'reseñas'}</small>`:'Aún no hay reseñas';
-  lista.innerHTML=comentarios.length?comentarios.map(comentario=>`<article class="product-comment"><header><div><strong>${escapeHtml(comentario.autor)}</strong><small>${new Date(comentario.creado_en).toLocaleDateString('es-PE',{year:'numeric',month:'short',day:'numeric'})}</small></div><span class="product-comment-stars" aria-label="${comentario.calificacion} de 5 estrellas">${'★'.repeat(comentario.calificacion)}${'☆'.repeat(5-comentario.calificacion)}</span></header><p>${escapeHtml(comentario.comentario)}</p></article>`).join(''):'Sé la primera persona en compartir su experiencia con este producto.';
+  lista.innerHTML=comentarios.length?comentarios.map(comentario=>`<article class="product-comment"><header><div><strong>${escapeHtml(comentario.autor)}</strong><small>${new Date(comentario.creado_en).toLocaleDateString('es-PE',{year:'numeric',month:'short',day:'numeric'})}</small></div><span class="product-comment-stars" aria-label="${Number(comentario.calificacion)} de 5 estrellas">${'★'.repeat(Number(comentario.calificacion))}${'☆'.repeat(5-Number(comentario.calificacion))}</span></header><p>${escapeHtml(comentario.comentario)}</p></article>`).join(''):'Sé la primera persona en compartir su experiencia con este producto.';
 }
 
 async function sendNotificationEmail({email,wants}){
@@ -308,7 +329,7 @@ async function sendNotificationEmail({email,wants}){
 
 const money=n=>`S/ ${n.toLocaleString('es-PE',{minimumFractionDigits:2})}`;
 
-document.querySelector('#categoryList').innerHTML=categories.map(c=>`<a class="category-card" href="#" data-category="${c.name}"><div class="cat-image"><img src="${imagenSegura(c.img,IMAGEN_CATEGORIA_RESPALDO)}" alt="${c.name}" ${atributoRespaldo(IMAGEN_CATEGORIA_RESPALDO)}></div><strong>${c.name}</strong><small>${c.count}</small></a>`).join('');
+document.querySelector('#categoryList').innerHTML=categories.map(c=>`<a class="category-card" href="#" data-category="${escapeHtml(c.name)}"><span class="cat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg></span><strong>${escapeHtml(c.name)}</strong><small>${escapeHtml(c.count)}</small></a>`).join('');
 
 function getVisibleProducts(){
   let list=soloOfertas?products.filter(p=>Number(p.discount)>0):products;
@@ -342,9 +363,10 @@ function renderProducts(list=getVisibleProducts().slice(start,start+12)){
   document.querySelector('#catalogTitle').textContent=soloOfertas?'Ofertas activas':'Catálogo de productos';
   document.querySelector('#productCountLabel').textContent=soloOfertas?`${total} ${total===1?'oferta activa':'ofertas activas'}`:`${total} productos disponibles`;
   const vacio=soloOfertas?`<div class="empty-cart" style="grid-column:1/-1"><span>🏷</span><h3>No hay ofertas activas</h3><p>El personal puede programar descuentos desde Gestión interna → Ofertas. Cuando haya una oferta real, aparecerá aquí automáticamente.</p></div>`:`<div class="empty-cart" style="grid-column:1/-1"><span>▱</span><h3>No hay resultados</h3><p>Prueba otra categoría, cambia el orden de precio o limpia los filtros.</p></div>`;
-  document.querySelector('#productGrid').innerHTML=visible.length?visible.map(tarjetaProducto).join(''):vacio;
+  document.querySelector('#productGrid').innerHTML=visible.length?visible.map(producto=>tarjetaProducto(producto)).join(''):vacio;
   bindCards();
   updateProductNav();
+  window.dispatchEvent(new Event('bb:catalogo-actualizado'));
 }
 
 function updateProductNav(){
@@ -377,6 +399,7 @@ function addToCart(id){
   if(found&&found.qty>=product.stock){showToast(`Solo quedan ${product.stock} unidades.`);return;}
   found?found.qty++:cart.push({...product,qty:1});
   updateCart();
+  window.BBPrivacy?.registrarEvento?.('CARRITO',{idProducto:product.id,categoria:product.category});
   showToast();
 }
 
@@ -396,7 +419,7 @@ function updateCart(){
   document.querySelector('#cartCount').textContent=count;
   document.querySelector('#cartTitleCount').textContent=`(${count})`;
   document.querySelector('#cartSubtotal').textContent=money(subtotal());
-  document.querySelector('#cartItems').innerHTML=cart.length?cart.map(x=>`<div class="cart-item"><img src="${imagenSegura(x.img)}" alt="${x.name}" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}><div><h4>${x.name}</h4><strong>${money(x.price)}</strong><div class="qty"><button onclick="changeQty(${x.id},-1)">−</button><span>${x.qty}</span><button onclick="changeQty(${x.id},1)">+</button></div></div><button onclick="removeItem(${x.id})" aria-label="Eliminar">×</button></div>`).join(''):`<div class="empty-cart"><span>▱</span><h3>Tu carrito está vacío</h3><p>Agrega productos y aparecerán aquí.</p></div>`;
+  document.querySelector('#cartItems').innerHTML=cart.length?cart.map(x=>`<div class="cart-item"><img src="${escapeHtml(imagenSegura(x.img))}" alt="${escapeHtml(x.name)}" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}><div><h4>${escapeHtml(x.name)}</h4><strong>${money(Number(x.price)||0)}</strong><div class="qty"><button onclick="changeQty(${Number(x.id)},-1)">−</button><span>${Number(x.qty)||0}</span><button onclick="changeQty(${Number(x.id)},1)">+</button></div></div><button onclick="removeItem(${Number(x.id)})" aria-label="Eliminar">×</button></div>`).join(''):`<div class="empty-cart"><span>▱</span><h3>Tu carrito está vacío</h3><p>Agrega productos y aparecerán aquí.</p></div>`;
   updateCheckout();
 }
 
@@ -423,10 +446,6 @@ document.querySelector('#overlay').onclick=()=>toggleCart(false);
 
 document.querySelector('#departmentsBtn').onclick=()=>{
   document.querySelector('#megaMenu').classList.toggle('open');
-};
-
-document.querySelector('.mobile-menu').onclick=()=>{
-  document.querySelector('#mainNav').classList.toggle('open');
 };
 
 document.querySelector('#megaMenu').querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>{
@@ -459,6 +478,7 @@ const footerInfo={
   'Medios de pago':{title:'Medios de pago',body:'<p>Actualmente el único medio habilitado es <strong>Yape mediante código QR</strong>.</p><ol><li>Escanea el QR desde la aplicación Yape.</li><li>Verifica que el monto coincida con el total del pedido.</li><li>Realiza el pago.</li><li>Registra el código de operación en Byte Bay.</li></ol><p>No solicitamos número de tarjeta, CVV, clave de Yape ni contraseña bancaria.</p>'},
   'Envíos y devoluciones':{title:'Envíos y devoluciones',body:'<p>Antes de registrar el pedido, confirma que tu dirección incluya calle, número, distrito y ciudad. Conserva tu código de pedido.</p><p>Para consultar un envío, corregir una dirección o reportar un problema, escribe por redes sociales con: nombre del comprador, código <strong>YP-XXXXXXXX</strong> y una explicación breve.</p><p>No envíes fotos de documentos completos ni contraseñas.</p>'},
   'Centro de ayuda':{title:'Centro de ayuda',body:'<p>Elige el caso que necesitas resolver y envíanos estos datos por una red oficial:</p><ul><li><strong>Pedido pendiente:</strong> código YP, nombre y código de operación Yape.</li><li><strong>Problema con producto:</strong> código YP, nombre del producto y fotos claras.</li><li><strong>Cambio de dirección:</strong> código YP y la dirección completa corregida.</li><li><strong>Producto agotado:</strong> nombre o código del producto para revisar alternativas.</li><li><strong>Acceso a cuenta:</strong> correo registrado. Nunca envíes tu contraseña.</li></ul><p>Las cuentas de redes oficiales están enlazadas abajo en el pie de página.</p>'},
+  'Preguntas frecuentes':{title:'Preguntas frecuentes',body:'<p><strong>¿Cómo registro un pedido?</strong></p><p>Agrega productos al carrito, completa tus datos de entrega y paga con Yape. El pedido queda pendiente hasta verificar el código de operación.</p><p><strong>¿Qué medios de pago aceptan?</strong></p><p>Solo Yape mediante código QR. No solicitamos tarjetas, CVV ni claves bancarias.</p><p><strong>¿Cómo sigo mi pedido?</strong></p><p>Guarda el código YP que recibes al registrar la compra y consúltanos por nuestras redes oficiales.</p><p><strong>¿Puedo cambiar la dirección?</strong></p><p>Escríbenos con tu código YP y la dirección corregida antes de que el pedido salga a reparto.</p><p><strong>¿Cómo elimino mi cuenta?</strong></p><p>Solicítalo por nuestras redes oficiales con el correo registrado. No envíes tu contraseña.</p>'},
   'Contáctanos':{title:'Contáctanos',body:'<p>Escríbenos por cualquiera de nuestras redes oficiales. Incluye tu consulta y, si se trata de una compra, tu código YP.</p><p><a href="https://tiktok.com/@bytebayperu" target="_blank" rel="noopener noreferrer">TikTok</a> · <a href="https://www.instagram.com/bytebayperu?stkn=b2Zlc3c4M2lrcjJw" target="_blank" rel="noopener noreferrer">Instagram</a> · <a href="https://youtube.com/@bytebayperu?si=4nyrzBNYliTeMwbu" target="_blank" rel="noopener noreferrer">YouTube</a> · <a href="https://x.com/bytebayperu" target="_blank" rel="noopener noreferrer">X</a> · <a href="https://www.facebook.com/share/19SYEVhY7c/" target="_blank" rel="noopener noreferrer">Facebook</a>.</p>'},
   'Libro de reclamaciones':{title:'Libro de reclamaciones',body:'<p>Para registrar un reclamo formal debes indicar: nombre completo, documento, correo, descripción del producto o servicio, número de pedido y el detalle de tu reclamo.</p><p>Esta sección quedará habilitada para envío real cuando configuremos el correo oficial del negocio y los datos legales requeridos.</p>'},
   'Privacidad':{title:'Privacidad',body:'<p>Byte Bay usa tu nombre, correo, teléfono, dirección y datos de pedido solo para registrar compras, verificar pagos, gestionar entregas y responder solicitudes.</p><p>Las contraseñas se guardan cifradas. Nunca te pediremos contraseña, clave de Yape, CVV ni código de seguridad por redes sociales.</p>'},
@@ -479,6 +499,12 @@ document.querySelectorAll('#ayuda a[href="#"]').forEach(link=>link.addEventListe
   if(!info) return;
   event.preventDefault();openFooterInfo(info);
 }));
+// Accesos reutilizables para el panel de configuración del cliente.
+window.bbAyuda={
+  abrir:openFooterInfo,
+  info:footerInfo,
+  reclamaciones:()=>document.querySelector('#openClaimsForm')?.click()
+};
 
 let accountMode='register';
 function openAccountModal(){
@@ -503,6 +529,8 @@ function updateAccountHeader(){
   const accesoMovil=document.querySelector('#mobileAccountAccess span'),salidaMovil=document.querySelector('#mobileAccountLogout');
   if(accesoMovil) accesoMovil.textContent=saved?.verified?`Mi cuenta · ${saved.name?.split(' ')[0]||'cliente'}`:'Crear cuenta / Ingresar';
   if(salidaMovil) salidaMovil.classList.toggle('hidden',!saved?.verified);
+  window.BBPrivacy?.actualizarSesionUI?.();
+  window.dispatchEvent(new Event('bb:account-updated'));
 }
 function setAccountMode(mode){
   accountMode=mode;
@@ -525,7 +553,12 @@ document.querySelector('#mobileAccountAccess').onclick=openAccountModal;
 document.querySelector('#mobileAccountLogout').onclick=()=>document.querySelector('#accountLogout').click();
 document.querySelector('#accountLogout').onclick=async()=>{
   const cuenta=JSON.parse(localStorage.getItem('beruAccount')||'null');
-  if(cuenta?.provider==='google'&&supabaseClient) await supabaseClient.auth.signOut();
+  try{
+    if(window.BBPrivacy?.cerrarSesionActual) await window.BBPrivacy.cerrarSesionActual();
+    else if(cuenta?.provider==='google'&&supabaseClient) await supabaseClient.auth.signOut();
+  }catch(error){
+    console.warn('Cierre de sesión:',error);
+  }
   localStorage.removeItem('beruAccount');updateAccountHeader();showToast('Sesión cerrada correctamente.');
 };
 async function guardarSesionGoogle(user){
@@ -540,6 +573,10 @@ async function guardarSesionGoogle(user){
   if(error){console.warn('Perfil Google pendiente de sincronización:',error.message);return;}
   localStorage.setItem('beruAccount',JSON.stringify({id:data?.id||null,name:`${data?.nombres||meta.given_name||''} ${data?.apellidos||meta.family_name||''}`.trim()||meta.full_name||'Cliente',username:data?.nombre_usuario||meta.name||user.email.split('@')[0],email:user.email,verified:true,provider:'google'}));
   updateAccountHeader();
+  if(window.BBPrivacy?.sincronizarSesionGoogle){
+    const sesionToken=await window.BBPrivacy.sincronizarSesionGoogle();
+    if(!sesionToken?.ok) console.warn('Sesión Google sin token de tienda:',sesionToken?.error||sesionToken?.message);
+  }
 }
 async function restaurarSesionGoogle(){
   if(!supabaseClient) return;
@@ -570,25 +607,44 @@ document.querySelector('#accountForm').onsubmit=async e=>{
   if(accountMode==='login'){
     if(!email||!password){status.textContent='Escribe tu correo y contraseña.';return;}
     setAccountBusy(true,'Ingresando…');
-    const {data,error}=await supabaseClient.rpc('iniciar_sesion_cliente',{p_correo:email,p_contrasena:password});
+    let resultado;
+    if(window.BBPrivacy?.iniciarSesion){
+      resultado=await window.BBPrivacy.iniciarSesion(email,password);
+    }else{
+      const {data,error}=await supabaseClient.rpc('iniciar_sesion_cliente',{p_correo:email,p_contrasena:password});
+      resultado=error?{ok:false,message:'Correo o contraseña incorrectos.'}:{ok:true,cuenta:data,token:false};
+    }
     setAccountBusy(false,'Iniciar sesión');
-    if(error){status.textContent='Correo o contraseña incorrectos.';return;}
-    localStorage.setItem('beruAccount',JSON.stringify({id:data.id,name:`${data.nombres||''} ${data.apellidos||''}`.trim()||'Cliente',username:data.nombre_usuario||email.split('@')[0],email:data.correo,verified:true}));
-    updateAccountHeader();status.textContent='Sesión iniciada correctamente.';e.target.reset();setTimeout(closeAccountModal,700);return;
+    if(!resultado.ok){status.textContent=resultado.message||'Correo o contraseña incorrectos.';return;}
+    const cuenta=resultado.cuenta||{};
+    localStorage.setItem('beruAccount',JSON.stringify({id:cuenta.id||null,name:`${cuenta.nombres||''} ${cuenta.apellidos||''}`.trim()||'Cliente',username:cuenta.nombre_usuario||email.split('@')[0],email:cuenta.correo||email,verified:true}));
+    updateAccountHeader();status.textContent=resultado.token?'Sesión iniciada con token seguro.':'Sesión iniciada correctamente.';e.target.reset();setTimeout(closeAccountModal,700);return;
   }
   if(username&&!/^[A-Za-z0-9._-]{3,30}$/.test(username)){status.textContent='El nombre de usuario solo admite letras, números, punto, guion o guion bajo.';return;}
   if(password.length<8){status.textContent='La contraseña debe tener al menos 8 caracteres.';return;}
+  if(!/[A-Za-z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){status.textContent='La contraseña debe incluir letras, números y al menos un símbolo.';return;}
   if(password!==passwordConfirm){status.textContent='Las contraseñas no coinciden.';return;}
   setAccountBusy(true,'Creando…');
   const payload={email,first_name:firstName||null,last_name:lastName||null,username:username||null};
-  const {error}=await supabaseClient.rpc('registrar_cuenta_cliente',{p_correo:email,p_nombres:payload.first_name,p_apellidos:payload.last_name,p_nombre_usuario:payload.username,p_contrasena:password});
-  setAccountBusy(false,'Crear cuenta');
-  if(error){
+  let registrado;
+  if(window.BBPrivacy?.registrarCuenta){
+    registrado=await window.BBPrivacy.registrarCuenta({...payload,password});
+  }else{
+    const {error}=await supabaseClient.rpc('registrar_cuenta_cliente',{p_correo:email,p_nombres:payload.first_name,p_apellidos:payload.last_name,p_nombre_usuario:payload.username,p_contrasena:password});
+    registrado=error?{ok:false,error}:{ok:true};
+  }
+  if(!registrado.ok){
+    setAccountBusy(false,'Crear cuenta');
+    const error=registrado.error;
     console.error('Supabase simple account:',error);
-    status.textContent=error.code==='23505'?'Este correo ya está registrado.':(error.code==='42883'||error.code==='PGRST202'?'Ejecuta las migraciones de columnas en español en Supabase antes de registrar usuarios.':`Supabase: ${error.message}`);
+    status.textContent=error?.code==='23505'?'Este correo ya está registrado.':(error?.code==='42883'||error?.code==='PGRST202'?'Ejecuta las migraciones de columnas en español en Supabase antes de registrar usuarios.':`No se pudo crear la cuenta: ${registrado.message||error?.message||'intenta nuevamente.'}`);
     return;
   }
-  localStorage.setItem('beruAccount',JSON.stringify({name:`${firstName} ${lastName}`.trim()||'Cliente',username:username||email.split('@')[0],email,verified:true}));
+  let sesionCreada={ok:false};
+  if(window.BBPrivacy?.iniciarSesion) sesionCreada=await window.BBPrivacy.iniciarSesion(email,password);
+  setAccountBusy(false,'Crear cuenta');
+  const cuentaCreada=sesionCreada.cuenta||{};
+  localStorage.setItem('beruAccount',JSON.stringify({id:cuentaCreada.id||registrado.id||null,name:`${cuentaCreada.nombres||firstName||''} ${cuentaCreada.apellidos||lastName||''}`.trim()||'Cliente',username:cuentaCreada.nombre_usuario||username||email.split('@')[0],email:cuentaCreada.correo||email,verified:true}));
   updateAccountHeader();
   status.textContent='Datos guardados correctamente.';
   showToast('Tu correo fue registrado.');
@@ -604,6 +660,7 @@ document.querySelectorAll('[data-category]').forEach(link=>link.addEventListener
   start=0;
   sincronizarFiltrosCatalogo();
   renderProducts();
+  window.BBPrivacy?.registrarEvento?.('CATEGORIA',{categoria:link.dataset.category});
   document.querySelector('#ofertas').scrollIntoView({behavior:'smooth'});
 }));
 
@@ -624,6 +681,7 @@ document.querySelector('#searchForm').onsubmit=e=>{
   activeQuery=document.querySelector('#searchInput').value.toLowerCase().trim();
   start=0;
   renderProducts();
+  window.BBPrivacy?.registrarEvento?.('BUSQUEDA',{termino:activeQuery,categoria:activeCategory!=='all'?activeCategory:null});
   document.querySelector('#ofertas').scrollIntoView({behavior:'smooth'});
 };
 
@@ -640,7 +698,8 @@ document.querySelector('#catalogPriceFilter').addEventListener('change',event=>{
 document.querySelector('#catalogOfferFilter').addEventListener('change',event=>{soloOfertas=event.target.value==='ofertas';activeCategory='all';actualizarOpcionesCategorias();sincronizarFiltrosCatalogo();start=0;renderProducts();});
 document.querySelector('#clearCatalogFilters').onclick=()=>{activeCategory='all';activeFilter='all';activeQuery='';soloOfertas=false;document.querySelector('#searchInput').value='';document.querySelectorAll('.filter-chip').forEach(chip=>chip.classList.toggle('active',chip.dataset.filter==='all'));actualizarOpcionesCategorias();sincronizarFiltrosCatalogo();start=0;renderProducts();};
 
-document.querySelector('#newsletterForm').onsubmit=async e=>{
+const newsletterForm=document.querySelector('#newsletterForm');
+if(newsletterForm) newsletterForm.onsubmit=async e=>{
   e.preventDefault();
   const input=e.target.querySelector('input[type="email"]');
   const button=e.target.querySelector('button');
@@ -685,6 +744,7 @@ document.querySelector('#notifyForm').onsubmit=async e=>{
   }
   notificationSubscription={email,wants,date:new Date().toISOString(),emailSent:emailResult.configured&&!emailResult.error};
   localStorage.setItem('beruNotifications',JSON.stringify(notificationSubscription));
+  window.dispatchEvent(new Event('bb:notifications-updated'));
   showNotificationStatus();
   showToast(emailResult.configured?'Suscripción activa. Revisa tu bandeja de entrada.':'Suscripción guardada. Falta configurar EmailJS para enviar el correo.');
   showStickyNotice(`Suscripción activa: ${email}. Recibirás ${wants.join(', ') || 'ofertas'}.`);
@@ -714,6 +774,7 @@ function showNotificationStatus(){
 document.querySelector('#notifyCancel').onclick=()=>{
   notificationSubscription=null;
   localStorage.removeItem('beruNotifications');
+  window.dispatchEvent(new Event('bb:notifications-updated'));
   showNotificationStatus();
   showToast('Cancelaste las notificaciones');
 };
@@ -779,13 +840,11 @@ function syncPaymentUI(){}
 
 document.querySelector('#payNow').onclick=async()=>{
   const count=cart.reduce((a,x)=>a+x.qty,0);
-  const selected='yape';
   if(!count){
     showToast('Agrega productos antes de pagar');
     return;
   }
   const required=['#fullName','#documentId','#address','#email','#phone'];
-  required.push('#yapeOperation');
   const missing=required.find(sel=>!document.querySelector(sel).value.trim());
   if(missing){
     showToast('Completa los datos de pago y entrega');
@@ -796,6 +855,14 @@ document.querySelector('#payNow').onclick=async()=>{
     showToast('No se puede registrar la compra: la BD no está conectada.');
     return;
   }
+  if(window.BBPrivacy?.validarParaAccion){
+    const sesionValida=await window.BBPrivacy.validarParaAccion();
+    if(!sesionValida){
+      showToast('Tu sesión expiró. Vuelve a iniciar sesión para completar la compra.');
+      window.BBPrivacy.abrirCuenta?.();
+      return;
+    }
+  }
   setPaymentStep(3);
   const cliente={
     correo:document.querySelector('#email').value.trim().toLowerCase(),
@@ -804,24 +871,34 @@ document.querySelector('#payNow').onclick=async()=>{
     direccion:document.querySelector('#address').value.trim(),
     telefono:document.querySelector('#phone').value.trim()
   };
-  const {data,error}=await supabaseClient.rpc('crear_pedido_yape',{
-    p_articulos:cart.map(item=>({id_producto:item.id,cantidad:item.qty})),
-    p_cliente:cliente,
-    p_codigo_operacion_yape:document.querySelector('#yapeOperation').value.trim()
-  });
-  if(error){
-    console.error('Supabase order:',error);
+  try{
+    const {data,error}=await supabaseClient.functions.invoke('crear-pago',{
+      body:{
+        articulos:cart.map(item=>({id_producto:item.id,cantidad:item.qty})),
+        cliente,
+        cupon:document.querySelector('#couponInput').value.trim().toUpperCase()
+      }
+    });
+    if(error||!data?.checkout_url){
+      console.error('Mercado Pago checkout:',error||data);
+      setPaymentStep(2);
+      showToast(data?.error||error?.message||'No se pudo iniciar el pago.');
+      return;
+    }
+    try{
+      sessionStorage.setItem('bbMercadoPagoCheckout',JSON.stringify({
+        cart,
+        coupon:document.querySelector('#couponInput').value.trim().toUpperCase()
+      }));
+    }catch(error){
+      console.error('No se pudo guardar temporalmente el carrito:',error);
+    }
+    window.location.assign(data.checkout_url);
+  }catch(error){
+    console.error('Mercado Pago checkout:',error);
     setPaymentStep(2);
-    showToast(error.message||'No se pudo registrar la compra.');
-    return;
+    showToast('No se pudo iniciar el pago. Revisa tu conexión e inténtalo nuevamente.');
   }
-  cart=[];
-  updateCart();
-  await loadCatalogFromSupabase();
-  setTimeout(()=>{
-    showToast(`Pedido registrado. Código de verificación: ${data.codigo_verificacion}`);
-    closeCheckout();
-  },900);
 };
 
 document.querySelector('#saveCheckout').onclick=()=>showToast('Tu compra quedó guardada para continuar después');
@@ -835,7 +912,7 @@ function openProductModal(id){
   document.querySelector('#modalImage').alt=lastViewedProduct.name;
   document.querySelector('#modalBrand').textContent=`${lastViewedProduct.brand} · ${lastViewedProduct.category}`;
   document.querySelector('#modalName').textContent=lastViewedProduct.name;
-  document.querySelector('#modalRating').innerHTML=`★★★★★ <span>${lastViewedProduct.rating}</span>`;
+  document.querySelector('#modalRating').innerHTML=`★★★★★ <span>${escapeHtml(lastViewedProduct.rating??'')}</span>`;
   document.querySelector('#modalPrice').textContent=money(lastViewedProduct.price);
   document.querySelector('#modalOld').textContent=money(lastViewedProduct.old);
   document.querySelector('#modalDescription').textContent=lastViewedProduct.description||'Consulta las características principales de este producto antes de añadirlo al carrito.';
@@ -865,6 +942,10 @@ document.querySelector('#productCommentForm').onsubmit=async event=>{
   const estado=document.querySelector('#commentStatus');
   if(!cuenta?.verified||!cuenta.email){estado.textContent='Inicia sesión como cliente antes de comentar.';return;}
   if(!lastViewedProduct){estado.textContent='No hay un producto seleccionado.';return;}
+  if(window.BBPrivacy?.validarParaAccion){
+    const sesionValida=await window.BBPrivacy.validarParaAccion();
+    if(!sesionValida){estado.textContent='Tu sesión expiró. Vuelve a iniciar sesión para publicar tu reseña.';return;}
+  }
   const boton=event.target.querySelector('button[type="submit"]');
   boton.disabled=true;
   const rpc=cuenta.provider==='google'?'guardar_comentario_producto_google':'guardar_comentario_producto';
@@ -928,9 +1009,19 @@ function configurarAsistenteIA(){
     const productosValidos=(productosRecomendados||[]).map(item=>products.find(producto=>Number(producto.id)===Number(item.id))).filter(Boolean);
     if(!productosValidos.length) return;
     const contenedor=document.createElement('div');contenedor.className='ai-product-links';
-    contenedor.innerHTML=productosValidos.map(producto=>`<button type="button" data-ai-product="${producto.id}"><img src="${imagenSegura(producto.img)}" alt=""><span><strong>${escapeHtml(producto.name)}</strong><small>${money(producto.price)} · ${producto.stock} disponibles</small></span><b>Ver →</b></button>`).join('');
+    contenedor.innerHTML=productosValidos.map(producto=>`<button type="button" data-ai-product="${Number(producto.id)}"><img src="${escapeHtml(imagenSegura(producto.img))}" alt=""><span><strong>${escapeHtml(producto.name)}</strong><small>${money(Number(producto.price)||0)} · ${Number(producto.stock)||0} disponibles</small></span><b>Ver →</b></button>`).join('');
     contenedor.querySelectorAll('[data-ai-product]').forEach(botonProducto=>botonProducto.onclick=()=>{panel.classList.add('hidden');openProductModal(Number(botonProducto.dataset.aiProduct));});
     chat.appendChild(contenedor);chat.scrollTop=chat.scrollHeight;
+  };
+  const consultarAsistente=async mensaje=>{
+    const {data,error}=await supabaseClient.functions.invoke('asistente-bytebay',{body:{mensaje}});
+    if(error||data?.error){
+      let detalle=data?.error||error?.message||'El asistente no pudo responder.';
+      let estado=Number(error?.context?.status)||0;
+      try{const cuerpo=await error?.context?.clone()?.json();detalle=cuerpo?.error||detalle;if(cuerpo?.reintentar&&!estado) estado=503;}catch(e){}
+      const fallo=new Error(detalle);fallo.estado=estado;throw fallo;
+    }
+    return data;
   };
   const preguntar=async texto=>{
     if(!texto?.trim()) return;
@@ -938,11 +1029,18 @@ function configurarAsistenteIA(){
     const esperando=agregarMensaje('Buscando opciones en Byte Bay…','assistant');
     try{
       if(!supabaseClient) throw new Error('No se pudo conectar con el asistente.');
-      const {data,error}=await supabaseClient.functions.invoke('asistente-bytebay',{body:{mensaje:texto.trim()}});
-      if(error||data?.error){let detalle=data?.error||error?.message||'El asistente no pudo responder.';try{const cuerpo=await error?.context?.clone()?.json();detalle=cuerpo?.error||detalle;}catch(e){}throw new Error(detalle);}
+      let data;
+      try{data=await consultarAsistente(texto.trim());}
+      catch(error){
+        // Reintento silencioso si Gemini está saturado (503) o sin cuota momentánea (429).
+        if(![429,503].includes(error.estado)) throw error;
+        esperando.textContent='La IA está ocupada, reintentando…';
+        await new Promise(resolver=>setTimeout(resolver,1500));
+        data=await consultarAsistente(texto.trim());
+      }
       esperando.textContent=data.respuesta;
       agregarProductosRecomendados(data.productos);
-    }catch(error){esperando.textContent=`No puedo responder ahora: ${error.message}. Intenta nuevamente.`;}
+    }catch(error){esperando.textContent=`No puedo responder ahora: ${String(error.message||'').replace(/[.\s]+$/,'')}. Intenta nuevamente en unos minutos.`;}
   };
   formulario.onsubmit=evento=>{evento.preventDefault();preguntar(entrada.value);};
   document.querySelectorAll('[data-ai-question]').forEach(botonSugerencia=>botonSugerencia.onclick=()=>preguntar(botonSugerencia.dataset.aiQuestion));
@@ -970,9 +1068,44 @@ configurarAsistenteIA();
 iniciarCarruselHero();
 renderProducts();
 renderizarPersonalizacion();
+if(mercadoPagoCartState.cart.length){
+  document.querySelector('#couponInput').value=mercadoPagoCartState.coupon;
+  updateCart();
+}
+if(['exito','fallo','pendiente'].includes(mercadoPagoReturn)){
+  const mensajes={
+    exito:'Volviste de Mercado Pago. Estamos confirmando el estado del pago; no vuelvas a pagar.',
+    fallo:'El pago no se completó. Puedes volver a intentarlo desde tu carrito.',
+    pendiente:'El pago sigue pendiente. Espera la confirmación de Mercado Pago.'
+  };
+  showToast(mensajes[mercadoPagoReturn]);
+  const urlLimpia=new URL(window.location.href);
+  urlLimpia.searchParams.delete('pago');
+  urlLimpia.searchParams.delete('pedido');
+  window.history.replaceState(null,'',urlLimpia);
+}
 loadCatalogFromSupabase();
 if(!supabaseClient){
   showToast('Conexión fallida a la BD.');
 }else{
   showToast('Conexión a la BD exitosa.');
 }
+
+/* --------------------------------------------------------------------------
+   API pública para site-privacy.js. Mantiene una sola fuente de verdad para
+   catálogo, tarjetas, carrito y avisos sin duplicar lógica.
+   -------------------------------------------------------------------------- */
+window.BBStore={
+  get products(){return products;},
+  get cart(){return cart;},
+  client:supabaseClient,
+  card:tarjetaProducto,
+  bindCards,
+  toast:showToast,
+  escapeHtml,
+  money,
+  openAccountModal,
+  updateAccountHeader,
+  refreshPersonalization:renderizarPersonalizacion
+};
+window.dispatchEvent(new Event('bb:store-ready'));

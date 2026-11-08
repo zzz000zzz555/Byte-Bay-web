@@ -42,6 +42,7 @@ async function validarSesion(){
   $('#adminLogin').classList.add('hidden');$('#adminApp').classList.remove('hidden');
   $('#adminRole').textContent=`Sesión: ${session.user.email} · ${rol}`;
   $('#adminPeopleTab').classList.toggle('hidden',rol!=='jefe');
+  $('#adminClientsTab').classList.toggle('hidden',rol!=='jefe');
   mostrarSeccion('resumen');
 }
 function mostrarAcceso(mensaje=''){$('#adminLogin').classList.remove('hidden');$('#adminApp').classList.add('hidden');$('#adminLoginStatus').textContent=mensaje;}
@@ -54,11 +55,12 @@ function mostrarFormularioRecuperacion(){
 function mostrarSeccion(seccion){
   document.querySelectorAll('[data-admin-section]').forEach(elemento=>elemento.classList.toggle('hidden',elemento.dataset.adminSection!==seccion));
   document.querySelectorAll('[data-admin-tab]').forEach(boton=>boton.classList.toggle('active',boton.dataset.adminTab===seccion));
-  if(seccion==='resumen') cargarReportes();
+  if(seccion==='resumen'){cargarReportes();window.bbCargarDashboard?.();}
   if(seccion==='productos') cargarCatalogo();
   if(seccion==='inventario'||seccion==='ofertas') cargarOpciones();
   if(seccion==='ofertas') cargarOfertas();
-  if(seccion==='movimientos') cargarMovimientos();
+  if(seccion==='clientes'&&rolPersonal==='jefe') window.bbCargarClientes?.();
+  if(seccion==='movimientos'){if(window.bbCargarMovimientosFiltrados) window.bbCargarMovimientosFiltrados(); else cargarMovimientos();}
   if(seccion==='personal'&&rolPersonal==='jefe') cargarPersonal();
 }
 
@@ -85,7 +87,7 @@ supabaseClient.auth.onAuthStateChange(event=>{
 $('#adminRecoveryForm').onsubmit=async event=>{
   event.preventDefault();
   const password=$('#adminNewPassword').value;
-  if(password.length<8){$('#adminLoginStatus').textContent='La contraseña debe tener al menos 8 caracteres.';return;}
+  if(password.length<10){$('#adminLoginStatus').textContent='La contraseña debe tener al menos 10 caracteres.';return;}
   if(password!==$('#adminConfirmPassword').value){$('#adminLoginStatus').textContent='Las contraseñas no coinciden.';return;}
   const {error}=await supabaseClient.auth.updateUser({password});
   if(error){$('#adminLoginStatus').textContent=`No se pudo cambiar la contraseña: ${error.message}`;return;}
@@ -123,9 +125,9 @@ async function cargarReportes(){
   renderizarInventario();
 }
 function renderizarInventario(){const texto=$('#inventorySearch').value.trim().toLowerCase(),estado=$('#inventoryStatusFilter').value;const datos=lotesInventario.filter(l=>(!estado||l.estado===estado)&&(!texto||`${l.producto} ${l.codigo_lote}`.toLowerCase().includes(texto)));$('#inventoryReportList').innerHTML=datos.length?datos.map(l=>`<article class="admin-list-item"><img src="${escapar(imagenProducto(0,l.producto))}" alt="${escapar(l.producto)}"><div><strong>${escapar(l.producto)}</strong><span>Lote ${escapar(l.codigo_lote)} · ${l.existencias_actuales} unidades · ${escapar(l.estado)}</span></div></article>`).join(''):'No hay lotes que coincidan con el filtro.';}
-async function cargarOfertas(){const lista=$('#adminOffersList');lista.textContent='Cargando ofertas…';await cargarOpciones();const {data,error}=await supabaseClient.rpc('listar_ofertas_personal');if(error){lista.textContent='Ejecuta primero el SQL de pruebas: '+error.message;return;}ofertasRegistradas=data||[];renderizarOfertas();}
+async function cargarOfertas(){const lista=$('#adminOffersList');lista.textContent='Cargando ofertas…';await cargarOpciones();const {data,error}=await supabaseClient.rpc('listar_ofertas_personal');if(error){lista.textContent='No se pudieron cargar las ofertas: '+error.message;return;}ofertasRegistradas=data||[];renderizarOfertas();}
 function renderizarOfertas(){const texto=$('#offerSearch').value.trim().toLowerCase(),estado=$('#offerStatusFilter').value;const datos=ofertasRegistradas.filter(o=>(!estado||(estado==='activa')===o.activa)&&(!texto||`${o.producto} ${o.nombre}`.toLowerCase().includes(texto)));$('#adminOffersList').innerHTML=datos.length?datos.map(o=>`<article class="admin-list-item"><img src="${escapar(imagenProducto(o.id_producto,o.producto))}" alt="${escapar(o.producto)}"><div><strong>${escapar(o.producto)}</strong><span>${escapar(o.nombre)} · S/ ${Number(o.precio_oferta).toFixed(2)} · ${o.activa?'Activa':'Inactiva'}</span></div></article>`).join(''):'No hay ofertas que coincidan con el filtro.';}
-async function cargarMovimientos(){const lista=$('#adminMovementsList');lista.textContent='Cargando movimientos…';await cargarOpciones();const {data,error}=await supabaseClient.rpc('listar_movimientos_inventario_personal');if(error){lista.textContent='Ejecuta primero el SQL de pruebas: '+error.message;return;}movimientosRegistrados=data||[];renderizarMovimientos();}
+async function cargarMovimientos(){const lista=$('#adminMovementsList');lista.textContent='Cargando movimientos…';await cargarOpciones();const {data,error}=await supabaseClient.rpc('listar_movimientos_inventario_personal');if(error){lista.textContent='No se pudieron cargar los movimientos: '+error.message;return;}movimientosRegistrados=data||[];renderizarMovimientos();}
 function renderizarMovimientos(){const texto=$('#movementSearch').value.trim().toLowerCase(),tipo=$('#movementTypeFilter').value;const datos=movimientosRegistrados.filter(m=>(!tipo||m.motivo===tipo)&&(!texto||m.producto.toLowerCase().includes(texto)));$('#adminMovementsList').innerHTML=datos.length?datos.map(m=>`<article class="admin-list-item"><img src="${escapar(imagenProducto(m.id_producto,m.producto))}" alt="${escapar(m.producto)}"><div><strong>${escapar(m.producto)}</strong><span>${escapar(m.motivo)} · ${m.cantidad} unidades · ${new Date(m.creado_en).toLocaleString('es-CO')}</span></div></article>`).join(''):'No hay movimientos que coincidan con el filtro.';}
 
 async function llamarGestionPersonal(accion,datos={}){
@@ -152,13 +154,13 @@ function renderizarPersonal(){
   lista.querySelectorAll('[data-delete-staff]').forEach(b=>b.onclick=()=>eliminarPersonal(b.dataset.deleteStaff));
 }
 function contrasenaEmpleadoFuerte(contrasena){
-  return contrasena.length>=8&&/[a-z]/.test(contrasena)&&/[A-Z]/.test(contrasena)&&/\d/.test(contrasena)&&/[@$!%*#?&.]/.test(contrasena);
+  return contrasena.length>=10&&/[a-z]/.test(contrasena)&&/[A-Z]/.test(contrasena)&&/\d/.test(contrasena)&&/[@$!%*#?&.]/.test(contrasena);
 }
 $('#newStaffPassword').addEventListener('input',event=>{
   const password=event.currentTarget.value;
   const cumple=contrasenaEmpleadoFuerte(password);
   const estado=$('#staffPasswordStrength');
-  estado.textContent=cumple?'Contraseña segura: cumple todos los requisitos.':'Debe tener 8 caracteres, mayúscula, minúscula, número y un símbolo permitido.';
+  estado.textContent=cumple?'Contraseña segura: cumple todos los requisitos.':'Debe tener al menos 10 caracteres, mayúscula, minúscula, número y un símbolo permitido.';
   estado.classList.toggle('is-valid',cumple);
   estado.classList.toggle('is-invalid',Boolean(password)&&!cumple);
 });
@@ -171,14 +173,13 @@ $('#adminProductForm').onsubmit=async event=>{event.preventDefault();const valor
 $('#adminProviderForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim();const {error}=await supabaseClient.rpc('guardar_proveedor_personal',{p_id:null,p_razon_social:valor('providerName'),p_documento:valor('providerDocument')||null,p_contacto_nombre:null,p_correo:valor('providerEmail')||null,p_telefono:valor('providerPhone')||null,p_direccion:null,p_notas:null});if(error)return informar(error.message);informar('Proveedor guardado.');event.target.reset();cargarOpciones();};
 $('#adminLotForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim(),estado=valor('lotStatus');const {error}=await supabaseClient.rpc('registrar_lote_personal',{p_id_producto:Number(valor('lotProduct')),p_id_proveedor:valor('lotProvider')?Number(valor('lotProvider')):null,p_codigo_lote:valor('lotCode'),p_cantidad:Number(valor('lotQuantity')),p_costo_unitario:valor('lotCost')?Number(valor('lotCost')):null,p_fecha_vencimiento:valor('lotExpiry')||null,p_estado:estado,p_motivo_danio:estado==='daniado'?valor('lotNote'):null,p_observacion:estado!=='daniado'?valor('lotNote'):null});if(error)return informar(error.message);informar('Lote registrado.');event.target.reset();cargarReportes();};
 $('#adminOfferForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim(),superOferta=$('#offerSuperSale').checked,liquidacion=$('#offerClearance').checked;const {data,error}=await supabaseClient.rpc('guardar_oferta_personal',{p_id_producto:Number(valor('offerProduct')),p_nombre:valor('offerName'),p_precio_oferta:Number(valor('offerPrice')),p_inicia_en:new Date(valor('offerStart')).toISOString(),p_termina_en:valor('offerEnd')?new Date(valor('offerEnd')).toISOString():null});if(error)return informar(error.message);if(superOferta||liquidacion){const {error:errorMarca}=await supabaseClient.rpc('marcar_oferta_especial_jefe',{p_id_oferta:Number(data),p_super_oferta:superOferta,p_liquidacion_stock:liquidacion});if(errorMarca){informar(`Oferta guardada, pero no se pudo activar el aviso: ${errorMarca.message}`);event.target.reset();cargarOfertas();return;}}informar('Oferta guardada.');event.target.reset();cargarOfertas();};
-$('#adminStaffForm').onsubmit=async event=>{event.preventDefault();const id=$('#staffUserId').value;if(!id&&!contrasenaEmpleadoFuerte($('#newStaffPassword').value)){informar('La contraseña inicial debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo (@$!%*#?&.).');$('#newStaffPassword').focus();return;}const datos={nombres:$('#newStaffNames').value.trim(),apellidos:$('#newStaffLastNames').value.trim(),correo:$('#newStaffEmail').value.trim().toLowerCase()};try{const data=await llamarGestionPersonal(id?'actualizar':'registrar_empleado',id?{...datos,id_usuario:id}:{...datos,contrasena:$('#newStaffPassword').value});informar(id?'Datos del personal actualizados.':`Empleado registrado: ${data.correo}. Entrégale su contraseña inicial de forma privada.`);limpiarFormularioPersonal();cargarPersonal();}catch(error){informar(error.message);}};
+$('#adminStaffForm').onsubmit=async event=>{event.preventDefault();const id=$('#staffUserId').value;if(!id&&!contrasenaEmpleadoFuerte($('#newStaffPassword').value)){informar('La contraseña inicial debe tener al menos 10 caracteres, una mayúscula, una minúscula, un número y un símbolo (@$!%*#?&.).');$('#newStaffPassword').focus();return;}const datos={nombres:$('#newStaffNames').value.trim(),apellidos:$('#newStaffLastNames').value.trim(),correo:$('#newStaffEmail').value.trim().toLowerCase()};try{const data=await llamarGestionPersonal(id?'actualizar':'registrar_empleado',id?{...datos,id_usuario:id}:{...datos,contrasena:$('#newStaffPassword').value});informar(id?'Datos del personal actualizados.':`Empleado registrado: ${data.correo}. Entrégale su contraseña inicial de forma privada.`);limpiarFormularioPersonal();cargarPersonal();}catch(error){informar(error.message);}};
 $('#adminRefreshReports').onclick=cargarReportes;$('#adminRefreshCatalog').onclick=cargarCatalogo;$('#adminRefreshMovements').onclick=cargarMovimientos;$('#adminRefreshStaff').onclick=cargarPersonal;$('#staffCancelEdit').onclick=limpiarFormularioPersonal;
 $('#adminProductImage').addEventListener('input',event=>mostrarVistaPrevia('#adminProductPreview','#adminProductPreviewEmpty',event.target.value.trim()));
 $('#offerProduct').addEventListener('change',event=>mostrarVistaPrevia('#offerProductPreview','#offerProductPreviewEmpty',imagenProducto(event.target.value)));
 $('#productSearch').addEventListener('input',renderizarCatalogo);$('#productCategoryFilter').addEventListener('change',renderizarCatalogo);
 $('#inventorySearch').addEventListener('input',renderizarInventario);$('#inventoryStatusFilter').addEventListener('change',renderizarInventario);
 $('#offerSearch').addEventListener('input',renderizarOfertas);$('#offerStatusFilter').addEventListener('change',renderizarOfertas);
-$('#movementSearch').addEventListener('input',renderizarMovimientos);$('#movementTypeFilter').addEventListener('change',renderizarMovimientos);
 $('#staffSearch').addEventListener('input',renderizarPersonal);$('#staffStatusFilter').addEventListener('change',renderizarPersonal);
 const esEnlaceRecuperacion=/[?&]code=|type=recovery/.test(`${window.location.search}${window.location.hash}`);
 if(!esEnlaceRecuperacion) validarSesion();

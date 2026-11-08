@@ -5,7 +5,7 @@ const rolesValidos = ['jefe', 'empleado']
 const texto = (valor: unknown) => typeof valor === 'string' ? valor.trim() : ''
 const contrasenaSegura = (valor: unknown): valor is string =>
   typeof valor === 'string' &&
-  valor.length >= 8 &&
+  valor.length >= 10 &&
   /[a-z]/.test(valor) &&
   /[A-Z]/.test(valor) &&
   /\d/.test(valor) &&
@@ -36,7 +36,7 @@ Deno.serve(async (request) => {
       const nombres = texto(cuerpo.nombres), apellidos = texto(cuerpo.apellidos), correo = texto(cuerpo.correo).toLowerCase()
       const contrasena = cuerpo.contrasena
       if (!nombres || !apellidos || !correo || !contrasenaSegura(contrasena)) {
-        throw new Error('Completa los datos y usa una contraseña de al menos 8 caracteres, con mayúscula, minúscula, número y un símbolo (@$!%*#?&.)')
+        throw new Error('Completa los datos y usa una contraseña de al menos 10 caracteres, con mayúscula, minúscula, número y un símbolo (@$!%*#?&.)')
       }
       const { data: usuariosAuth, error: usuariosError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
       if (usuariosError) throw usuariosError

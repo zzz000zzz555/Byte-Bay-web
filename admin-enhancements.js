@@ -27,20 +27,23 @@ function exportarLibroExcel(nombre, nombreHoja, filas) {
 async function cargarOfertasAutomaticas() {
   const lista = document.querySelector('#automaticOffersList');
   const metricas = document.querySelector('#automaticOffersMetrics');
+  if (!lista) return;
   lista.textContent = 'Cargando ofertas automáticas…';
-  const { data, error } = await supabaseClient.rpc('listar_ofertas_automaticas_jefe', { p_limite: 200 });
+  const { data, error } = await supabaseClient.rpc('listar_ofertas_automaticas_personal', { p_limite: 200 });
   if (error) {
     lista.textContent = `No se pudieron cargar las ofertas automáticas: ${error.message}`;
-    metricas.replaceChildren();
+    if (metricas) metricas.replaceChildren();
     return;
   }
   ofertasAutomaticas = data || [];
   const conteo = estado => ofertasAutomaticas.filter(oferta => oferta.estado === estado).length;
-  metricas.innerHTML = `
-    <div><strong>${ofertasAutomaticas.length}</strong><span>Avisos automáticos</span></div>
-    <div><strong>${conteo('publicada')}</strong><span>Publicadas</span></div>
-    <div><strong>${conteo('programada')}</strong><span>Programadas</span></div>
-    <div><strong>${conteo('finalizada')}</strong><span>Finalizadas</span></div>`;
+  if (metricas) {
+    metricas.innerHTML = `
+      <div><strong>${ofertasAutomaticas.length}</strong><span>Avisos automáticos</span></div>
+      <div><strong>${conteo('publicada')}</strong><span>Publicadas</span></div>
+      <div><strong>${conteo('programada')}</strong><span>Programadas</span></div>
+      <div><strong>${conteo('finalizada')}</strong><span>Finalizadas</span></div>`;
+  }
   lista.innerHTML = ofertasAutomaticas.length ? ofertasAutomaticas.map(oferta => `
     <article class="automatic-offer-row">
       <div>
@@ -49,8 +52,25 @@ async function cargarOfertasAutomaticas() {
         <p>${adminEscape(oferta.mensaje)}</p>
         <small>Creada: ${adminDate(oferta.creado_en)} · ${oferta.fecha_limite ? `Vence: ${adminDate(oferta.fecha_limite)}` : 'Sin fecha de vencimiento'}</small>
       </div>
-      <b class="automatic-offer-status status-${adminEscape(oferta.estado)}">${adminEscape(oferta.estado)}</b>
+      <div class="automatic-offer-actions">
+        <b class="automatic-offer-status status-${adminEscape(oferta.estado)}">${adminEscape(oferta.estado)}</b>
+        ${adminEsJefe && oferta.id_oferta ? `<button class="btn secondary btn-compact" type="button" data-quitar-aviso="${Number(oferta.id_oferta)}">Quitar aviso</button>` : ''}
+      </div>
     </article>`).join('') : 'Aún no se han generado avisos automáticos. Marca una oferta como super oferta o liquidación al crearla.';
+}
+
+async function regenerarAvisosAutomaticos() {
+  const boton = document.querySelector('#regenerateAutomaticOffers');
+  if (boton) boton.disabled = true;
+  const { data, error } = await supabaseClient.rpc('regenerar_avisos_ofertas_jefe');
+  if (boton) boton.disabled = false;
+  if (error) {
+    mostrarErrorMejoras(error);
+    return;
+  }
+  const estado = document.querySelector('#adminStatus');
+  if (estado) estado.textContent = `Avisos regenerados: ${data?.creados ?? 0} creados, ${data?.eliminados ?? 0} eliminados.`;
+  await cargarOfertasAutomaticas();
 }
 
 function responsablesSeleccionados() {
@@ -366,6 +386,26 @@ document.querySelector('#refreshClaims').addEventListener('click', cargarReclamo
 document.querySelector('#refreshAudit').addEventListener('click', cargarAuditoria);
 document.querySelector('#refreshUserLifecycle').addEventListener('click', cargarCicloUsuarios);
 document.querySelector('#refreshAutomaticOffers').addEventListener('click', cargarOfertasAutomaticas);
+document.querySelector('#regenerateAutomaticOffers').addEventListener('click', regenerarAvisosAutomaticos);
+document.querySelector('#automaticOffersList').addEventListener('click', async event => {
+  const boton = event.target.closest('[data-quitar-aviso]');
+  if (!boton) return;
+  if (!window.confirm('¿Quitar el aviso automático de esta oferta? La oferta dejará de ser especial.')) return;
+  boton.disabled = true;
+  const { error } = await supabaseClient.rpc('marcar_oferta_especial_jefe', {
+    p_id_oferta: Number(boton.dataset.quitarAviso),
+    p_super_oferta: false,
+    p_liquidacion_stock: false
+  });
+  boton.disabled = false;
+  if (error) {
+    mostrarErrorMejoras(error);
+    return;
+  }
+  document.querySelector('#adminStatus').textContent = 'Aviso automático retirado.';
+  await cargarOfertasAutomaticas();
+  if (typeof cargarOfertas === 'function') cargarOfertas();
+});
 document.querySelector('#adminRefreshReports').addEventListener('click', () => {
   if (adminEsJefe) cargarCicloUsuarios();
 });
@@ -423,8 +463,9 @@ const adminReadyObserver = new MutationObserver(() => {
   document.querySelector('#adminBrandTab').classList.toggle('hidden', !adminEsJefe);
   document.querySelector('#adminNotificationsTab').classList.toggle('hidden', !adminEsJefe);
   document.querySelector('#specialOfferOptions').classList.toggle('hidden', !adminEsJefe);
-  document.querySelector('#userLifecyclePanel').classList.toggle('hidden', !adminEsJefe);
-  document.querySelector('#automaticOffersDashboard').classList.toggle('hidden', !adminEsJefe);
+  document.querySelector('#userLifecyclePanel').classList.toggle('hidden', true);
+  document.querySelector('#automaticOffersDashboard').classList.remove('hidden');
+  document.querySelector('#regenerateAutomaticOffers').classList.toggle('hidden', !adminEsJefe);
   document.querySelector('[data-admin-section="auditoria"]').classList.toggle('hidden', true);
   document.querySelector('[data-admin-section="marca"]').classList.toggle('hidden', true);
   if (adminEsJefe) cargarCicloUsuarios();
@@ -433,6 +474,6 @@ adminReadyObserver.observe(document.querySelector('#adminApp'), { attributes: tr
 
 document.querySelectorAll('[data-admin-tab="ofertas"]').forEach(button => {
   button.addEventListener('click', () => {
-    if (adminEsJefe) cargarOfertasAutomaticas();
+    cargarOfertasAutomaticas();
   });
 });

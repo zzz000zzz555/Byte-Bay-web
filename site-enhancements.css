@@ -24,3 +24,140 @@
 .dark-mode .offers-notification-toggle,.dark-mode .offers-notification-panel,.dark-mode .claims-card{background:#1c2a2f;color:#e7f0ed;border-color:#304247}
 .dark-mode .claims-card input,.dark-mode .claims-card select,.dark-mode .claims-card textarea{background:#152126;color:#e7f0ed;border-color:#3a4c50}
 @media(max-width:700px){.claims-card{padding:22px 18px}.claims-form-grid{grid-template-columns:1fr}.offers-notification-toggle{padding:0 8px}}
+
+/* ---------- Storefront: clear, calm visual hierarchy ---------- */
+:root{
+  --ink:#142a3b;
+  --navy:#163b5c;
+  --lime:#2563eb;
+  --coral:#c2413b;
+  --cream:#f6f8fb;
+  --muted:#607286;
+  --line:#e2e8f0;
+  --shadow:0 12px 32px rgba(20,42,59,.07);
+}
+
+.header{
+  background:rgba(255,255,255,.96);
+  border-bottom:1px solid #e8edf2;
+  box-shadow:0 2px 12px rgba(20,42,59,.04);
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+}
+.header-main{height:76px}
+.brand-logo img{max-width:100%;max-height:100%;object-fit:contain}
+.search{background:#f5f7fa;border-color:#e7edf3}
+.search button{width:50px;background:#163b5c;color:#fff}
+.search button:hover{background:#24547d}
+.cart-button{background:#163b5c}
+.cart-button:hover{background:#24547d}
+.nav{height:46px;color:#516477}
+.nav a,.departments{transition:color .18s ease,background .18s ease}
+.nav a:hover,.departments:hover{color:#2563eb}
+
+.hero{
+  min-height:410px;
+  margin-top:24px;
+  border:1px solid #e7edf3;
+  border-radius:24px;
+  background:#f6f8fb;
+  box-shadow:none;
+}
+.hero-copy{padding:clamp(34px,5vw,68px)}
+.eyebrow,.section-kicker{color:#2563eb;letter-spacing:.11em}
+.hero h1{max-width:540px;font-size:clamp(38px,4.5vw,58px);line-height:1.08;letter-spacing:-.045em}
+.hero h1 em{color:#2563eb}
+.hero-copy>p{max-width:430px;color:#607286;font-size:16px;line-height:1.7}
+.hero-actions{gap:10px}
+.btn{border-radius:11px;min-height:48px}
+.btn.primary,.primary{background:#163b5c;box-shadow:none}
+.btn.primary:hover,.primary:hover{background:#24547d}
+.btn.secondary,.secondary{border-color:#dbe4ed;background:#fff}
+.hero-visual{min-height:410px}
+.hero-visual img{object-position:center}
+.hero-visual:after{background:linear-gradient(90deg,#f6f8fb 0,rgba(246,248,251,.25) 25%,transparent 55%)}
+.sale-badge{width:92px;height:92px;right:24px;top:24px;background:rgba(255,255,255,.94);color:#163b5c;box-shadow:0 8px 24px rgba(20,42,59,.09)}
+.sale-badge b{font-size:27px}
+.floating-card{border:1px solid #e6ecf2;box-shadow:0 8px 24px rgba(20,42,59,.08)}
+
+.category-section{padding:58px 0 62px}
+.section-head{margin-bottom:22px}
+.section-head h2{font-size:clamp(24px,3vw,30px);letter-spacing:-.035em}
+.section-head p{line-height:1.6}
+.categories{grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:12px}
+.category-card{border-color:#e7edf3;border-radius:14px;box-shadow:none}
+.category-card:hover{transform:translateY(-2px);border-color:#b9c9d8;box-shadow:0 8px 20px rgba(20,42,59,.06)}
+.category-card strong{font-size:13px}
+
+.offers{background:#f6f8fb;padding:58px 0 68px}
+.offers .wrap{max-width:1220px}
+.countdown{display:none}
+.round{border-color:#dbe4ed}
+.round:hover{border-color:#9bb2c8;background:#fff}
+.filter-bar{gap:8px;margin-bottom:12px}
+.filter-chip{border-radius:999px;padding-inline:16px}
+.filter-chip.active{background:#163b5c;border-color:#163b5c}
+.catalog-filters{gap:12px;margin:12px 0 20px}
+.catalog-filters label{gap:7px;color:#516477;font-size:12px;font-weight:600}
+.catalog-filters select{min-height:44px;border-radius:10px;border-color:#dbe4ed}
+.catalog-filters .btn{min-height:44px}
+.product-grid{gap:16px}
+.product-card{border:1px solid #e7edf3;border-radius:15px;box-shadow:none}
+.product-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(20,42,59,.08)}
+.product-image{background:#f7f9fb;border-radius:11px}
+.product-image img{object-fit:contain;padding:8px}
+.product-card h3{min-height:40px;font-size:13px}
+.product-meta{color:#718096;letter-spacing:.04em}
+.discount{background:#b93832}
+.add{background:#eaf1f8;color:#163b5c}
+.add:hover{background:#163b5c;color:#fff}
+
+.promo-grid{gap:16px;padding-top:58px;padding-bottom:58px}
+.promo{border-radius:16px}
+.benefits{gap:14px}
+.benefits article{border:1px solid #e7edf3;border-radius:14px}
+.notify-card{border-radius:18px}
+.footer{background:#142a3b}
+
+.dark-mode .header{background:rgba(17,24,39,.96);border-color:#263447}
+.dark-mode .search{background:#1e293b;border-color:#334155}
+.dark-mode .search button,.dark-mode .cart-button{background:#2563eb}
+.dark-mode .hero{background:#111827;border-color:#263447}
+.dark-mode .btn.secondary,.dark-mode .secondary{background:#1e293b;color:#e5e7eb;border-color:#334155}
+.dark-mode .btn.secondary:hover,.dark-mode .secondary:hover{background:#263b55;color:#fff;border-color:#2563eb}
+.dark-mode .hero-visual:after{background:linear-gradient(90deg,#111827 0,rgba(17,24,39,.2) 28%,transparent 58%)}
+.dark-mode .sale-badge{background:rgba(17,24,39,.94);color:#f8fafc;border-color:#334155}
+.dark-mode .category-card,.dark-mode .product-card{background:#111827;border-color:#263447}
+.dark-mode .offers{background:#0b1220}
+.dark-mode .product-image{background:#1e293b}
+.dark-mode .add{background:#263b55;color:#eaf2ff}
+.dark-mode .add:hover{background:#2563eb}
+
+@media(max-width:900px){
+  .hero{min-height:0}
+  .hero-copy{padding:34px}
+  .hero-visual{min-height:320px}
+  .categories{grid-template-columns:repeat(auto-fit,minmax(128px,1fr))}
+}
+@media(max-width:767px){
+  .header-main{height:auto;min-height:64px}
+  .hero{margin-top:14px;border-radius:18px}
+  .hero-copy{padding:26px 22px}
+  .hero h1{font-size:clamp(32px,9vw,42px);letter-spacing:-.04em}
+  .hero-copy>p{font-size:15px}
+  .hero-visual{min-height:230px}
+  .hero-visual:after{background:linear-gradient(180deg,#f6f8fb 0,transparent 28%)}
+  .sale-badge{width:76px;height:76px;right:14px;top:14px}
+  .sale-badge b{font-size:22px}
+  .floating-card{bottom:14px;left:14px}
+  .category-section{padding:42px 0}
+  .offers{padding:42px 0 50px}
+  .filter-chip{min-height:40px;padding-inline:13px}
+  .product-grid{gap:10px}
+  .product-card{border-radius:12px}
+  .promo-grid{gap:12px;padding:42px 0}
+}
+@media(max-width:390px){
+  .hero-copy{padding:22px 18px}
+  .product-image{height:124px}
+}

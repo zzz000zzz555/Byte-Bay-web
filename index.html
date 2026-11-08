@@ -3,34 +3,184 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Byte Bay, compra y vende fácil.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.emailjs.com; frame-src 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="description" content="Byte Bay, compra y vende fácil. Tecnología, hogar, supermercado y más con envíos a todo el Perú.">
+  <meta name="theme-color" content="#0d2b31">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Byte Bay">
+  <meta property="og:title" content="Byte Bay | Compra y vende fácil">
+  <meta property="og:description" content="Tecnología, hogar, supermercado y más con envíos a todo el Perú.">
+  <meta property="og:image" content="byte-bay-logo.png">
+  <meta property="og:locale" content="es_PE">
+  <meta name="twitter:card" content="summary_large_image">
   <title>Byte Bay | Compra y vende fácil</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20">
+  <link rel="stylesheet" href="styles.css?v=22">
   <link rel="stylesheet" href="site-enhancements.css?v=1">
-  <script>try{if(localStorage.getItem('beruTema')==='noche')document.documentElement.classList.add('dark-mode')}catch(e){}</script>
+  <link rel="stylesheet" href="site-settings.css?v=1">
+  <link rel="stylesheet" href="site-privacy.css?v=4">
+  <script>try{var bbPrefs=JSON.parse(localStorage.getItem('byteBayPreferences')||'null');var bbTema=bbPrefs&&bbPrefs.theme?bbPrefs.theme:(localStorage.getItem('beruTema')==='noche'?'dark':localStorage.getItem('beruTema')==='claro'?'light':'auto');if(bbTema==='dark'||(bbTema==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark-mode')}catch(e){}</script>
   <!-- EmailJS permite enviar el correo desde la página sin exponer la contraseña de Gmail. -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="topbar"><div class="wrap topbar-inner"><span>Envíos gratis desde S/ 99</span><div><a href="#beneficios">Compra protegida</a><a href="#ayuda" data-action="help">Ayuda</a><a href="#" data-action="sell">Vende en Byte Bay</a></div></div></div>
   <header class="header">
     <div class="wrap header-main">
-      <button class="mobile-menu icon-button" aria-label="Abrir menú">☰</button>
+      <button class="mobile-menu settings-toggle" id="settingsToggle" type="button" aria-label="Abrir configuración y preferencias" aria-expanded="false" aria-controls="settingsDrawer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
       <a class="brand" href="#" aria-label="Byte Bay inicio"><span class="brand-logo"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></span></a>
       <form class="search" id="searchForm"><input id="searchInput" type="search" placeholder="Busca productos, marcas y más" aria-label="Buscar productos"><button type="submit" aria-label="Buscar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg></button></form>
-      <button class="location header-action" data-action="location"><span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg></span><span><small>Enviar a</small><strong>Lima, Perú</strong></span></button>
       <button class="account header-action" data-action="account"><span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span><span><small>Mi cuenta</small><strong>Ingresar</strong></span></button><button class="account-logout hidden" id="accountLogout" type="button">Salir</button>
-      <button class="offers-notification-toggle" id="offersNotificationToggle" type="button" aria-expanded="false" aria-controls="offersNotificationPanel">Avisos <span id="offersNotificationCount" class="notification-count">0</span></button>
-      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche" title="Cambiar apariencia"><span aria-hidden="true">☾</span></button>
       <button class="cart-button" id="cartOpen" aria-label="Abrir carrito"><svg class="cart-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 1.9-1.5L21 8H6"></path></svg><span class="cart-count" id="cartCount">0</span></button>
     </div>
-    <nav class="nav wrap" id="mainNav"><button class="departments" id="departmentsBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg> Departamentos <span>⌄</span></button><a href="#ofertas">Ofertas</a><a href="#novedades">Novedades</a><a href="#" data-category="Supermercado">Supermercado</a><a href="#" data-category="Tecnología">Tecnología</a><a href="#" data-category="Hogar">Hogar</a><a class="nav-special" href="#">Byte Bay Plus</a><div class="mobile-account-zone"><button id="mobileAccountAccess" class="mobile-account-link" type="button">👤 <span>Crear cuenta / Ingresar</span></button><button id="mobileAccountLogout" class="mobile-account-logout hidden" type="button">Cerrar sesión</button></div></nav>
+    <nav class="nav wrap" id="mainNav"><button class="departments" id="departmentsBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg> Departamentos <span>⌄</span></button><a href="#ofertas">Ofertas</a><a href="#novedades">Novedades</a><a href="#" data-category="Supermercado">Supermercado</a><a href="#" data-category="Tecnología">Tecnología</a><a href="#" data-category="Hogar">Hogar</a></nav>
     <div class="mega-menu" id="megaMenu"><div class="wrap mega-grid"><div><strong>Supermercado</strong><a href="#ofertas" data-category="Supermercado">Frutas y verduras</a><a href="#ofertas" data-category="Supermercado">Despensa</a><a href="#ofertas" data-category="Supermercado">Bebidas</a></div><div><strong>Tecnología</strong><a href="#ofertas" data-category="Tecnología">Celulares</a><a href="#ofertas" data-category="Tecnología">Computación</a><a href="#ofertas" data-category="Audio">Audio</a></div><div><strong>Hogar</strong><a href="#ofertas" data-category="Electrohogar">Electrodomésticos</a><a href="#ofertas" data-category="Hogar">Muebles</a><a href="#ofertas" data-category="Hogar">Decoración</a></div><div><strong>Más categorías</strong><a href="#ofertas" data-category="Moda">Moda</a><a href="#ofertas" data-category="Deportes">Deportes</a><a href="#ofertas" data-category="Belleza">Belleza</a></div></div></div>
   </header>
+
+  <div class="settings-backdrop" id="settingsBackdrop" hidden></div>
+  <aside class="settings-drawer" id="settingsDrawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-hidden="true">
+    <header class="settings-head">
+      <div><span class="settings-eyebrow">BYTE BAY</span><h2 id="settingsTitle">Configuración</h2><p>Personaliza tu experiencia de compra.</p></div>
+      <button class="settings-close" id="settingsClose" type="button" aria-label="Cerrar configuración">×</button>
+    </header>
+    <nav class="settings-quicknav" aria-label="Navegación rápida">
+      <a href="#ofertas" data-settings-close>Catálogo</a>
+      <a href="#categorias" data-settings-close>Categorías</a>
+      <a href="#novedades" data-settings-close>Novedades</a>
+      <a href="#notificaciones" data-settings-close>Alertas</a>
+    </nav>
+    <div class="settings-body">
+      <section class="settings-group" aria-labelledby="settingsGeneralTitle">
+        <h3 id="settingsGeneralTitle">Configuración general</h3>
+        <div class="settings-grid-2">
+          <label class="settings-field"><span>País</span><select id="settingsCountry"><option value="PE">Perú</option></select></label>
+          <label class="settings-field"><span>Región de entrega</span><select id="settingsRegion"><option value="Lima">Lima</option><option value="Amazonas">Amazonas</option><option value="Áncash">Áncash</option><option value="Apurímac">Apurímac</option><option value="Arequipa">Arequipa</option><option value="Ayacucho">Ayacucho</option><option value="Cajamarca">Cajamarca</option><option value="Callao">Callao</option><option value="Cusco">Cusco</option><option value="Huancavelica">Huancavelica</option><option value="Huánuco">Huánuco</option><option value="Ica">Ica</option><option value="Junín">Junín</option><option value="La Libertad">La Libertad</option><option value="Lambayeque">Lambayeque</option><option value="Loreto">Loreto</option><option value="Madre de Dios">Madre de Dios</option><option value="Moquegua">Moquegua</option><option value="Pasco">Pasco</option><option value="Piura">Piura</option><option value="Puno">Puno</option><option value="San Martín">San Martín</option><option value="Tacna">Tacna</option><option value="Tumbes">Tumbes</option><option value="Ucayali">Ucayali</option></select></label>
+        </div>
+        <p class="settings-hint">Por ahora enviamos solo a Perú. El costo final se confirma al registrar el pedido.</p>
+        <div class="settings-grid-2">
+          <label class="settings-field"><span>Idioma</span><select id="settingsLanguage"><option value="es-PE">Español (Perú)</option></select></label>
+          <label class="settings-field"><span>Vista del catálogo</span><select id="settingsColumns"><option value="auto">Automática</option><option value="3">3 productos por fila</option><option value="4">4 productos por fila</option></select></label>
+        </div>
+        <div class="settings-account">
+          <div class="settings-account-info"><strong id="settingsAccountName">Invitado</strong><small id="settingsAccountEmail">Inicia sesión para ver tus datos.</small></div>
+          <div class="settings-account-actions">
+            <button type="button" id="mobileAccountAccess" class="settings-account-btn"><span>Crear cuenta / Ingresar</span></button>
+            <button type="button" id="mobileAccountLogout" class="settings-account-btn is-danger hidden">Cerrar sesión</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-group" aria-labelledby="settingsAppearanceTitle">
+        <h3 id="settingsAppearanceTitle">Apariencia</h3>
+        <fieldset class="settings-theme" id="settingsThemeGroup">
+          <legend>Elige el tema de la tienda</legend>
+          <label><input type="radio" name="bbTheme" value="light"><span class="theme-card"><b aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"></path></svg></b><strong>Claro</strong><small>Siempre luminoso</small></span></label>
+          <label><input type="radio" name="bbTheme" value="dark"><span class="theme-card"><b aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"></path></svg></b><strong>Oscuro</strong><small>Ideal de noche</small></span></label>
+          <label><input type="radio" name="bbTheme" value="auto"><span class="theme-card"><b aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"></path></svg></b><strong>Automático</strong><small>Según tu sistema</small></span></label>
+        </fieldset>
+        <p class="settings-hint">El tema se aplica en toda la tienda y se recuerda en este dispositivo.</p>
+      </section>
+
+      <section class="settings-group" aria-labelledby="settingsNotificationsTitle">
+        <h3 id="settingsNotificationsTitle">Notificaciones y avisos</h3>
+        <label class="settings-switch"><input type="checkbox" id="settingsNotifyDeals"><span class="switch-track" aria-hidden="true"></span><span class="switch-text"><strong>Ofertas y descuentos</strong><small>Precios especiales y cupones.</small></span></label>
+        <label class="settings-switch"><input type="checkbox" id="settingsNotifyDrops"><span class="switch-track" aria-hidden="true"></span><span class="switch-text"><strong>Novedades y lanzamientos</strong><small>Productos nuevos en el catálogo.</small></span></label>
+        <label class="settings-switch"><input type="checkbox" id="settingsNotifyStock"><span class="switch-track" aria-hidden="true"></span><span class="switch-text"><strong>Avisos de stock</strong><small>Cuando un producto vuelva a estar disponible.</small></span></label>
+        <button id="offersNotificationToggle" class="settings-alerts-btn" type="button" aria-expanded="false" aria-controls="offersNotificationPanel"><span>Avisos del sistema</span><span id="offersNotificationCount" class="notification-count">0</span></button>
+        <div id="settingsSystemAlerts" class="settings-system-alerts" aria-live="polite"></div>
+        <button type="button" class="settings-inline-link" data-settings-close data-settings-target="#notificaciones">Configurar correo de alertas</button>
+      </section>
+
+      <section class="settings-group" aria-labelledby="settingsHelpTitle">
+        <h3 id="settingsHelpTitle">Atención al cliente</h3>
+        <div class="settings-links">
+          <button type="button" data-settings-info="Libro de reclamaciones">Libro de reclamaciones<span aria-hidden="true">→</span></button>
+          <button type="button" data-settings-info="Centro de ayuda">Centro de ayuda<span aria-hidden="true">→</span></button>
+          <button type="button" data-settings-info="Preguntas frecuentes">Preguntas frecuentes<span aria-hidden="true">→</span></button>
+          <button type="button" data-settings-info="Contáctanos">Contacto y soporte<span aria-hidden="true">→</span></button>
+          <button type="button" data-settings-info="Privacidad">Política de privacidad<span aria-hidden="true">→</span></button>
+          <button type="button" data-settings-info="Términos">Términos y condiciones<span aria-hidden="true">→</span></button>
+        </div>
+      </section>
+
+      <section class="settings-group bb-privacy" aria-labelledby="privacyTitle">
+        <div class="bb-privacy-head">
+          <h3 id="privacyTitle">Privacidad y personalización</h3>
+          <span class="bb-status" id="privacyStatusBadge" data-state="pendiente">Consentimiento pendiente</span>
+        </div>
+        <p class="bb-privacy-intro">Tú controlas qué datos usa Byte Bay. La personalización solo se activa con tu autorización y puedes desactivarla en cualquier momento sin perder el carrito, las compras ni el resto de la tienda.</p>
+
+        <div class="bb-card bb-master">
+          <label class="bb-switch-row">
+            <span class="bb-switch-copy"><strong>Personalización</strong><small>Control maestro de recomendaciones y secciones personalizadas.</small></span>
+            <span class="bb-switch"><input type="checkbox" id="privacyMasterToggle" aria-label="Activar o desactivar la personalización"><span class="bb-switch-track" aria-hidden="true"></span></span>
+          </label>
+          <div class="bb-master-actions">
+            <button type="button" class="bb-link-btn" id="privacyDisableBtn">Desactivar</button>
+            <button type="button" class="bb-link-btn" id="privacyReactivateBtn">Reactivar</button>
+            <button type="button" class="bb-link-btn" id="privacyOpenPreferences">Configurar preferencias</button>
+          </div>
+        </div>
+
+        <div class="bb-card">
+          <h4>Recomendaciones en tiempo real</h4>
+          <p id="privacyRealtimeText">Estado pendiente: todavía no autorizaste el uso de tus datos.</p>
+          <p id="privacyReactivateText" class="bb-reactivate-note" hidden>Actualmente tienes desactivadas las recomendaciones personalizadas. Si deseas recibir sugerencias de productos relacionadas con tus preferencias, puedes activar nuevamente esta función.</p>
+        </div>
+
+        <div class="bb-card">
+          <h4>Historial de intereses</h4>
+          <p id="privacyWhyText">¿Por qué veo este producto? Cada recomendación indica la categoría o señal que la originó.</p>
+          <ul class="bb-interests" id="privacyInterestList"><li class="bb-empty">Sin intereses registrados</li></ul>
+          <button type="button" class="bb-secondary-btn" id="privacyClearHistory">Borrar historial de intereses</button>
+        </div>
+
+        <div class="bb-card">
+          <h4>Gestión del consentimiento</h4>
+          <dl class="bb-meta">
+            <div><dt>Primera aceptación</dt><dd id="privacyConsentAccepted">—</dd></div>
+            <div><dt>Última modificación</dt><dd id="privacyConsentUpdated">—</dd></div>
+            <div><dt>Versión del aviso</dt><dd id="privacyNoticeVersion">v2.1-2026</dd></div>
+            <div><dt>Finalidades autorizadas</dt><dd id="privacyConsentPurposes">Ninguna</dd></div>
+          </dl>
+          <button type="button" class="bb-secondary-btn" id="privacyDownloadReceipt">Descargar comprobante JSON</button>
+        </div>
+
+        <div class="bb-card">
+          <h4>Uso de tus datos</h4>
+          <p id="privacyDataUse">Usamos las señales que autorices para ordenar el catálogo, recordar tu historial y explicar cada recomendación. No vendemos tus datos ni los usamos para finalidades distintas a las autorizadas. Al rechazar o desactivar, dejamos de procesar esas señales y borramos el perfil de recomendaciones.</p>
+        </div>
+
+        <div class="bb-card bb-purposes">
+          <h4>Finalidades granulares</h4>
+          <label class="bb-purpose"><span class="bb-purpose-copy"><strong>Navegación</strong><small>Productos y categorías que visitas.</small></span><span class="bb-switch"><input type="checkbox" id="purpRecNavegacion" data-purpose="rec_navegacion"><span class="bb-switch-track" aria-hidden="true"></span></span></label>
+          <label class="bb-purpose"><span class="bb-purpose-copy"><strong>Búsquedas</strong><small>Términos que escribes en el buscador.</small></span><span class="bb-switch"><input type="checkbox" id="purpRecBusquedas" data-purpose="rec_busquedas"><span class="bb-switch-track" aria-hidden="true"></span></span></label>
+          <label class="bb-purpose"><span class="bb-purpose-copy"><strong>Carrito de compras</strong><small>Productos que agregas antes de pagar.</small></span><span class="bb-switch"><input type="checkbox" id="purpRecCarrito" data-purpose="rec_carrito_compras"><span class="bb-switch-track" aria-hidden="true"></span></span></label>
+          <label class="bb-purpose"><span class="bb-purpose-copy"><strong>Secciones de la interfaz</strong><small>Orden de bloques y accesos que ves.</small></span><span class="bb-switch"><input type="checkbox" id="purpUiSecciones" data-purpose="ui_secciones"><span class="bb-switch-track" aria-hidden="true"></span></span></label>
+        </div>
+
+        <div class="bb-card bb-session" id="privacySessionCard">
+          <h4>Sesión y tokens</h4>
+          <p class="bb-session-line"><span>Estado</span><strong id="privacySessionState">Invitado</strong></p>
+          <p class="bb-session-line"><span>Cuenta</span><strong id="privacySessionEmail">Sin iniciar sesión</strong></p>
+          <p class="bb-session-line"><span>Token de acceso</span><strong id="privacyTokenState">Sin token</strong></p>
+          <p class="bb-session-line"><span>ID de sesión</span><code id="privacySessionId">—</code></p>
+          <div class="bb-session-actions">
+            <button type="button" class="bb-secondary-btn" id="privacyRefreshToken">Renovar token</button>
+            <button type="button" class="bb-danger-btn" id="privacyRevokeAll">Cerrar sesión en todos los dispositivos</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <footer class="settings-foot">
+      <small>Tus preferencias se guardan en tu cuenta y en este dispositivo.</small>
+      <button type="button" id="settingsReset">Restablecer</button>
+    </footer>
+  </aside>
+
   <aside class="offers-notification-panel hidden" id="offersNotificationPanel" aria-label="Notificaciones de ofertas">
     <div class="offers-notification-heading"><strong>Ofertas y novedades</strong><button id="offersNotificationClose" type="button" aria-label="Cerrar avisos">×</button></div>
     <div id="offersNotificationList" aria-live="polite">Cargando avisos…</div>
@@ -38,7 +188,7 @@
 
   <main>
     <section class="hero hero-carousel wrap" id="heroCarousel" aria-label="Ofertas y productos destacados">
-      <div class="hero-copy"><span class="eyebrow" id="heroEyebrow">BYTE BAY DESTACADO</span><h1 id="heroTitle">Todo lo que necesitas, <em>más cerca.</em></h1><p id="heroDescription">Encuentra tus marcas favoritas, ofertas exclusivas y entregas rápidas en un solo lugar.</p><div class="hero-actions"><a class="btn primary" id="heroPrimaryAction" href="#ofertas">Ver destacados</a><a class="btn secondary" href="#categorias">Explorar categorías</a></div><div class="hero-proof"><div class="faces"><span>LM</span><span>JC</span><span>AR</span></div><p><strong>4.8 de 5</strong><br>Más de 20 mil compradores</p></div><div class="hero-carousel-controls"><button class="hero-nav" id="heroPrevious" type="button" aria-label="Oferta anterior">←</button><div class="hero-dots" id="heroDots" aria-label="Seleccionar una oferta"></div><button class="hero-nav" id="heroNext" type="button" aria-label="Oferta siguiente">→</button></div></div>
+      <div class="hero-copy"><span class="eyebrow" id="heroEyebrow">BYTE BAY DESTACADO</span><h1 id="heroTitle">Todo lo que necesitas, <em>más cerca.</em></h1><p id="heroDescription">Encuentra tus marcas favoritas, ofertas exclusivas y entregas rápidas en un solo lugar.</p><div class="hero-actions"><a class="btn primary" id="heroPrimaryAction" href="#ofertas">Ver destacados</a><a class="btn secondary" href="#categorias">Explorar categorías</a></div><div class="hero-carousel-controls"><button class="hero-nav" id="heroPrevious" type="button" aria-label="Oferta anterior">←</button><div class="hero-dots" id="heroDots" aria-label="Seleccionar una oferta"></div><button class="hero-nav" id="heroNext" type="button" aria-label="Oferta siguiente">→</button></div></div>
       <div class="hero-visual"><div class="sale-badge" id="heroBadge"><strong>DESTACADO</strong><b>HOY</b><span>para ti</span></div><img id="heroImage" src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1100&q=85" alt="Compras frescas en supermercado" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"><div class="floating-card"><span id="heroCardLabel">Entrega rápida</span><strong id="heroCardTitle">Recíbelo hoy</strong><small id="heroCardText">Comprando antes de las 12:00</small></div></div>
     </section>
 
@@ -49,9 +199,9 @@
     <section class="personalized-section wrap hidden" id="recentlyViewedSection"><div class="section-head"><div><span class="section-kicker">TU HISTORIAL</span><h2>Vistos recientemente</h2><p>Retoma los productos que revisaste.</p></div><button class="text-action" id="clearViewed" type="button">Limpiar historial</button></div><div class="product-grid personalized-grid" id="recentlyViewedGrid"></div></section>
     <section class="personalized-section wrap hidden" id="recommendationsSection"><div class="section-head"><div><span class="section-kicker coral">SELECCIÓN PARA TI</span><h2>También te puede interesar</h2><p>Productos similares según lo que estuviste viendo.</p></div></div><div class="product-grid personalized-grid" id="recommendationsGrid"></div></section>
 
-    <section class="promo-grid wrap" id="novedades"><article class="promo promo-tech"><div><span>TECNOLOGÍA</span><h3>Renueva tu mundo</h3><p>Hasta 12 cuotas sin intereses con tarjetas seleccionadas.</p><a href="#tecnologia">Comprar tecnología →</a></div><img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&w=700&q=80" alt="Laptop moderna" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"></article><article class="promo promo-home"><div><span>HOGAR</span><h3>Tu espacio, a tu manera</h3><p>Diseño y comodidad para cada rincón.</p><a href="#hogar">Descubrir hogar →</a></div><img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=700&q=80" alt="Sala moderna" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"></article></section>
+    <section class="promo-grid wrap" id="novedades"><article class="promo promo-tech"><div><span>TECNOLOGÍA</span><h3>Renueva tu mundo</h3><p>Equipos y accesorios para tu día a día.</p><a href="#" data-category="Tecnología">Comprar tecnología →</a></div><img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&w=700&q=80" alt="Laptop moderna" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"></article><article class="promo promo-home"><div><span>HOGAR</span><h3>Tu espacio, a tu manera</h3><p>Diseño y comodidad para cada rincón.</p><a href="#" data-category="Hogar">Descubrir hogar →</a></div><img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=700&q=80" alt="Sala moderna" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"></article></section>
 
-    <section class="benefits wrap" id="beneficios"><article><span class="benefit-icon">↗</span><div><h4>Envíos rápidos</h4><p>Recibe tus compras cuando y donde quieras.</p></div></article><article><span class="benefit-icon">◇</span><div><h4>Compra protegida</h4><p>Tu pago y tus datos siempre están seguros.</p></div></article><article><span class="benefit-icon">↺</span><div><h4>Devoluciones simples</h4><p>Tienes hasta 30 días para cambiar de opinión.</p></div></article><article><span class="benefit-icon">◉</span><div><h4>Atención cercana</h4><p>Estamos disponibles todos los días.</p></div></article></section>
+    <section class="benefits wrap" id="beneficios"><article><span class="benefit-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3z"></path><path d="M14 10h4l3 3v3h-7z"></path><circle cx="7" cy="18" r="1.6"></circle><circle cx="18" cy="18" r="1.6"></circle></svg></span><div><h4>Envíos rápidos</h4><p>Recibe tus compras cuando y donde quieras.</p></div></article><article><span class="benefit-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v6c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6z"></path><path d="m9 12 2 2 4-4"></path></svg></span><div><h4>Compra protegida</h4><p>Tu pago y tus datos siempre están seguros.</p></div></article><article><span class="benefit-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 0 1 13.6-5.7L20 8.6"></path><path d="M20 4v4.6h-4.6"></path><path d="M20 12a8 8 0 0 1-13.6 5.7L4 15.4"></path><path d="M4 20v-4.6h4.6"></path></svg></span><div><h4>Devoluciones simples</h4><p>Tienes hasta 30 días para cambiar de opinión.</p></div></article><article><span class="benefit-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0"></path><path d="M4 13v4a2 2 0 0 0 2 2h1v-6H6a2 2 0 0 0-2 2z"></path><path d="M20 13v4a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2z"></path><path d="M17 19a3 3 0 0 1-3 3h-2"></path></svg></span><div><h4>Atención cercana</h4><p>Estamos disponibles todos los días.</p></div></article></section>
 
     <section class="notify-section wrap" id="notificaciones">
       <div class="notify-card">
@@ -98,16 +248,16 @@
         <article class="checkout-card checkout-steps">
           <div class="checkout-step"><span>1</span><div><strong>Tu carrito</strong><p>Revisa los productos antes de pagar.</p></div></div>
           <div class="checkout-step"><span>2</span><div><strong>Datos de entrega</strong><p>Escribe una dirección clara para evitar errores.</p></div></div>
-          <div class="checkout-step"><span>3</span><div><strong>Confirma el pago</strong><p>Escanea el QR de Yape y registra tu código de operación.</p></div></div>
+          <div class="checkout-step"><span>3</span><div><strong>Confirma el pago</strong><p>Completa el pago de forma segura en Mercado Pago.</p></div></div>
           <div class="checkout-note">Tus datos se procesan de forma segura y el resumen se actualiza al instante.</div>
-          <div class="checkout-note subtle">Las tarjetas no se cobran desde esta demo. Para procesar un pago real, el formulario debe conectarse con una pasarela segura y un backend de pagos.</div>
+          <div class="checkout-note subtle">El pago se procesa en Mercado Pago. Byte Bay nunca recibe ni almacena los datos de tu tarjeta.</div>
         </article>
         <article class="checkout-card">
           <div class="checkout-head">
             <h3>Medios de pago</h3>
             <span class="checkout-tag">Seguro</span>
           </div>
-          <div class="payment-methods" id="paymentMethods"><div class="payment-option active"><span><strong>Yape</strong><small>Escanea el QR y paga desde tu celular</small></span></div></div>
+          <div class="payment-methods" id="paymentMethods"><div class="payment-option active"><span><strong>Mercado Pago</strong><small>Paga de forma segura con los medios disponibles en tu cuenta.</small></span></div></div>
           <button class="btn primary payment-next" id="paymentNext" type="button">Continuar</button>
           <div class="checkout-form">
             <div class="form-row two">
@@ -121,13 +271,8 @@
             </div>
           </div>
           <div class="payment-panel" id="walletPanel">
-            <div class="panel-title">Pago con Yape</div>
-            <p>Escanea el QR, paga el importe exacto y registra el código de operación. El pedido quedará pendiente hasta que sea verificado.</p>
-            <div class="wallet-box">
-              <img class="yape-qr" src="yape-qr.png?v=1" alt="Código QR para pagar con Yape" onerror="this.onerror=null;this.src='yape-qr-pendiente.svg'">
-              <strong>Pago por Yape</strong><span>Escanea el código desde la aplicación Yape.</span>
-            </div>
-            <label><span>Código de operación Yape</span><input type="text" id="yapeOperation" placeholder="Ej. 123456789" maxlength="20"></label>
+            <div class="panel-title">Pago protegido por Mercado Pago</div>
+            <p>Al continuar, te llevaremos al sitio seguro de Mercado Pago para completar el pago. El pedido se confirma automáticamente cuando Mercado Pago notifique el resultado.</p>
           </div>
           <div class="payment-box">
             <div><span>Subtotal</span><strong id="checkoutSubtotal">S/ 0.00</strong></div>
@@ -140,7 +285,7 @@
             <button class="btn secondary" type="submit">Aplicar</button>
           </form>
           <div class="checkout-actions">
-            <button class="btn primary checkout" id="payNow">Registrar pedido Yape</button>
+            <button class="btn primary checkout" id="payNow">Pagar con Mercado Pago</button>
             <button class="btn secondary checkout-secondary" id="saveCheckout">Guardar compra</button>
           </div>
           <div class="payment-processing hidden" id="paymentProcessing" aria-live="polite">
@@ -154,12 +299,11 @@
       </div>
     </div>
 
-    <section class="newsletter"><div class="wrap newsletter-inner"><div><span class="section-kicker">BENEFICIOS EXCLUSIVOS</span><h2>Lo mejor de Byte Bay, directo a tu correo</h2><p>Recibe descuentos, novedades y recomendaciones hechas para ti.</p></div><form id="newsletterForm"><input type="email" required placeholder="Tu correo electrónico"><button class="btn primary">Quiero recibir ofertas</button><small>Al suscribirte aceptas nuestra política de privacidad.</small></form></div></section>
-  </main>
+    </main>
 
   <footer id="ayuda"><div class="wrap footer-grid"><div><a class="brand footer-brand" href="#"><span class="brand-logo"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></span></a><p>Comprar y vender debería sentirse fácil. Por eso reunimos variedad, buenos precios y una experiencia en la que puedes confiar.</p></div><div><h5>Acerca de Byte Bay</h5><a href="#">Quiénes somos</a><a href="#">Trabaja con nosotros</a><a href="#">Sostenibilidad</a></div><div><h5>Compra con confianza</h5><a href="#">Cómo comprar</a><a href="#">Medios de pago</a><a href="#">Envíos y devoluciones</a></div><div><h5>Redes oficiales</h5><a href="https://tiktok.com/@bytebayperu" target="_blank" rel="noopener noreferrer">TikTok · @bytebayperu</a><a href="https://www.instagram.com/bytebayperu?stkn=b2Zlc3c4M2lrcjJw" target="_blank" rel="noopener noreferrer">Instagram · @bytebayperu</a><a href="https://youtube.com/@bytebayperu?si=4nyrzBNYliTeMwbu" target="_blank" rel="noopener noreferrer">YouTube · @bytebayperu</a><a href="https://x.com/bytebayperu" target="_blank" rel="noopener noreferrer">X · @bytebayperu</a><a href="https://www.facebook.com/share/19SYEVhY7c/" target="_blank" rel="noopener noreferrer">Facebook · Byte Bay Perú</a></div><div><h5>¿Necesitas ayuda?</h5><a href="#">Centro de ayuda</a><a href="#">Contáctanos</a><a href="#" id="openClaimsForm">Libro de reclamaciones</a></div></div><div class="wrap footer-bottom"><span>© 2026 Byte Bay. Todos los derechos reservados.</span><div><a href="#">Privacidad</a><a href="#">Términos</a><span>Yape</span></div></div></footer>
 
-  <aside class="cart-drawer" id="cartDrawer" aria-hidden="true"><div class="cart-header"><div><small>TU COMPRA</small><h2>Carrito <span id="cartTitleCount">(0)</span></h2></div><button id="cartClose" aria-label="Cerrar carrito">×</button></div><div class="cart-items" id="cartItems"><div class="empty-cart"><span>▱</span><h3>Tu carrito está vacío</h3><p>Agrega productos para ver tu resumen de compra.</p></div></div><div class="cart-summary"><div><span>Subtotal</span><strong id="cartSubtotal">S/ 0.00</strong></div><p>El envío, el cupón y el total final se calculan al instante.</p><button class="btn primary checkout" id="openCheckout">Continuar compra</button></div></aside><div class="overlay" id="overlay"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-hidden="true"><div class="cart-header"><div><small>TU COMPRA</small><h2>Carrito <span id="cartTitleCount">(0)</span></h2></div><button id="cartClose" aria-label="Cerrar carrito">×</button></div><div class="cart-items" id="cartItems"><div class="empty-cart"><span>▱</span><h3>Tu carrito está vacío</h3><p>Agrega productos para ver tu resumen de compra.</p></div></div><div class="cart-summary"><div><span>Subtotal</span><strong id="cartSubtotal">S/ 0.00</strong></div><p id="cartDeliveryNote">El envío, el cupón y el total final se calculan al instante.</p><button class="btn primary checkout" id="openCheckout">Continuar compra</button></div></aside><div class="overlay" id="overlay"></div>
   <div class="product-modal" id="productModal" aria-hidden="true">
     <div class="product-modal-card">
       <button class="product-modal-close" id="closeProductModal" aria-label="Cerrar detalle">×</button>
@@ -238,11 +382,90 @@
         </form>
       </div>
   </section>
+  <div class="bb-modal" id="privacyPreferencesModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="privacyPrefsTitle">
+    <div class="bb-modal-card">
+      <button class="bb-modal-close" type="button" data-bb-close="privacyPreferencesModal" aria-label="Cerrar preferencias">×</button>
+      <span class="bb-modal-kicker">PREFERENCIAS DE PRIVACIDAD</span>
+      <h2 id="privacyPrefsTitle">Elige qué datos podemos usar</h2>
+      <p>Activa solo las finalidades que quieras autorizar. Guardar sin activar no cambia tu consentimiento: la personalización seguirá pendiente hasta que la aceptes de forma expresa.</p>
+      <div class="bb-prefs-grid">
+        <label class="bb-purpose"><span class="bb-purpose-copy"><strong>Navegación</strong><small>Productos y categorías que visitas.</small></span><span class="bb-switch"><input type="checkbox" id="prefsRecNavegacion" data-pref-purpose="rec_navegacion"><span class="bb-switch-track" aria-hidden="true"></span></span></label>
+        <label class="bb-purpose"><span class="bb-purpose-copy"><strong>Búsquedas</strong><small>Términos que escribes en el buscador.</small></span><span class="bb-switch"><input type="checkbox" id="prefsRecBusquedas" data-pref-purpose="rec_busquedas"><span class="bb-switch-track" aria-hidden="true"></span></span></label>
+        <label class="bb-purpose"><span class="bb-purpose-copy"><strong>Carrito de compras</strong><small>Productos que agregas antes de pagar.</small></span><span class="bb-switch"><input type="checkbox" id="prefsRecCarrito" data-pref-purpose="rec_carrito_compras"><span class="bb-switch-track" aria-hidden="true"></span></span></label>
+        <label class="bb-purpose"><span class="bb-purpose-copy"><strong>Secciones de la interfaz</strong><small>Orden de bloques y accesos que ves.</small></span><span class="bb-switch"><input type="checkbox" id="prefsUiSecciones" data-pref-purpose="ui_secciones"><span class="bb-switch-track" aria-hidden="true"></span></span></label>
+      </div>
+      <div class="bb-modal-actions">
+        <button type="button" class="bb-primary-btn" id="privacyPrefsActivate">Guardar y activar personalización</button>
+        <button type="button" class="bb-secondary-btn" id="privacyPrefsSave">Guardar sin activar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bb-modal" id="privacyDisableModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="privacyDisableTitle">
+    <div class="bb-modal-card bb-modal-narrow">
+      <button class="bb-modal-close" type="button" data-bb-close="privacyDisableModal" aria-label="Cerrar">×</button>
+      <span class="bb-modal-kicker">CONFIRMAR CAMBIO</span>
+      <h2 id="privacyDisableTitle">¿Deseas desactivar las recomendaciones personalizadas?</h2>
+      <p>Al desactivar esta función, dejaremos de utilizar los datos cubiertos por este consentimiento para personalizar tus recomendaciones. Podrás continuar utilizando la tienda normalmente.</p>
+      <div class="bb-modal-actions">
+        <button type="button" class="bb-danger-btn" id="confirmDisablePrivacy">Desactivar personalización</button>
+        <button type="button" class="bb-secondary-btn" data-bb-close="privacyDisableModal">Mantener activada</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bb-modal" id="privacyReactivateModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="privacyReactivateTitle">
+    <div class="bb-modal-card">
+      <button class="bb-modal-close" type="button" data-bb-close="privacyReactivateModal" aria-label="Cerrar">×</button>
+      <span class="bb-modal-kicker">NUEVA AUTORIZACIÓN</span>
+      <h2 id="privacyReactivateTitle">Reactivar la personalización</h2>
+      <p>Para reactivarla necesitamos tu aceptación expresa. Esto es lo que volveremos a procesar:</p>
+      <div class="bb-reactivate-summary">
+        <h4>Datos que se usarán</h4>
+        <ul>
+          <li>Productos y categorías que visitas.</li>
+          <li>Términos que escribes en el buscador.</li>
+          <li>Productos que agregas al carrito.</li>
+          <li>Preferencias de secciones de la interfaz.</li>
+        </ul>
+        <h4>Finalidades</h4>
+        <ul>
+          <li>Ordenar recomendaciones y mostrar productos similares.</li>
+          <li>Explicar por qué ves cada recomendación.</li>
+          <li>Recordar tu historial reciente dentro de Byte Bay.</li>
+        </ul>
+        <h4>Vigencia y control</h4>
+        <ul>
+          <li>Aviso de privacidad v2.1-2026.</li>
+          <li>Puedes desactivarla de nuevo en cualquier momento.</li>
+          <li>No se activa automáticamente al iniciar sesión, recargar o comprar.</li>
+        </ul>
+      </div>
+      <div class="bb-modal-actions">
+        <button type="button" class="bb-primary-btn" id="confirmReactivatePrivacy">Acepto y reactivo la personalización</button>
+        <button type="button" class="bb-secondary-btn" data-bb-close="privacyReactivateModal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast">Producto agregado al carrito</div>
-  <section class="cookie-banner hidden" id="personalizationConsent" role="dialog" aria-labelledby="consentTitle" aria-describedby="consentDescription"><div><span class="section-kicker">TU PRIVACIDAD</span><h2 id="consentTitle">¿Quieres recomendaciones personalizadas?</h2><p id="consentDescription">Con tu permiso, Byte Bay recuerda los productos que ves en este dispositivo para mostrarte artículos similares y tu historial reciente. No vendemos esta información.</p></div><div class="cookie-actions"><button class="btn secondary" id="rejectPersonalization" type="button">No aceptar</button><button class="btn primary" id="acceptPersonalization" type="button">Aceptar y personalizar</button></div></section>
+  <section class="bb-consent-banner hidden" id="personalizationConsent" role="dialog" aria-labelledby="consentTitle" aria-describedby="consentDescription">
+    <div class="bb-consent-copy">
+      <span class="bb-consent-kicker">TU PRIVACIDAD · AVISO v2.1-2026</span>
+      <h2 id="consentTitle">Mejoremos tu experiencia en Byte Bay</h2>
+      <p id="consentDescription">Queremos mejorar tu experiencia de compra. Podemos utilizar tus preferencias y actividad dentro de nuestra tienda para recomendarte productos que podrían interesarte. Tú decides si deseas utilizar esta función. Puedes aceptar, rechazar o modificar tu decisión posteriormente desde la configuración de privacidad.</p>
+    </div>
+    <div class="bb-consent-actions">
+      <button class="bb-consent-btn is-accept" id="acceptPersonalization" type="button">ACEPTAR PERSONALIZACIÓN</button>
+      <button class="bb-consent-btn is-reject" id="rejectPersonalization" type="button">RECHAZAR PERSONALIZACIÓN</button>
+      <button class="bb-consent-btn is-config" id="configurePersonalization" type="button">CONFIGURAR PREFERENCIAS</button>
+    </div>
+  </section>
   <button id="aiAssistantToggle" class="ai-assistant-toggle" type="button" aria-label="Abrir Asistente Byte"><span>✦</span> Asistente Byte</button>
   <section id="aiAssistantPanel" class="ai-assistant-panel hidden" aria-label="Asistente Byte"><header><div><span class="section-kicker">IA DE BYTE BAY</span><h2>¿Qué estás buscando?</h2></div><button id="aiAssistantClose" type="button" aria-label="Cerrar asistente">×</button></header><div class="ai-chat" id="aiChat"><article class="ai-message assistant">Hola, soy Asistente Byte. Puedo ayudarte a encontrar productos, ofertas y opciones similares.</article></div><div class="ai-suggestions"><button type="button" data-ai-question="¿Qué ofertas de tecnología tienen stock?">Ofertas de tecnología</button><button type="button" data-ai-question="Recomiéndame productos para el hogar">Para el hogar</button></div><form id="aiAssistantForm"><input id="aiAssistantInput" maxlength="500" placeholder="Ej.: Recomiéndame una laptop económica" required><button class="btn primary" type="submit">Enviar</button></form><small>Respuestas generadas con IA según el catálogo disponible.</small></section>
-  <script src="app.js?v=43"></script>
+  <script src="app.js?v=47"></script>
   <script src="site-enhancements.js?v=1"></script>
+  <script src="site-settings.js?v=2"></script>
+  <script src="site-privacy.js?v=4"></script>
 </body>
 </html>

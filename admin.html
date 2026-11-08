@@ -3,41 +3,65 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.emailjs.com; frame-src 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Gestión interna | Byte Bay</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="styles.css?v=13">
   <link rel="stylesheet" href="admin.css?v=4">
   <link rel="stylesheet" href="admin-enhancements.css?v=1">
+  <link rel="stylesheet" href="admin-pro.css?v=4">
   <script>try{if(localStorage.getItem('beruTema')==='noche')document.documentElement.classList.add('dark-mode')}catch(e){}</script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
   <main id="adminLogin" class="admin-login-shell">
     <section class="admin-login-card">
-      <img src="byte-bay-logo-transparent.png" alt="Byte Bay">
-      <span class="section-kicker">ACCESO INTERNO</span>
-      <h1>Panel de gestión</h1>
-      <p>Exclusivo para personal autorizado de Byte Bay.</p>
-      <form id="adminLoginForm">
-        <label><span>Correo laboral</span><input id="adminEmail" type="email" autocomplete="username" required></label>
-        <label><span>Contraseña</span><input id="adminPassword" type="password" autocomplete="current-password" required></label>
-        <button class="btn primary" type="submit">Ingresar</button>
-      </form>
-      <button id="adminForgotPassword" class="admin-store-link" type="button">Olvidé mi contraseña</button>
-      <form id="adminRecoveryForm" class="hidden">
-        <label><span>Nueva contraseña</span><input id="adminNewPassword" type="password" autocomplete="new-password" minlength="8" required></label>
-        <label><span>Confirmar contraseña</span><input id="adminConfirmPassword" type="password" autocomplete="new-password" minlength="8" required></label>
-        <button class="btn primary" type="submit">Guardar contraseña</button>
-      </form>
-      <div id="adminLoginStatus" class="admin-status" aria-live="polite"></div>
-      <button class="theme-toggle admin-theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche"><span aria-hidden="true">☾</span></button>
-      <a href="index.html" class="admin-store-link">Volver a la tienda</a>
+      <div class="admin-login-art">
+        <img src="byte-bay-logo-transparent.png" alt="Byte Bay">
+        <div class="admin-login-art-copy">
+          <span class="admin-login-badge">Acceso interno</span>
+          <h2>Todo tu negocio, bajo control.</h2>
+          <p>Catálogo, inventario, ofertas, reclamos y equipo en un solo panel.</p>
+        </div>
+        <ul class="admin-login-trust">
+          <li>Sesión cifrada</li>
+          <li>Accesos por rol</li>
+          <li>Auditoría de cambios</li>
+        </ul>
+      </div>
+      <div class="admin-login-form">
+        <span class="section-kicker">BYTE BAY · PERSONAL</span>
+        <h1>Panel de gestión</h1>
+        <p>Ingresa con tu cuenta laboral. Solo personal autorizado.</p>
+        <form id="adminLoginForm">
+          <label><span>Correo laboral</span><input id="adminEmail" type="email" autocomplete="username" required></label>
+          <label><span>Contraseña</span><input id="adminPassword" type="password" autocomplete="current-password" required></label>
+          <button class="btn primary" type="submit">Ingresar</button>
+        </form>
+        <button id="adminForgotPassword" class="admin-store-link" type="button">Olvidé mi contraseña</button>
+        <form id="adminRecoveryForm" class="hidden">
+          <label><span>Nueva contraseña</span><input id="adminNewPassword" type="password" autocomplete="new-password" minlength="10" required></label>
+          <label><span>Confirmar contraseña</span><input id="adminConfirmPassword" type="password" autocomplete="new-password" minlength="10" required></label>
+          <button class="btn primary" type="submit">Guardar contraseña</button>
+        </form>
+        <div id="adminLoginStatus" class="admin-status" aria-live="polite"></div>
+        <button class="theme-toggle admin-theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche"><span aria-hidden="true">☾</span></button>
+        <a href="index.html" class="admin-store-link admin-back-store">← Volver a la tienda</a>
+      </div>
     </section>
   </main>
 
   <div id="adminApp" class="admin-app hidden">
     <aside class="admin-sidebar">
       <a href="index.html" class="admin-brand"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></a>
+      <div class="admin-user-chip">
+        <span class="admin-avatar" id="adminAvatar" aria-hidden="true">BB</span>
+        <div>
+          <strong id="adminUserName">Personal Byte Bay</strong>
+          <small id="adminUserRole">Cargando…</small>
+        </div>
+      </div>
       <p id="adminRole"></p>
       <nav class="admin-nav" aria-label="Gestión interna">
         <button class="active" data-admin-tab="resumen">Resumen</button>
@@ -45,6 +69,7 @@
         <button data-admin-tab="inventario">Inventario</button>
         <button data-admin-tab="ofertas">Ofertas</button>
         <button data-admin-tab="avisos" id="adminNotificationsTab">Avisos</button>
+        <button data-admin-tab="clientes" id="adminClientsTab">Clientes</button>
         <button data-admin-tab="movimientos">Movimientos</button>
         <button data-admin-tab="reclamos">Reclamaciones</button>
         <button data-admin-tab="auditoria" id="adminAuditTab">Auditoría</button>
@@ -55,11 +80,66 @@
     </aside>
 
     <main class="admin-main">
-      <header class="admin-header"><div><span class="section-kicker">BYTE BAY</span><h1>Gestión interna</h1></div><div class="admin-header-actions"><div id="adminStatus" class="admin-status" aria-live="polite"></div><button class="theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche"><span aria-hidden="true">☾</span></button></div></header>
+      <header class="admin-header">
+        <div>
+          <span class="admin-breadcrumb" id="adminBreadcrumb">Resumen</span>
+          <h1 id="adminPageTitle">Resumen operativo</h1>
+        </div>
+        <div class="admin-header-actions">
+          <div id="adminStatus" class="admin-status" aria-live="polite"></div>
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche"><span aria-hidden="true">☾</span></button>
+        </div>
+      </header>
 
       <section data-admin-section="resumen">
-        <div class="admin-section-head"><div><h2>Resumen operativo</h2><p>Ventas, pagos e inventario.</p></div><button class="btn secondary" id="adminRefreshReports">Actualizar</button></div>
-        <div class="admin-metrics" id="managementSummary"></div>
+        <div class="admin-section-head"><div><h2>Resumen operativo</h2><p>Ventas, clientes e inventario en tiempo real.</p></div><button class="btn secondary" id="adminRefreshReports">Actualizar</button></div>
+
+        <div class="dash-toolbar" id="dashboardFilters" role="group" aria-label="Filtros del panel">
+          <div class="dash-presets" role="group" aria-label="Periodos rápidos">
+            <button type="button" class="dash-preset" data-dashboard-preset="today">Hoy</button>
+            <button type="button" class="dash-preset" data-dashboard-preset="7">7 días</button>
+            <button type="button" class="dash-preset is-active" data-dashboard-preset="30">30 días</button>
+            <button type="button" class="dash-preset" data-dashboard-preset="month">Este mes</button>
+            <button type="button" class="dash-preset" data-dashboard-preset="year">Este año</button>
+          </div>
+          <label class="dash-date">Desde<input id="dashboardFrom" type="date"></label>
+          <label class="dash-date">Hasta<input id="dashboardTo" type="date"></label>
+          <button class="btn secondary" id="dashboardApply" type="button">Aplicar</button>
+        </div>
+
+        <div class="dash-kpis" id="dashboardKpis" aria-live="polite"></div>
+
+        <div class="dash-grid">
+          <article class="admin-card dash-card dash-card-wide">
+            <div class="dash-card-head"><div><h3>Pedidos por día</h3><p id="dashboardSalesCaption">Pedidos confirmados y pendientes del periodo.</p></div><span class="dash-legend"><i class="legend-sales"></i>Pedidos</span></div>
+            <div id="dashboardSalesChart" class="dash-chart"></div>
+          </article>
+          <article class="admin-card dash-card">
+            <div class="dash-card-head"><div><h3>Clientes registrados</h3><p>Altas por día en el periodo.</p></div></div>
+            <div id="dashboardClientsChart" class="dash-chart"></div>
+          </article>
+        </div>
+
+        <div class="dash-grid">
+          <article class="admin-card dash-card">
+            <div class="dash-card-head"><div><h3>Estado de pedidos</h3><p>Distribución por estado operativo.</p></div></div>
+            <div id="dashboardStatusChart" class="dash-status-chart"></div>
+          </article>
+          <article class="admin-card dash-card">
+            <div class="dash-card-head"><div><h3>Productos más vendidos</h3><p>Top 5 por unidades del periodo.</p></div></div>
+            <div id="dashboardTopProducts" class="dash-rank"></div>
+          </article>
+        </div>
+
+        <article class="admin-card dash-card dash-offers">
+          <div class="dash-card-head">
+            <div><h3>Ofertas automáticas del sistema</h3><p>Avisos generados al marcar super ofertas o liquidaciones.</p></div>
+            <button class="btn secondary" id="dashboardRefreshOffers" type="button">Actualizar</button>
+          </div>
+          <div id="dashboardAutoOffers" class="dash-offers-list" aria-live="polite"></div>
+        </article>
+
+        <div class="admin-metrics" id="managementSummary" hidden></div>
         <div id="userLifecyclePanel" class="user-lifecycle-panel hidden">
           <div class="admin-section-head"><div><h3>Ciclo de vida de clientes</h3><p>Altas y solicitudes de baja lógica.</p></div></div>
           <div class="admin-filters admin-filters-wide">
@@ -98,7 +178,7 @@
       <section class="hidden" data-admin-section="ofertas">
         <div class="admin-section-head"><div><h2>Ofertas</h2><p>Programa descuentos y revisa las ofertas que activan avisos automáticos.</p></div></div>
         <div id="automaticOffersDashboard" class="admin-card automatic-offers-dashboard hidden">
-          <div class="admin-section-head"><div><h3>Ofertas automáticas del sistema</h3><p>Avisos creados al marcar una oferta como super oferta o liquidación.</p></div><button class="btn secondary" id="refreshAutomaticOffers" type="button">Actualizar</button></div>
+          <div class="admin-section-head"><div><h3>Ofertas automáticas del sistema</h3><p>Avisos creados al marcar una oferta como super oferta o liquidación.</p></div><div class="admin-head-actions"><button class="btn secondary" id="refreshAutomaticOffers" type="button">Actualizar</button><button class="btn secondary hidden" id="regenerateAutomaticOffers" type="button">Regenerar avisos</button></div></div>
           <div id="automaticOffersMetrics" class="admin-metrics"></div>
           <div id="automaticOffersList" class="admin-list" aria-live="polite"></div>
         </div>
@@ -118,7 +198,33 @@
         </form>
       </section>
 
-      <section class="hidden" data-admin-section="movimientos"><div class="admin-section-head"><div><h2>Movimientos</h2><p>Entradas, ventas, ajustes y devoluciones.</p></div><button class="btn secondary" id="adminRefreshMovements">Actualizar</button></div><div class="admin-filters"><input id="movementSearch" type="search" placeholder="Buscar producto"><select id="movementTypeFilter"><option value="">Todos los tipos</option><option value="entrada">Entrada</option><option value="venta">Venta</option><option value="ajuste">Ajuste</option><option value="devolucion">Devolución</option></select></div><div id="adminMovementsList" class="admin-list admin-card"></div></section>
+      <section class="hidden" data-admin-section="movimientos">
+        <div class="admin-section-head">
+          <div><h2>Movimientos de inventario</h2><p>Entradas, ventas, ajustes y devoluciones con trazabilidad.</p></div>
+          <div class="admin-head-actions">
+            <button class="btn secondary" id="adminRefreshMovements">Actualizar</button>
+            <button class="btn primary" id="exportMovements" type="button">Exportar Excel</button>
+          </div>
+        </div>
+        <div class="dash-toolbar">
+          <div class="dash-presets" role="group" aria-label="Periodos rápidos de movimientos">
+            <button type="button" class="dash-preset" data-movement-preset="today">Hoy</button>
+            <button type="button" class="dash-preset" data-movement-preset="7">7 días</button>
+            <button type="button" class="dash-preset is-active" data-movement-preset="30">30 días</button>
+            <button type="button" class="dash-preset" data-movement-preset="month">Este mes</button>
+            <button type="button" class="dash-preset" data-movement-preset="all">Todo</button>
+          </div>
+          <label class="dash-date">Desde<input id="movementFromFilter" type="date"></label>
+          <label class="dash-date">Hasta<input id="movementToFilter" type="date"></label>
+          <button class="btn secondary" id="movementApplyFilters" type="button">Aplicar</button>
+        </div>
+        <div class="admin-filters admin-filters-wide">
+          <label>Buscar<input id="movementSearch" type="search" placeholder="Producto, código, pedido, lote o nota"></label>
+          <label>Tipo<select id="movementTypeFilter"><option value="">Todos los tipos</option><option value="entrada">Entrada</option><option value="venta">Venta</option><option value="ajuste">Ajuste</option><option value="devolucion">Devolución</option></select></label>
+        </div>
+        <div class="dash-kpis dash-kpis-compact" id="movementSummary" aria-live="polite"></div>
+        <div id="adminMovementsList" class="admin-list admin-card" aria-live="polite"></div>
+      </section>
 
       <section class="hidden" data-admin-section="reclamos">
         <div class="admin-section-head"><div><h2>Libro de reclamaciones</h2><p>Revisa, responde y exporta las solicitudes recibidas.</p></div><button class="btn secondary" id="exportClaims" type="button">Exportar Excel</button></div>
@@ -168,18 +274,76 @@
             <p class="admin-help">Registro interno temporal: crea las credenciales del empleado sin enviar correo. Entrégale la contraseña inicial de forma privada.</p>
             <div class="admin-form-row"><label><span>Nombres</span><input id="newStaffNames" required></label><label><span>Apellidos</span><input id="newStaffLastNames" required></label></div>
             <label><span>Correo laboral</span><input id="newStaffEmail" type="email" required></label>
-            <label id="newStaffPasswordLabel"><span>Contraseña inicial</span><input id="newStaffPassword" type="password" minlength="8" autocomplete="new-password" aria-describedby="staffPasswordHelp staffPasswordStrength" required></label>
-            <div id="staffPasswordFeedback" class="staff-password-feedback"><p id="staffPasswordHelp" class="admin-help">Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo (@$!%*#?&amp;.).</p><p id="staffPasswordStrength" class="admin-help" aria-live="polite">Aún no cumple los requisitos.</p></div>
+            <label id="newStaffPasswordLabel"><span>Contraseña inicial</span><input id="newStaffPassword" type="password" minlength="10" autocomplete="new-password" aria-describedby="staffPasswordHelp staffPasswordStrength" required></label>
+            <div id="staffPasswordFeedback" class="staff-password-feedback"><p id="staffPasswordHelp" class="admin-help">Mínimo 10 caracteres, con mayúscula, minúscula, número y símbolo (@$!%*#?&amp;.).</p><p id="staffPasswordStrength" class="admin-help" aria-live="polite">Aún no cumple los requisitos.</p></div>
             <label><span>Rol asignado</span><input value="Empleado" disabled></label>
             <div class="staff-form-actions"><button class="btn primary" id="staffSubmit" type="submit">Registrar empleado</button><button class="btn secondary hidden" id="staffCancelEdit" type="button">Cancelar edición</button></div>
           </form>
           <div class="admin-card"><div class="admin-filters"><input id="staffSearch" type="search" placeholder="Buscar nombre, correo o rol"><select id="staffStatusFilter"><option value="">Todos los estados</option><option value="activo">Activos</option><option value="anulado">Anulados</option></select></div><div id="adminStaffList" class="admin-list"></div></div>
         </div>
       </section>
+      <section class="hidden" data-admin-section="clientes">
+        <div class="admin-section-head">
+          <div><h2>Clientes</h2><p>Consulta, filtra por fecha de registro y administra el estado de las cuentas.</p></div>
+          <div class="admin-head-actions">
+            <button class="btn secondary" id="refreshClients" type="button">Actualizar</button>
+            <button class="btn primary" id="exportClients" type="button">Exportar Excel</button>
+          </div>
+        </div>
+        <div class="dash-kpis dash-kpis-compact" id="clientKpis" aria-live="polite"></div>
+        <div class="dash-toolbar">
+          <div class="dash-presets" role="group" aria-label="Periodos rápidos de clientes">
+            <button type="button" class="dash-preset" data-client-preset="today">Hoy</button>
+            <button type="button" class="dash-preset" data-client-preset="7">7 días</button>
+            <button type="button" class="dash-preset" data-client-preset="30">30 días</button>
+            <button type="button" class="dash-preset" data-client-preset="month">Este mes</button>
+            <button type="button" class="dash-preset is-active" data-client-preset="all">Todo</button>
+          </div>
+          <label class="dash-date">Desde<input id="clientFromFilter" type="date"></label>
+          <label class="dash-date">Hasta<input id="clientToFilter" type="date"></label>
+          <button class="btn secondary" id="clientApplyFilters" type="button">Aplicar</button>
+        </div>
+        <div class="admin-filters admin-filters-wide">
+          <label>Buscar<input id="clientSearch" type="search" placeholder="Correo, nombre, apellido o usuario"></label>
+          <label>Estado<select id="clientStatusFilter"><option value="">Todos</option><option value="activo">Activo</option><option value="inactivo">Inactivo</option><option value="anulado">Anulado</option></select></label>
+        </div>
+        <div class="admin-card">
+          <div class="admin-table-wrap">
+            <table class="admin-table admin-table-clients">
+              <thead>
+                <tr><th>Cliente</th><th>Correo</th><th>Estado</th><th>Registro</th><th>Último acceso</th><th class="num">Pedidos</th><th class="num">Total gastado</th><th class="actions">Acciones</th></tr>
+              </thead>
+              <tbody id="adminClientsList"></tbody>
+            </table>
+          </div>
+          <p class="admin-help" id="clientsHint">Solo el jefe puede administrar cuentas de clientes. Las fechas filtran por fecha de registro; usa «Todo» para ver el historial completo.</p>
+        </div>
+      </section>
     </main>
   </div>
+
+  <dialog id="clientStatusDialog" class="admin-dialog" aria-labelledby="clientStatusTitle">
+    <form id="clientStatusForm" method="dialog" novalidate>
+      <div class="admin-dialog-head">
+        <h3 id="clientStatusTitle">Cambiar estado del cliente</h3>
+        <button type="button" class="admin-dialog-close" id="clientStatusCancel" aria-label="Cerrar">×</button>
+      </div>
+      <p id="clientStatusDescription" class="admin-dialog-copy"></p>
+      <input type="hidden" id="clientStatusId">
+      <label><span>Nuevo estado</span><select id="clientStatusSelect"><option value="activo">Activo</option><option value="inactivo">Inactivo</option><option value="anulado">Anulado</option></select></label>
+      <label id="clientStatusReasonLabel"><span>Motivo <small>(obligatorio para anular)</small></span><textarea id="clientStatusReason" rows="3" maxlength="500" placeholder="Describe el motivo del cambio"></textarea></label>
+      <p class="admin-dialog-warning" id="clientStatusWarning" hidden>La anulación es una baja lógica: la cuenta no se elimina, pero el cliente no podrá iniciar sesión ni registrarse con ese correo.</p>
+      <div class="admin-dialog-actions">
+        <button type="button" class="btn secondary" id="clientStatusDismiss">Cancelar</button>
+        <button type="submit" class="btn primary" id="clientStatusConfirm">Confirmar cambio</button>
+      </div>
+      <p class="admin-status" id="clientStatusMessage" aria-live="polite"></p>
+    </form>
+  </dialog>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-  <script src="admin.js?v=10"></script>
-  <script src="admin-enhancements.js?v=2"></script>
+  <script src="admin.js?v=13"></script>
+  <script src="admin-enhancements.js?v=3"></script>
+  <script src="admin-pro.js?v=2"></script>
+  <script src="admin-dashboard.js?v=2"></script>
 </body>
 </html>
