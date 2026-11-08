@@ -231,8 +231,8 @@ let activeFilter='all';
 let soloOfertas=false;
 let lastViewedProduct=null;
 const favorites=new Set(JSON.parse(localStorage.getItem('beruFavorites')||'[]'));
-// La personalización real vive en site-privacy.js (servidor + tokens).
-// Aquí solo se delega; localStorage nunca habilita el algoritmo por sí solo.
+// La personalización y el consentimiento viven en site-privacy.js.
+// El modo local solo procesa señales en este dispositivo cuando el usuario lo autoriza.
 function puedePersonalizar(){return Boolean(window.BBPrivacy?.personalizacionActiva?.());}
 function registrarProductoVisto(id){window.BBPrivacy?.registrarVista?.(Number(id));}
 function tarjetaProducto(producto,motivo=''){
@@ -822,6 +822,8 @@ function setPaymentStep(step){
 function openCheckout(){
   if(!cart.length){showToast('Agrega productos antes de continuar');return;}
   toggleCart(false);
+  document.body.classList.add('checkout-open');
+  document.querySelector('#aiAssistantPanel')?.classList.add('hidden');
   checkoutModal.classList.add('open');
   checkoutModal.setAttribute('aria-hidden','false');
   setPaymentStep(1);
@@ -830,6 +832,7 @@ function openCheckout(){
 function closeCheckout(){
   checkoutModal.classList.remove('open');
   checkoutModal.setAttribute('aria-hidden','true');
+  document.body.classList.remove('checkout-open');
 }
 
 document.querySelector('#openCheckout').onclick=openCheckout;

@@ -4,8 +4,8 @@
    - Emite y renueva access_token / refresh_token contra Supabase.
    - Valida el token en cada acción sensible (checkout, reseñas).
    - Lee y escribe el consentimiento en el servidor.
-   - El almacenamiento local NUNCA activa la personalización: solo es
-     caché de interfaz. Si el servidor no confirma, no se personaliza.
+   - El consentimiento local solo activa recomendaciones locales en este
+     dispositivo; las señales no se envían ni sincronizan sin el servidor.
    - Expone window.BBPrivacy para app.js y site-settings.js.
    ============================================================ */
 
@@ -17,6 +17,7 @@
     session: 'bbSession',
     guest: 'bbGuestId',
     cache: 'bbPrivacyCache',
+    localSignals: 'bbLocalRecommendationSignals',
     legacyConsent: 'byteBayPersonalizationConsent',
     legacyViewed: 'byteBayViewedProducts'
   };
@@ -417,6 +418,7 @@
       desactivado_en: source.desactivado_en || null,
       actualizado_en: source.actualizado_en || null,
       operation_id: source.operation_id || null,
+      localOnly: Boolean(source.localOnly || source.local_only),
       sincronizado: Boolean(synced)
     };
   }
@@ -450,7 +452,12 @@
       p_action_medium: 'MENU_CONFIGURACION'
     });
     if (result.data && result.data.ok) {
-      state.consentimiento = normalizeConsent(result.data, true);
+      const serverConsent = normalizeConsent(result.data, true);
+      const cachedConsent = readCachedConsent();
+      state.consentimiento = serverConsent.estado === 'pendiente' &&
+        cachedConsent.localOnly && cachedConsent.estado !== 'pendiente'
+        ? cachedConsent
+        : serverConsent;
       cacheConsent();
       state.consentimientoListo = true;
       return state.consentimiento;
@@ -463,12 +470,67 @@
 
   function personalizacionActiva() {
     const consent = state.consentimiento;
-    if (!consent || !consent.sincronizado || consent.estado !== 'aceptado') return false;
+    if (!consent || consent.estado !== 'aceptado') return false;
+    if (!consent.sincronizado && !consent.localOnly) return false;
     return PURPOSE_LIST.some((purpose) => Boolean(consent.finalidades[purpose.key]));
   }
 
   function finalidadActiva(key) {
     return Boolean(personalizacionActiva() && state.consentimiento.finalidades[key]);
+  }
+
+  function localSignals() {
+    const records = readJSON(KEYS.localSignals);
+    return Array.isArray(records) ? records.slice(-100) : [];
+  }
+
+  function saveLocalSignals(records) {
+    writeJSON(KEYS.localSignals, records.slice(-100));
+  }
+
+  function localRecommendations() {
+    const storeRef = store();
+    const products = storeRef && Array.isArray(storeRef.products) ? storeRef.products : [];
+    const consent = state.consentimiento;
+    const enabledSignals = localSignals().filter((signal) => {
+      const purpose = TYPE_TO_PURPOSE[signal.tipo];
+      return purpose && consent.finalidades[purpose];
+    });
+    const categoryWeights = new Map();
+    const viewed = [];
+
+    enabledSignals.forEach((signal) => {
+      const category = String(signal.categoria || '').trim();
+      if (category) {
+        categoryWeights.set(category, (categoryWeights.get(category) || 0) + 1);
+      }
+      if (signal.tipo === 'VISTA' && signal.id_producto != null &&
+          Number.isInteger(Number(signal.id_producto)) && Number(signal.id_producto) > 0) {
+        const id = Number(signal.id_producto);
+        if (!viewed.some((item) => item.id_producto === id)) viewed.push({ id_producto: id });
+      }
+    });
+
+    const interests = [...categoryWeights.entries()]
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, 5)
+      .map(([categoria, peso]) => ({ categoria, peso }));
+    const items = products
+      .filter((product) => Number(product.stock) > 0)
+      .map((product) => {
+        const weight = categoryWeights.get(String(product.category || '').trim()) || 0;
+        return {
+          product,
+          score: weight * 10 + Number(product.rating || 0),
+          motivo: weight ? `Relacionado con ${product.category}` : 'Popular en Byte Bay'
+        };
+      })
+      .sort((left, right) => right.score - left.score)
+      .slice(0, 8)
+      .map(({ product, motivo }) => ({ id_producto: product.id, motivo }));
+
+    const viewedProducts = consent.finalidades.rec_navegacion ? viewed.slice(0, 4) : [];
+    return { modo: interests.length ? 'personalizado' : 'general', items, intereses: interests, vistos: viewedProducts, local: true };
   }
 
   function fallbackLocal(estado, purposes) {
@@ -479,8 +541,20 @@
       aviso_version: NOTICE_VERSION,
       rechazado_en: estado === 'rechazado' ? now : null,
       desactivado_en: estado === 'desactivado' ? now : null,
-      actualizado_en: now
+      actualizado_en: now,
+      localOnly: true
     }, false);
+    if (estado !== 'aceptado') {
+      try {
+        localStorage.removeItem(KEYS.localSignals);
+      } catch (error) {
+        console.warn('Byte Bay · no se pudo borrar el historial local de recomendaciones.', error);
+      }
+    } else {
+      const allowed = PURPOSE_LIST.filter((purpose) => purposes[purpose.key]).map((purpose) => purpose.key);
+      const allowedTypes = Object.keys(TYPE_TO_PURPOSE).filter((type) => allowed.includes(TYPE_TO_PURPOSE[type]));
+      saveLocalSignals(localSignals().filter((signal) => allowedTypes.includes(signal.tipo)));
+    }
     cacheConsent();
     state.consentimientoListo = true;
   }
@@ -490,13 +564,14 @@
     const session = state.sesion;
 
     if (!session || !session.access_token) {
-      if (decision === 'rechazado' || decision === 'desactivado') {
-        fallbackLocal(decision === 'desactivado' ? 'desactivado' : 'rechazado', emptyPurposes());
-        renderTodo();
-        dispatchPrivacy();
-        return { ok: true, local: true };
-      }
-      return { ok: false, message: 'Necesitamos conexión con Byte Bay para registrar tu consentimiento.' };
+      const localDecision = decision === 'personalizado' ? 'aceptado'
+        : decision === 'configurar' ? 'pendiente'
+          : decision;
+      fallbackLocal(localDecision, purposes || emptyPurposes());
+      state.recomendaciones = localDecision === 'aceptado' ? localRecommendations() : genericRecommendations();
+      renderTodo();
+      dispatchPrivacy();
+      return { ok: true, local: true };
     }
 
     state.guardando = true;
@@ -513,6 +588,11 @@
 
       if (result.data && result.data.ok) {
         state.consentimiento = normalizeConsent(result.data, true);
+        try {
+          localStorage.removeItem(KEYS.localSignals);
+        } catch (error) {
+          console.warn('Byte Bay · no se pudo limpiar el historial local de recomendaciones.', error);
+        }
         cacheConsent();
         state.consentimientoListo = true;
         renderTodo();
@@ -521,11 +601,19 @@
         return { ok: true, data: result.data };
       }
 
-      if (decision === 'rechazado' || decision === 'desactivado') {
-        fallbackLocal(decision === 'desactivado' ? 'desactivado' : 'rechazado', emptyPurposes());
+      if (decision === 'rechazado' || decision === 'desactivado' || !state.disponible) {
+        const localDecision = decision === 'personalizado' ? 'aceptado'
+          : decision === 'configurar' ? 'pendiente'
+            : decision;
+        fallbackLocal(localDecision, localDecision === 'aceptado' || localDecision === 'pendiente'
+          ? purposes || emptyPurposes()
+          : emptyPurposes());
+        state.recomendaciones = personalizacionActiva() ? localRecommendations() : genericRecommendations();
         renderTodo();
         dispatchPrivacy();
-        toast('Preferencia guardada en este dispositivo. Se sincronizará cuando vuelva la conexión.');
+        toast(personalizacionActiva()
+          ? 'Personalización activada solo en este dispositivo. Tu historial no se sincroniza.'
+          : 'Preferencia guardada solo en este dispositivo.');
         return { ok: true, local: true };
       }
 
@@ -563,11 +651,17 @@
   }
 
   function recommendationData() {
-    if (!state.recomendaciones || state.recomendaciones.local) return genericRecommendations();
+    if (!state.recomendaciones || (state.recomendaciones.local && state.recomendaciones.modo !== 'personalizado')) {
+      return genericRecommendations();
+    }
     return state.recomendaciones;
   }
 
   async function cargarRecomendaciones() {
+    if (personalizacionActiva() && state.consentimiento.localOnly) {
+      state.recomendaciones = localRecommendations();
+      return;
+    }
     const session = state.sesion;
     if (session && session.access_token && state.disponible) {
       const result = await rpc('bb_obtener_recomendaciones', {
@@ -586,6 +680,20 @@
     if (!personalizacionActiva()) return false;
     const purpose = TYPE_TO_PURPOSE[tipo];
     if (!purpose || !finalidadActiva(purpose)) return false;
+    if (state.consentimiento.localOnly) {
+      const records = localSignals();
+      records.push({
+        tipo,
+        id_producto: payload && payload.idProducto != null ? Number(payload.idProducto) : null,
+        categoria: payload && payload.categoria ? String(payload.categoria).slice(0, 80) : null,
+        creado_en: Date.now()
+      });
+      saveLocalSignals(records);
+      state.recomendaciones = localRecommendations();
+      renderRecommendations();
+      renderPanel();
+      return true;
+    }
     if (!state.sesion || !state.sesion.access_token) return false;
 
     const result = await rpc('bb_registrar_evento_recomendacion', {
@@ -696,7 +804,9 @@
     const realtime = $('privacyRealtimeText');
     if (realtime) {
       if (active) {
-        realtime.textContent = 'Activada. El servidor valida tu token y tus finalidades autorizadas antes de calcular cada recomendación.';
+        realtime.textContent = consent.localOnly
+          ? 'Activada solo en este dispositivo. Usamos tu actividad autorizada para sugerencias locales; no se envía ni sincroniza.'
+          : 'Activada. El servidor valida tu token y tus finalidades autorizadas antes de calcular cada recomendación.';
       } else if (consent.estado === 'rechazado') {
         realtime.textContent = 'Desactivada. Mostramos recomendaciones generales (populares y novedades) sin usar tu historial.';
       } else if (consent.estado === 'desactivado') {
@@ -704,7 +814,7 @@
       } else {
         realtime.textContent = 'Consentimiento pendiente. Mientras no autorices, solo verás recomendaciones generales.';
       }
-      if (!state.disponible) realtime.textContent += ' Modo local: falta aplicar la migración de privacidad en Supabase.';
+      if (!state.disponible && !consent.localOnly) realtime.textContent += ' Modo local: falta aplicar la migración de privacidad en Supabase.';
     }
 
     const reactivateNote = $('privacyReactivateText');
@@ -934,7 +1044,9 @@
   async function aceptarDesdeBanner() {
     const result = await guardarConsentimiento('CONSENTIMIENTO_ACEPTADO', 'aceptado', allPurposes(), 'BANNER_INICIAL');
     if (result.ok) {
-      toast(result.local ? 'Preferencia guardada. Se sincronizará cuando vuelva la conexión.' : 'Personalización activada. Puedes cambiarla cuando quieras.');
+      toast(result.local
+        ? 'Personalización activada solo en este dispositivo. Tu historial no se sincroniza.'
+        : 'Personalización activada. Puedes cambiarla cuando quieras.');
     } else {
       toast(result.message || 'No se pudo registrar tu consentimiento.', 'error');
     }
@@ -965,7 +1077,9 @@
     if (result.ok) {
       await cargarRecomendaciones();
       renderTodo();
-      toast('Personalización reactivada con tu nueva autorización.');
+      toast(result.local
+        ? 'Personalización reactivada solo en este dispositivo. Tu historial no se sincroniza.'
+        : 'Personalización reactivada con tu nueva autorización.');
     } else {
       toast(result.message || 'No se pudo reactivar la personalización.', 'error');
     }
@@ -986,7 +1100,9 @@
       const result = await guardarConsentimiento(eventType, 'personalizado', purposes, 'MODAL_PREFERENCIAS');
       if (result.ok) {
         closeModal('privacyPreferencesModal');
-        toast(alreadyActive ? 'Preferencias actualizadas.' : 'Personalización activada.');
+        toast(result.local
+          ? 'Preferencias guardadas solo en este dispositivo; no se sincronizan.'
+          : alreadyActive ? 'Preferencias actualizadas.' : 'Personalización activada.');
       } else {
         toast(result.message || 'No se pudieron guardar tus preferencias.', 'error');
       }
@@ -998,7 +1114,9 @@
     const result = await guardarConsentimiento(eventType, decision, purposes, 'MODAL_PREFERENCIAS');
     if (result.ok) {
       closeModal('privacyPreferencesModal');
-      toast(decision === 'configurar' ? 'Preferencias guardadas. La personalización sigue pendiente.' : 'Preferencias actualizadas.');
+      toast(result.local
+        ? 'Preferencias guardadas solo en este dispositivo; no se sincronizan.'
+        : decision === 'configurar' ? 'Preferencias guardadas. La personalización sigue pendiente.' : 'Preferencias actualizadas.');
     } else {
       toast(result.message || 'No se pudieron guardar tus preferencias.', 'error');
     }
