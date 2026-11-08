@@ -8,4 +8,6 @@ tmp/
 !migrations_delta_update.sql
 !migrations_dashboard_ofertas.sql
 !database_schema_master.sql
+!migrations_checkout_cuenta_obligatoria.sql
+!insert_productos_prueba_mercado_pago.sql
 *.log

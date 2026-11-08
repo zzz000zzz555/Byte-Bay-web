@@ -507,10 +507,10 @@ window.bbAyuda={
 };
 
 let accountMode='register';
-function openAccountModal(){
+function openAccountModal(forceLogin=false){
   const cuenta=JSON.parse(localStorage.getItem('beruAccount')||'null');
-  if(cuenta?.verified){showToast(`Sesión activa: ${cuenta.name||cuenta.email}. Usa “Salir” para cerrar sesión.`);return;}
-  setAccountMode('register');
+  if(cuenta?.verified&&!forceLogin){showToast(`Sesión activa: ${cuenta.name||cuenta.email}. Usa “Salir” para cerrar sesión.`);return;}
+  setAccountMode(cuenta?.verified||forceLogin?'login':'register');
   document.querySelector('#accountModal').classList.add('open');document.querySelector('#accountModal').setAttribute('aria-hidden','false');
 }
 function closeAccountModal(){document.querySelector('#accountModal').classList.remove('open');document.querySelector('#accountModal').setAttribute('aria-hidden','true');}
@@ -549,7 +549,7 @@ function setAccountMode(mode){
 }
 document.querySelector('#accountClose').onclick=closeAccountModal;
 document.querySelector('#accountModeToggle').onclick=()=>setAccountMode(accountMode==='login'?'register':'login');
-document.querySelector('#mobileAccountAccess').onclick=openAccountModal;
+document.querySelector('#mobileAccountAccess').onclick=()=>openAccountModal();
 document.querySelector('#mobileAccountLogout').onclick=()=>document.querySelector('#accountLogout').click();
 document.querySelector('#accountLogout').onclick=async()=>{
   const cuenta=JSON.parse(localStorage.getItem('beruAccount')||'null');
@@ -616,6 +616,10 @@ document.querySelector('#accountForm').onsubmit=async e=>{
     }
     setAccountBusy(false,'Iniciar sesión');
     if(!resultado.ok){status.textContent=resultado.message||'Correo o contraseña incorrectos.';return;}
+    if(!resultado.token){
+      status.textContent='La cuenta inició sesión, pero la base todavía no tiene activa la sesión segura necesaria para comprar. Actualiza las migraciones de Byte Bay.';
+      return;
+    }
     const cuenta=resultado.cuenta||{};
     localStorage.setItem('beruAccount',JSON.stringify({id:cuenta.id||null,name:`${cuenta.nombres||''} ${cuenta.apellidos||''}`.trim()||'Cliente',username:cuenta.nombre_usuario||email.split('@')[0],email:cuenta.correo||email,verified:true}));
     updateAccountHeader();status.textContent=resultado.token?'Sesión iniciada con token seguro.':'Sesión iniciada correctamente.';e.target.reset();setTimeout(closeAccountModal,700);return;
@@ -643,6 +647,12 @@ document.querySelector('#accountForm').onsubmit=async e=>{
   let sesionCreada={ok:false};
   if(window.BBPrivacy?.iniciarSesion) sesionCreada=await window.BBPrivacy.iniciarSesion(email,password);
   setAccountBusy(false,'Crear cuenta');
+  if(!sesionCreada.ok||!sesionCreada.token){
+    e.target.reset();
+    setAccountMode('login');
+    status.textContent='Cuenta creada. Inicia sesión para continuar. Si el acceso seguro no se habilita, actualiza las migraciones de Byte Bay.';
+    return;
+  }
   const cuentaCreada=sesionCreada.cuenta||{};
   localStorage.setItem('beruAccount',JSON.stringify({id:cuentaCreada.id||registrado.id||null,name:`${cuentaCreada.nombres||firstName||''} ${cuentaCreada.apellidos||lastName||''}`.trim()||'Cliente',username:cuentaCreada.nombre_usuario||username||email.split('@')[0],email:cuentaCreada.correo||email,verified:true}));
   updateAccountHeader();
@@ -816,11 +826,31 @@ function setPaymentStep(step){
   paymentNext.classList.toggle('hidden',step!==1);
   paymentProcessing.classList.toggle('hidden',step!==3);
   document.querySelector('#walletPanel').classList.toggle('hidden',step!==2);
-  if(step===2) syncPaymentUI();
+  if(step===2){
+    const account=JSON.parse(localStorage.getItem('beruAccount')||'null');
+    const emailInput=document.querySelector('#email');
+    emailInput.readOnly=Boolean(account?.verified&&account.email);
+    if(emailInput.readOnly) emailInput.value=account.email;
+    syncPaymentUI();
+  }
 }
 
-function openCheckout(){
+async function openCheckout(){
   if(!cart.length){showToast('Agrega productos antes de continuar');return;}
+  const account=JSON.parse(localStorage.getItem('beruAccount')||'null');
+  if(!account?.verified){
+    toggleCart(false);
+    showToast('Para comprar necesitas iniciar sesión o crear una cuenta Byte Bay.');
+    openAccountModal();
+    return;
+  }
+  const session=await window.BBPrivacy?.obtenerSesionCliente?.();
+  if(!session?.ok){
+    toggleCart(false);
+    showToast('Inicia sesión con tu cuenta Byte Bay para continuar con la compra.');
+    openAccountModal(true);
+    return;
+  }
   toggleCart(false);
   document.body.classList.add('checkout-open');
   document.querySelector('#aiAssistantPanel')?.classList.add('hidden');
@@ -858,13 +888,12 @@ document.querySelector('#payNow').onclick=async()=>{
     showToast('No se puede registrar la compra: la BD no está conectada.');
     return;
   }
-  if(window.BBPrivacy?.validarParaAccion){
-    const sesionValida=await window.BBPrivacy.validarParaAccion();
-    if(!sesionValida){
-      showToast('Tu sesión expiró. Vuelve a iniciar sesión para completar la compra.');
-      window.BBPrivacy.abrirCuenta?.();
-      return;
-    }
+  const sesionCompra=await window.BBPrivacy?.obtenerSesionCliente?.();
+  if(!sesionCompra?.ok){
+    showToast('Tu sesión no es válida. Inicia sesión con tu cuenta Byte Bay para comprar.');
+    closeCheckout();
+    openAccountModal(true);
+    return;
   }
   setPaymentStep(3);
   const cliente={
@@ -879,7 +908,8 @@ document.querySelector('#payNow').onclick=async()=>{
       body:{
         articulos:cart.map(item=>({id_producto:item.id,cantidad:item.qty})),
         cliente,
-        cupon:document.querySelector('#couponInput').value.trim().toUpperCase()
+        cupon:document.querySelector('#couponInput').value.trim().toUpperCase(),
+        sesion_token:sesionCompra.access_token
       }
     });
     if(error||!data?.checkout_url){

@@ -180,6 +180,43 @@ Deno.serve(async request => {
     }
 
     const entrada = body as Record<string, unknown>
+    const sesionToken = text(entrada.sesion_token)
+    if (!sesionToken || sesionToken.length > 5000) {
+      return json({ error: 'Inicia sesión con una cuenta Byte Bay para comprar' }, 401, headers)
+    }
+
+    const { data: sesion, error: sesionError } = await admin.rpc('bb_validar_sesion', {
+      p_access_token: sesionToken
+    })
+    if (sesionError) {
+      console.error('crear-pago: no se pudo validar la sesión Byte Bay', sesionError)
+      return json({ error: 'No se pudo validar tu cuenta. Inténtalo nuevamente.' }, 503, headers)
+    }
+
+    const customerId = Number(sesion?.customer_id)
+    if (
+      sesion?.valid !== true ||
+      sesion?.role !== 'cliente' ||
+      !Number.isSafeInteger(customerId) ||
+      customerId <= 0
+    ) {
+      return json({ error: 'Tu sesión de Byte Bay no es válida. Inicia sesión nuevamente.' }, 401, headers)
+    }
+
+    const { data: cuentaCliente, error: cuentaError } = await admin
+      .from('cuentas_clientes')
+      .select('id, correo')
+      .eq('id', customerId)
+      .eq('activa', true)
+      .maybeSingle()
+    if (cuentaError) {
+      console.error('crear-pago: no se pudo cargar la cuenta del cliente', cuentaError)
+      return json({ error: 'No se pudo verificar tu cuenta. Inténtalo nuevamente.' }, 503, headers)
+    }
+    if (!cuentaCliente) {
+      return json({ error: 'No encontramos una cuenta Byte Bay activa para esta sesión.' }, 401, headers)
+    }
+
     const articulosRaw = Array.isArray(entrada.articulos) ? entrada.articulos : []
     if (articulosRaw.length === 0) return json({ error: 'El carrito está vacío' }, 400, headers)
     if (articulosRaw.length > 100) return json({ error: 'Demasiados productos en el pedido' }, 400, headers)
@@ -212,6 +249,9 @@ Deno.serve(async request => {
     }
 
     if (!validEmail(cliente.correo)) return json({ error: 'Correo no válido' }, 400, headers)
+    if (cliente.correo !== cuentaCliente.correo) {
+      return json({ error: 'El correo de compra debe coincidir con el de tu cuenta Byte Bay.' }, 403, headers)
+    }
     if (cliente.nombre_completo.length < 3 || cliente.nombre_completo.length > 200) {
       return json({ error: 'Nombre del cliente no válido' }, 400, headers)
     }

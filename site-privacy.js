@@ -397,6 +397,33 @@
     return false;
   }
 
+  async function obtenerSesionCliente() {
+    if (!client()) return { ok: false, error: 'SERVICIO_NO_DISPONIBLE' };
+    await asegurarSesion();
+
+    let session = state.sesion;
+    if (!session || !session.access_token) return { ok: false, error: 'SESION_REQUERIDA' };
+    if (!tokenIsFresh(session, 15)) {
+      const refreshed = await refrescarToken(true);
+      if (!refreshed.ok) return { ok: false, error: 'SESION_EXPIRADA' };
+      session = state.sesion;
+    }
+
+    const validation = await rpc('bb_validar_sesion', { p_access_token: session.access_token });
+    const customerId = Number(validation.data?.customer_id);
+    if (
+      validation.error ||
+      validation.data?.valid !== true ||
+      validation.data?.role !== 'cliente' ||
+      !Number.isSafeInteger(customerId) ||
+      customerId <= 0
+    ) {
+      return { ok: false, error: 'CUENTA_NO_VALIDADA' };
+    }
+
+    return { ok: true, access_token: session.access_token, customer_id: customerId };
+  }
+
   /* ------------------------------------------------------------
      Consentimiento
      ------------------------------------------------------------ */
@@ -1372,6 +1399,7 @@
     cerrarSesionActual: cerrarSesionActual,
     cerrarSesionEnTodos: cerrarSesionEnTodos,
     validarParaAccion: validarParaAccion,
+    obtenerSesionCliente: obtenerSesionCliente,
     abrirCuenta: () => {
       if (window.BBStore && typeof window.BBStore.openAccountModal === 'function') window.BBStore.openAccountModal();
     },
