@@ -45,6 +45,9 @@
     refrescoTimer: 0,
     validacionTimer: 0,
     inicializado: false,
+    promesaInicializacion: null,
+    promesaAsegurarSesion: null,
+    sesionVersion: 0,
     consentimientoListo: false,
     focoPrevio: null,
     guardando: false
@@ -184,6 +187,7 @@
   }
 
   function persistSession(session) {
+    state.sesionVersion += 1;
     if (!session || !session.access_token) {
       try {
         localStorage.removeItem(KEYS.session);
@@ -212,7 +216,9 @@
   }
 
   async function emitirInvitado() {
+    const version = state.sesionVersion;
     const result = await rpc('bb_emitir_sesion_invitado', { p_guest_id: guestId() });
+    if (version !== state.sesionVersion) return Boolean(state.sesion && state.sesion.access_token);
     if (result.data && result.data.access_token) {
       persistSession(result.data);
       return true;
@@ -220,34 +226,51 @@
     if (result.error && !isFunctionMissing(result.error)) {
       console.warn('Byte Bay · sesión invitado:', result.error.message || result.error);
     }
-    state.sesion = null;
     return false;
   }
 
   async function asegurarSesion() {
-    if (!client()) {
-      state.disponible = false;
-      return;
-    }
-
-    const stored = readSession();
-    if (stored) {
-      const validation = await rpc('bb_validar_sesion', { p_access_token: stored.access_token });
-      if (validation.data && validation.data.valid) {
-        state.sesion = stored;
+    if (state.promesaAsegurarSesion) return state.promesaAsegurarSesion;
+    const pending = (async () => {
+      if (!client()) {
+        state.disponible = false;
         return;
       }
-      if (stored.refresh_token) {
-        const refreshed = await rpc('bb_refrescar_sesion', { p_refresh_token: stored.refresh_token });
-        if (refreshed.data && refreshed.data.ok) {
-          persistSession(Object.assign({}, stored, refreshed.data));
+
+      const version = state.sesionVersion;
+      const stored = readSession();
+      if (stored) {
+        const validation = await rpc('bb_validar_sesion', { p_access_token: stored.access_token });
+        if (version !== state.sesionVersion) return;
+        if (validation.error) {
+          console.warn('Byte Bay · no se pudo validar la sesión guardada:', validation.error.message || validation.error);
+          state.sesion = stored;
           return;
         }
+        if (validation.data && validation.data.valid) {
+          state.sesion = stored;
+          return;
+        }
+        if (stored.refresh_token) {
+          const refreshed = await rpc('bb_refrescar_sesion', { p_refresh_token: stored.refresh_token });
+          if (version !== state.sesionVersion) return;
+          if (refreshed.data && refreshed.data.ok) {
+            persistSession(Object.assign({}, stored, refreshed.data));
+            return;
+          }
+        }
+        if (version !== state.sesionVersion) return;
+        persistSession(null);
       }
-      persistSession(null);
-    }
 
-    await emitirInvitado();
+      await emitirInvitado();
+    })();
+    state.promesaAsegurarSesion = pending;
+    try {
+      return await pending;
+    } finally {
+      if (state.promesaAsegurarSesion === pending) state.promesaAsegurarSesion = null;
+    }
   }
 
   async function refrescarToken(force) {
@@ -399,6 +422,7 @@
 
   async function obtenerSesionCliente() {
     if (!client()) return { ok: false, error: 'SERVICIO_NO_DISPONIBLE' };
+    await initialize();
     await asegurarSesion();
 
     let session = state.sesion;
@@ -410,9 +434,9 @@
     }
 
     const validation = await rpc('bb_validar_sesion', { p_access_token: session.access_token });
+    if (validation.error) return { ok: false, error: 'VALIDACION_NO_DISPONIBLE', message: validation.error.message };
     const customerId = Number(validation.data?.customer_id);
     if (
-      validation.error ||
       validation.data?.valid !== true ||
       validation.data?.role !== 'cliente' ||
       !Number.isSafeInteger(customerId) ||
@@ -1355,28 +1379,30 @@
      Arranque
      ------------------------------------------------------------ */
 
-  async function initialize() {
-    if (state.inicializado) return;
+  function initialize() {
+    if (state.promesaInicializacion) return state.promesaInicializacion;
     state.inicializado = true;
 
-    // Se elimina la simulación local anterior: no debe poder activar nada.
-    try {
-      localStorage.removeItem(KEYS.legacyConsent);
-      localStorage.removeItem(KEYS.legacyViewed);
-    } catch (error) {
-      /* noop */
-    }
+    state.promesaInicializacion = (async () => {
+      try {
+        localStorage.removeItem(KEYS.legacyConsent);
+        localStorage.removeItem(KEYS.legacyViewed);
+      } catch (error) {
+        /* noop */
+      }
 
-    state.consentimiento = readCachedConsent();
-    bindUI();
-    bindGlobalEvents();
-    renderTodo();
+      state.consentimiento = readCachedConsent();
+      bindUI();
+      bindGlobalEvents();
+      renderTodo();
 
-    await asegurarSesion();
-    await cargarConsentimiento();
-    await cargarRecomendaciones();
-    renderTodo();
-    dispatchPrivacy();
+      await asegurarSesion();
+      await cargarConsentimiento();
+      await cargarRecomendaciones();
+      renderTodo();
+      dispatchPrivacy();
+    })();
+    return state.promesaInicializacion;
   }
 
   window.BBPrivacy = {

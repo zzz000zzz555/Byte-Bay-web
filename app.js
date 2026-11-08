@@ -220,7 +220,36 @@ const mercadoPagoCartState=(()=>{
     return {cart:[],coupon:''};
   }
 })();
-let cart=mercadoPagoCartState.cart;
+const CART_STORAGE_KEY='bbCart';
+function loadSavedCart(){
+  if(mercadoPagoReturn==='exito'){
+    try{localStorage.removeItem(CART_STORAGE_KEY);}
+    catch(error){console.error('No se pudo limpiar el carrito tras completar el pago:',error);}
+    return [];
+  }
+  try{
+    const saved=JSON.parse(localStorage.getItem(CART_STORAGE_KEY)||'[]');
+    if(!Array.isArray(saved)) return [];
+    return saved.filter(item=>
+      item&&typeof item==='object'&&
+      Number.isInteger(Number(item.id))&&Number(item.id)>0&&
+      Number.isInteger(Number(item.qty))&&Number(item.qty)>0&&Number(item.qty)<=99&&
+      Number.isFinite(Number(item.price))&&Number(item.price)>=0
+    ).map(item=>({
+      id:Number(item.id),
+      name:typeof item.name==='string'?item.name.slice(0,200):'Producto',
+      price:Number(item.price),
+      img:imagenSegura(item.img),
+      brand:typeof item.brand==='string'?item.brand.slice(0,100):'BYTE BAY',
+      category:typeof item.category==='string'?item.category.slice(0,100):'',
+      qty:Number(item.qty)
+    }));
+  }catch(error){
+    console.error('No se pudo restaurar el carrito guardado:',error);
+    return [];
+  }
+}
+let cart=mercadoPagoCartState.cart.length?mercadoPagoCartState.cart:loadSavedCart();
 let start=0;
 let discountRate=['BERU10','BYTE10'].includes(mercadoPagoCartState.coupon)?0.1:mercadoPagoCartState.coupon==='HOGAR15'?0.15:0;
 let shippingValue=18;
@@ -398,8 +427,20 @@ function addToCart(id){
   const found=cart.find(x=>x.id===id);
   if(found&&found.qty>=product.stock){showToast(`Solo quedan ${product.stock} unidades.`);return;}
   found?found.qty++:cart.push({...product,qty:1});
-  updateCart();
+  const cartSaved=updateCart();
   window.BBPrivacy?.registrarEvento?.('CARRITO',{idProducto:product.id,categoria:product.category});
+  const account=JSON.parse(localStorage.getItem('beruAccount')||'null');
+  if(!cartSaved){
+    showToast('No se pudo guardar el carrito. No recargues ni cierres esta página.');
+    if(!account?.verified) openAccountModal();
+    return;
+  }
+  if(!account?.verified){
+    showToast('Producto guardado. Crea tu cuenta o inicia sesión para comprar.');
+    openAccountModal();
+    document.querySelector('#accountStatus').textContent='Tu producto quedó guardado en el carrito. Inicia sesión o crea una cuenta Byte Bay para continuar.';
+    return;
+  }
   showToast();
 }
 
@@ -415,12 +456,19 @@ function updateCheckout(){
 }
 
 function updateCart(){
+  let saved=true;
+  try{localStorage.setItem(CART_STORAGE_KEY,JSON.stringify(cart));}
+  catch(error){
+    console.error('No se pudo guardar el carrito en este dispositivo:',error);
+    saved=false;
+  }
   const count=cart.reduce((a,x)=>a+x.qty,0);
   document.querySelector('#cartCount').textContent=count;
   document.querySelector('#cartTitleCount').textContent=`(${count})`;
   document.querySelector('#cartSubtotal').textContent=money(subtotal());
   document.querySelector('#cartItems').innerHTML=cart.length?cart.map(x=>`<div class="cart-item"><img src="${escapeHtml(imagenSegura(x.img))}" alt="${escapeHtml(x.name)}" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}><div><h4>${escapeHtml(x.name)}</h4><strong>${money(Number(x.price)||0)}</strong><div class="qty"><button onclick="changeQty(${Number(x.id)},-1)">−</button><span>${Number(x.qty)||0}</span><button onclick="changeQty(${Number(x.id)},1)">+</button></div></div><button onclick="removeItem(${Number(x.id)})" aria-label="Eliminar">×</button></div>`).join(''):`<div class="empty-cart"><span>▱</span><h3>Tu carrito está vacío</h3><p>Agrega productos y aparecerán aquí.</p></div>`;
   updateCheckout();
+  return saved;
 }
 
 window.changeQty=(id,n)=>{
@@ -430,9 +478,9 @@ window.changeQty=(id,n)=>{
   if(n>0&&product&&x.qty>=product.stock){showToast(`Solo quedan ${product.stock} unidades.`);return;}
   x.qty+=n;
   if(x.qty<=0) cart=cart.filter(item=>item.id!==id);
-  updateCart();
+  if(!updateCart()) showToast('No se pudo guardar el carrito en este dispositivo.');
 };
-window.removeItem=id=>{cart=cart.filter(item=>item.id!==id);updateCart();};
+window.removeItem=id=>{cart=cart.filter(item=>item.id!==id);if(!updateCart()) showToast('No se pudo guardar el carrito en este dispositivo.');};
 
 function toggleCart(open){
   document.querySelector('#cartDrawer').classList.toggle('open',open);
@@ -839,15 +887,17 @@ async function openCheckout(){
   if(!cart.length){showToast('Agrega productos antes de continuar');return;}
   const account=JSON.parse(localStorage.getItem('beruAccount')||'null');
   if(!account?.verified){
-    toggleCart(false);
     showToast('Para comprar necesitas iniciar sesión o crear una cuenta Byte Bay.');
     openAccountModal();
     return;
   }
   const session=await window.BBPrivacy?.obtenerSesionCliente?.();
   if(!session?.ok){
-    toggleCart(false);
-    showToast('Inicia sesión con tu cuenta Byte Bay para continuar con la compra.');
+    if(['SERVICIO_NO_DISPONIBLE','VALIDACION_NO_DISPONIBLE'].includes(session?.error)){
+      showToast('No pudimos validar tu sesión ahora. Tu carrito se conservó; inténtalo nuevamente en unos minutos.');
+      return;
+    }
+    showToast('Inicia sesión con tu cuenta Byte Bay para continuar con la compra. Tu carrito se conservó.');
     openAccountModal(true);
     return;
   }
@@ -890,7 +940,11 @@ document.querySelector('#payNow').onclick=async()=>{
   }
   const sesionCompra=await window.BBPrivacy?.obtenerSesionCliente?.();
   if(!sesionCompra?.ok){
-    showToast('Tu sesión no es válida. Inicia sesión con tu cuenta Byte Bay para comprar.');
+    if(['SERVICIO_NO_DISPONIBLE','VALIDACION_NO_DISPONIBLE'].includes(sesionCompra?.error)){
+      showToast('No pudimos validar tu sesión ahora. El carrito y tus datos se conservaron; inténtalo nuevamente.');
+      return;
+    }
+    showToast('Tu sesión no es válida. Inicia sesión con tu cuenta Byte Bay para comprar; tu carrito se conservó.');
     closeCheckout();
     openAccountModal(true);
     return;
@@ -1103,7 +1157,9 @@ renderProducts();
 renderizarPersonalizacion();
 if(mercadoPagoCartState.cart.length){
   document.querySelector('#couponInput').value=mercadoPagoCartState.coupon;
-  updateCart();
+}
+if(cart.length){
+  if(!updateCart()) showToast('No se pudo guardar el carrito en este dispositivo.');
 }
 if(['exito','fallo','pendiente'].includes(mercadoPagoReturn)){
   const mensajes={
