@@ -935,7 +935,7 @@ document.querySelector('#payNow').onclick=async()=>{
     showToast('Agrega productos antes de pagar');
     return;
   }
-  const required=['#fullName','#documentId','#address','#email','#phone'];
+  const required=['#fullName','#documentId','#street','#streetNumber','#district','#city','#email','#phone'];
   const missing=required.find(sel=>!document.querySelector(sel).value.trim());
   if(missing){
     showToast('Completa los datos de pago y entrega');
@@ -962,7 +962,12 @@ document.querySelector('#payNow').onclick=async()=>{
     correo:document.querySelector('#email').value.trim().toLowerCase(),
     nombre_completo:document.querySelector('#fullName').value.trim(),
     documento:document.querySelector('#documentId').value.trim(),
-    direccion:document.querySelector('#address').value.trim(),
+    direccion:[
+      document.querySelector('#street').value.trim(),
+      document.querySelector('#streetNumber').value.trim(),
+      document.querySelector('#district').value.trim(),
+      document.querySelector('#city').value.trim()
+    ].join(', '),
     telefono:document.querySelector('#phone').value.trim()
   };
   try{

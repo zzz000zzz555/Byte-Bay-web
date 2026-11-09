@@ -264,7 +264,14 @@
               <label><span>Nombres y apellidos</span><input type="text" id="fullName" placeholder="Nombre completo"></label>
               <label><span>Documento</span><input type="text" id="documentId" placeholder="DNI o CE"></label>
             </div>
-            <label><span>Dirección de entrega</span><input type="text" id="address" placeholder="Calle, número, distrito, ciudad"></label>
+            <div class="form-row two">
+              <label><span>Calle / avenida</span><input type="text" id="street" placeholder="Ej. Av. Arequipa" maxlength="120" required autocomplete="address-line1"></label>
+              <label><span>Número / lote</span><input type="text" id="streetNumber" placeholder="Ej. 123, dpto. 401" maxlength="40" required autocomplete="address-line2"></label>
+            </div>
+            <div class="form-row two">
+              <label><span>Distrito</span><input type="text" id="district" placeholder="Ej. Miraflores" maxlength="65" required autocomplete="address-level3"></label>
+              <label><span>Ciudad / provincia</span><input type="text" id="city" placeholder="Ej. Lima" maxlength="65" required autocomplete="address-level2"></label>
+            </div>
             <div class="form-row two">
               <label><span>Correo electrónico</span><input type="email" id="email" placeholder="tu@correo.com"></label>
               <label><span>Teléfono</span><input type="tel" id="phone" placeholder="+51 999 999 999"></label>
