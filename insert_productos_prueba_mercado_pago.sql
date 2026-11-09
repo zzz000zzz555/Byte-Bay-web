@@ -1,5 +1,5 @@
 -- Productos temporales para probar Mercado Pago: cada unidad cuesta S/ 1.00.
--- El checkout actual agrega S/ 18.00 de envío si el subtotal es menor a S/ 299.
+-- El envío es gratis, así que el total del pedido es S/ 1.00.
 -- Ejecutar después del esquema base de Byte Bay y eliminar estos productos al terminar.
 
 begin;

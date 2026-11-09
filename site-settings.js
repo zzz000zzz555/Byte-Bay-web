@@ -191,7 +191,7 @@ function renderizarAvisosSistema(mensajeTemporal = '') {
 function actualizarNotaEntrega() {
   const nota = document.querySelector('#cartDeliveryNote');
   if (nota) {
-    nota.textContent = `Entrega en ${prefs.region}, ${prefs.country === 'PE' ? 'Perú' : prefs.country}. El envío, el cupón y el total final se calculan al instante.`;
+    nota.textContent = `Entrega en ${prefs.region}, ${prefs.country === 'PE' ? 'Perú' : prefs.country}. Envío gratis a todo el Perú. El cupón y el total final se calculan al instante.`;
   }
 }
 

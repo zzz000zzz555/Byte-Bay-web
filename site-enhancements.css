@@ -1,4 +1,6 @@
 .offers-notification-toggle{height:40px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:#fff;color:var(--ink);font-weight:700;white-space:nowrap}
+.free-shipping{color:#0f7b45;font-weight:800}
+.dark-mode .free-shipping{color:#4ade80}
 .notification-count{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:4px;border-radius:20px;background:#2563eb;color:#fff;font-size:11px}
 .offers-notification-panel{position:fixed;z-index:90;top:82px;right:max(20px,calc((100vw - 1280px)/2));width:min(380px,calc(100vw - 24px));max-height:70vh;overflow:auto;padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);box-shadow:0 18px 48px #071b2030}
 .offers-notification-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
