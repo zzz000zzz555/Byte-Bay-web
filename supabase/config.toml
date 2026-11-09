@@ -3,5 +3,11 @@ project_id = "inwugycvtaaceugvtfpv"
 [functions.reclamos-publicos]
 verify_jwt = false
 
+[functions.crear-pago]
+verify_jwt = false
+
+[functions.consultar-pago]
+verify_jwt = false
+
 [functions.webhook-mercado-pago]
 verify_jwt = false
