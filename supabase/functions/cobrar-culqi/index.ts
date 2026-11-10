@@ -193,7 +193,6 @@ Deno.serve(async request => {
       email: text(pedido.correo_cliente),
       source_id: token,
       description: `Pedido ${text(pedido.numero_pedido)} · Byte Bay`,
-      installments: 0,
       metadata: {
         pedido_id: text(pedido.id),
         numero_pedido: text(pedido.numero_pedido),
@@ -204,7 +203,7 @@ Deno.serve(async request => {
         last_name: nombrePartes.slice(1).join(' ') || 'Byte Bay',
         email: text(pedido.correo_cliente),
         address: text(envio.direccion),
-        address_city: text(envio.direccion),
+        address_city: text(envio.direccion).split(',').map(s => s.trim()).filter(Boolean).pop() || 'Lima',
         country_code: 'PE',
         phone_number: telefono
       }
