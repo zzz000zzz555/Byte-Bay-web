@@ -1369,13 +1369,10 @@ function openProductModal(id){
   document.querySelector('#modalAddToCart').onclick=()=>{addToCart(lastViewedProduct.id);closeProductModal();};
   const cuenta=JSON.parse(localStorage.getItem('beruAccount')||'null');
   const usaGoogle=cuenta?.provider==='google';
-  const campoContrasena=document.querySelector('#commentPassword');
-  campoContrasena.closest('label').classList.toggle('hidden',usaGoogle);
-  campoContrasena.required=!usaGoogle;
   document.querySelector('#productCommentForm').reset();
   actualizarCalificacionComentario();
   actualizarContadorComentario();
-  document.querySelector('#commentStatus').textContent=cuenta?.verified?(usaGoogle?'Tu cuenta Google está verificada. La reseña quedará pendiente de revisión.':'Confirma tu contraseña para publicar una reseña.'): 'Debes iniciar sesión. Las reseñas se publican después de la revisión.';
+   document.querySelector('#commentStatus').textContent=cuenta?.verified?'Tu cuenta estÃ¡ verificada. La reseÃ±a quedarÃ¡ pendiente de revisiÃ³n.':'Debes iniciar sesiÃ³n. Las reseÃ±as se publican despuÃ©s de la revisiÃ³n.';
   cargarComentariosProducto(lastViewedProduct.id);
   document.querySelector('#productModal').classList.add('open');
   document.querySelector('#productModal').setAttribute('aria-hidden','false');
@@ -1393,8 +1390,9 @@ document.querySelector('#productCommentForm').onsubmit=async event=>{
   }
   const boton=event.target.querySelector('button[type="submit"]');
   boton.disabled=true;
-  const rpc=cuenta.provider==='google'?'guardar_comentario_producto_google':'guardar_comentario_producto';
-  const parametros=cuenta.provider==='google'?{p_id_producto:lastViewedProduct.id,p_calificacion:Number(document.querySelector('input[name="commentRating"]:checked').value),p_comentario:document.querySelector('#commentText').value.trim()}:{p_id_producto:lastViewedProduct.id,p_correo:cuenta.email,p_contrasena:document.querySelector('#commentPassword').value,p_calificacion:Number(document.querySelector('input[name="commentRating"]:checked').value),p_comentario:document.querySelector('#commentText').value.trim()};
+   const rpc=cuenta.provider==='google'?'guardar_comentario_producto_google':'guardar_comentario_producto_sesion';
+   const sesionComentario=await window.BBPrivacy?.obtenerSesionCliente?.();
+   const parametros=cuenta.provider==='google'?{p_id_producto:lastViewedProduct.id,p_calificacion:Number(document.querySelector('input[name="commentRating"]:checked').value),p_comentario:document.querySelector('#commentText').value.trim()}:{p_id_producto:lastViewedProduct.id,p_access_token:sesionComentario?.access_token,p_calificacion:Number(document.querySelector('input[name="commentRating"]:checked').value),p_comentario:document.querySelector('#commentText').value.trim()};
   const {error}=await supabaseClient.rpc(rpc,parametros);
   boton.disabled=false;
   if(error){estado.textContent=error.message||'No se pudo guardar el comentario.';return;}
