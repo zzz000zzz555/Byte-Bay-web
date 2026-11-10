@@ -342,3 +342,49 @@ h1,h2,h3,h4,h5,h6{font-family:"Manrope","Inter",sans-serif;letter-spacing:-.02em
 .checkout-step span{border-radius:8px}
 @media(max-width:600px){.hero h1{font-size:32px}.hero-copy{padding:32px 20px}.product-card{border-radius:10px}.search{border-radius:8px}}
 
+
+/* === FLUID MOTION & 3D EFFECTS === */
+html{scroll-behavior:smooth}
+body{overflow-x:hidden}
+.product-card,.category-card,.benefit,.promo{transform-style:preserve-3d;will-change:transform}
+.product-card{transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s ease}
+.product-card:hover{transform:perspective(800px) rotateX(2deg) rotateY(-2deg) translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.1)}
+.hero{perspective:1200px}
+.hero-copy{transform:translateZ(0);transition:transform .6s ease}
+.hero-visual{transform-style:preserve-3d}
+.hero-visual img,.hero-visual .sale-badge{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.hero:hover .hero-visual img{transform:translateZ(20px) scale(1.02)}
+.hero:hover .sale-badge{transform:translateZ(40px) rotate(-6deg)}
+.btn{transition:transform .15s ease,box-shadow .15s ease,background .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.98)}
+.cart-button{transition:transform .2s ease}
+.cart-button:hover{transform:scale(1.05)}
+.brand-logo img{transition:transform .4s ease}
+.brand:hover .brand-logo img{transform:rotate(-6deg) scale(1.05)}
+.search{transition:border-color .2s,box-shadow .2s,transform .2s}
+.search:focus-within{transform:scale(1.005)}
+.product-image img{transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.product-card:hover .product-image img{transform:scale(1.06)}
+.category-card{transition:transform .25s ease,box-shadow .25s ease}
+.category-card:hover{transform:perspective(600px) rotateX(3deg) translateY(-3px)}
+.checkout-card,.notify-card{transition:box-shadow .2s ease}
+.checkout-card:hover{box-shadow:0 8px 30px rgba(0,0,0,.06)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.hero-badge,.sale-badge{animation:float 4s ease-in-out infinite}
+.product-grid .product-card{animation:fadeUp .5s ease both}
+.product-grid .product-card:nth-child(1){animation-delay:.05s}
+.product-grid .product-card:nth-child(2){animation-delay:.1s}
+.product-grid .product-card:nth-child(3){animation-delay:.15s}
+.product-grid .product-card:nth-child(4){animation-delay:.2s}
+.product-grid .product-card:nth-child(5){animation-delay:.25s}
+.product-grid .product-card:nth-child(6){animation-delay:.3s}
+.product-grid .product-card:nth-child(7){animation-delay:.35s}
+.product-grid .product-card:nth-child(8){animation-delay:.4s}
+.modal,.checkout-modal,.account-modal,.orders-modal{animation:fadeIn .2s ease}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;transform:none!important}}
+@media(max-width:600px){.product-card:hover{transform:none}.hero:hover .hero-visual img{transform:none}}
