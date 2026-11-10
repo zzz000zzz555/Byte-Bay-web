@@ -1,17 +1,24 @@
-# Pagos con Culqi (tarjetas)
+# Pagos con Culqi (tarjetas y Yape)
 
-Byte Bay cobra con **Culqi Checkout v4** usando cargos con token de tarjeta.
+Byte Bay cobra en PEN con **Culqi Checkout v4** para tarjetas y Yape. El cliente
+ingresa el celular y código de aprobación de Yape únicamente en el formulario
+seguro de Culqi. El servidor recibe el token y crea el cargo; nunca simula pagos.
 Ninguna clave privada vive en el navegador ni en este repositorio.
 
 ## Flujo
 
 1. El cliente inicia sesión con su cuenta Byte Bay (obligatorio).
 2. `crear-pago-culqi` valida la sesión, crea el pedido y **reserva** stock por 15 minutos.
-3. El navegador abre Culqi Checkout con la clave pública y el monto en céntimos.
+3. El navegador abre Culqi Checkout con la clave pública, tarjeta y Yape habilitados, y el monto en céntimos.
 4. `cobrar-culqi` crea el cargo en `POST https://api.culqi.com/v2/charges` con la clave privada.
-5. Si el cargo es exitoso, `bb_aplicar_estado_culqi` confirma el pedido y **descuenta** el stock.
+5. Si el cargo es exitoso, `bb_aplicar_estado_culqi` confirma el pedido y **descuenta** el stock; los cargos pendientes esperan conciliación/webhook.
 6. Si se rechaza o expira, la reserva se **libera** y el pedido queda cancelado.
 7. `consultar-pago-culqi` reconcilia el estado desde el navegador y `webhook-culqi` lo hace como respaldo.
+
+La disponibilidad de Yape depende de que Culqi lo tenga habilitado para la cuenta
+y las credenciales configuradas. Culqi documenta Yape para sus versiones vigentes
+de Checkout, con un máximo de S/ 2,000 por pago:
+[integración Yape](https://docs.culqi.com/es/documentacion/pagos-online/cargo-unico/tokens-yape).
 
 ## Secretos (Supabase → Edge Functions)
 

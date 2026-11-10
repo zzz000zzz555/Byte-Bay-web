@@ -251,14 +251,14 @@
           <div class="checkout-step"><span>2</span><div><strong>Datos de entrega</strong><p>Escribe una dirección clara para evitar errores.</p></div></div>
           <div class="checkout-step"><span>3</span><div><strong>Confirma el pago</strong><p>Completa el pago de forma segura con Culqi.</p></div></div>
           <div class="checkout-note">Tus datos se procesan de forma segura y el resumen se actualiza al instante.</div>
-          <div class="checkout-note subtle">El pago se procesa en Culqi. Byte Bay nunca recibe ni almacena los datos de tu tarjeta.</div>
+          <div class="checkout-note subtle">El pago se procesa en Culqi. Byte Bay nunca recibe datos de tu tarjeta ni códigos de aprobación de Yape.</div>
         </article>
         <article class="checkout-card">
           <div class="checkout-head">
             <h3>Medios de pago</h3>
             <span class="checkout-tag">Seguro</span>
           </div>
-          <div class="payment-methods" id="paymentMethods"><div class="payment-option active"><span><strong>Tarjeta de crédito o débito</strong><small>Visa, Mastercard, American Express y Diners. Pago procesado por Culqi; Byte Bay no recibe los datos de tu tarjeta.</small></span></div></div>
+          <div class="payment-methods" id="paymentMethods"><div class="payment-option active"><span><strong>Tarjeta o Yape</strong><small>Tarjetas Visa, Mastercard, American Express y Diners. Yape aparecerá en Culqi si está habilitado para este comercio; su celular y código de aprobación se ingresan únicamente allí.</small></span></div></div>
           <button class="btn primary payment-next" id="paymentNext" type="button">Continuar</button>
           <div class="checkout-form">
             <div class="form-row two">
@@ -280,7 +280,7 @@
           </div>
           <div class="payment-panel" id="walletPanel">
             <div class="panel-title">Pago protegido por Culqi</div>
-            <p>Debes iniciar sesión con tu cuenta Byte Bay para comprar. El pedido quedará asociado a tu cuenta. Al confirmar, se abrirá el formulario seguro de Culqi para ingresar los datos de tu tarjeta.</p>
+            <p>Debes iniciar sesión con tu cuenta Byte Bay para comprar. El pedido quedará asociado a tu cuenta. Al confirmar, Culqi te permitirá pagar con tarjeta o Yape; nunca ingreses el código de aprobación de Yape fuera de Culqi.</p>
           </div>
           <div class="payment-box">
             <div><span>Subtotal</span><strong id="checkoutSubtotal">S/ 0.00</strong></div>
@@ -293,7 +293,7 @@
             <button class="btn secondary" type="submit">Aplicar</button>
           </form>
           <div class="checkout-actions">
-            <button class="btn primary checkout" id="payNow">Pagar con tarjeta</button>
+            <button class="btn primary checkout" id="payNow">Pagar con Culqi</button>
             <button class="btn secondary checkout-secondary" id="saveCheckout">Guardar compra</button>
           </div>
           <div class="payment-processing hidden" id="paymentProcessing" aria-live="polite">
@@ -471,7 +471,7 @@
   </section>
   <button id="aiAssistantToggle" class="ai-assistant-toggle" type="button" aria-label="Abrir Asistente Byte"><span>✦</span> Asistente Byte</button>
   <section id="aiAssistantPanel" class="ai-assistant-panel hidden" aria-label="Asistente Byte"><header><div><span class="section-kicker">IA DE BYTE BAY</span><h2>¿Qué estás buscando?</h2></div><button id="aiAssistantClose" type="button" aria-label="Cerrar asistente">×</button></header><div class="ai-chat" id="aiChat"><article class="ai-message assistant">Hola, soy Asistente Byte. Puedo ayudarte a encontrar productos, ofertas y opciones similares.</article></div><div class="ai-suggestions"><button type="button" data-ai-question="¿Qué ofertas de tecnología tienen stock?">Ofertas de tecnología</button><button type="button" data-ai-question="Recomiéndame productos para el hogar">Para el hogar</button></div><form id="aiAssistantForm"><input id="aiAssistantInput" maxlength="500" placeholder="Ej.: Recomiéndame una laptop económica" required><button class="btn primary" type="submit">Enviar</button></form><small>Respuestas generadas con IA según el catálogo disponible.</small></section>
-  <script src="app.js?v=55"></script>
+  <script src="app.js?v=56"></script>
   <script src="site-enhancements.js?v=1"></script>
   <script src="site-settings.js?v=3"></script>
   <script src="site-privacy.js?v=7"></script>
