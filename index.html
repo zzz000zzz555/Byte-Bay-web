@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=23">
-  <link rel="stylesheet" href="site-enhancements.css?v=3">
+  <link rel="stylesheet" href="site-enhancements.css?v=4">
   <link rel="stylesheet" href="site-settings.css?v=1">
   <link rel="stylesheet" href="site-privacy.css?v=4">
   <script>try{var bbPrefs=JSON.parse(localStorage.getItem('byteBayPreferences')||'null');var bbTema=bbPrefs&&bbPrefs.theme?bbPrefs.theme:(localStorage.getItem('beruTema')==='noche'?'dark':localStorage.getItem('beruTema')==='claro'?'light':'auto');if(bbTema==='dark'||(bbTema==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark-mode')}catch(e){}</script>
@@ -34,7 +34,7 @@
       <button class="mobile-menu settings-toggle" id="settingsToggle" type="button" aria-label="Abrir configuración y preferencias" aria-expanded="false" aria-controls="settingsDrawer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
       <a class="brand" href="#" aria-label="Byte Bay inicio"><span class="brand-logo"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></span></a>
       <form class="search" id="searchForm"><input id="searchInput" type="search" placeholder="Busca productos, marcas y más" aria-label="Buscar productos"><button type="submit" aria-label="Buscar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg></button></form>
-      <button class="account header-action" data-action="account"><span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span><span><small>Mi cuenta</small><strong>Ingresar</strong></span></button><button class="account-logout hidden" id="accountLogout" type="button">Salir</button>
+      <button class="account header-action" data-action="account"><span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span><span><small>Mi cuenta</small><strong>Ingresar</strong></span></button><button class="orders-button header-action" id="ordersOpen" type="button" aria-label="Mis pedidos"><span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="M9 12h6M9 16h6"></path></svg></span><span><small>Pedidos</small><strong>Mis pedidos</strong></span></button><button class="account-logout hidden" id="accountLogout" type="button">Salir</button>
       <button class="cart-button" id="cartOpen" aria-label="Abrir carrito"><svg class="cart-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 1.9-1.5L21 8H6"></path></svg><span class="cart-count" id="cartCount">0</span></button>
     </div>
     <nav class="nav wrap" id="mainNav"><button class="departments" id="departmentsBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg> Departamentos <span>⌄</span></button><a href="#ofertas">Ofertas</a><a href="#novedades">Novedades</a><a href="#" data-category="Supermercado">Supermercado</a><a href="#" data-category="Tecnología">Tecnología</a><a href="#" data-category="Hogar">Hogar</a></nav>
@@ -375,6 +375,15 @@
       <div class="account-status" id="accountStatus"></div>
     </div>
   </div>
+  <div class="orders-modal" id="ordersModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ordersTitle">
+    <div class="orders-card">
+      <button class="orders-close" id="ordersClose" type="button" aria-label="Cerrar">×</button>
+      <span class="section-kicker">MIS PEDIDOS</span>
+      <h2 id="ordersTitle">Rastreo de pedidos</h2>
+      <p class="orders-subtitle">Consulta el estado de tus compras Byte Bay en tiempo real.</p>
+      <div id="ordersList" class="orders-list"><p class="orders-empty">Inicia sesión para ver tus pedidos.</p></div>
+    </div>
+  </div>
   <section class="claims-modal" id="claimsModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="claimsTitle">
       <div class="claims-card">
         <button class="account-close" id="claimsClose" type="button" aria-label="Cerrar">×</button>
@@ -481,6 +490,7 @@
   <button id="aiAssistantToggle" class="ai-assistant-toggle" type="button" aria-label="Abrir Asistente Byte"><span>✦</span> Asistente Byte</button>
   <section id="aiAssistantPanel" class="ai-assistant-panel hidden" aria-label="Asistente Byte"><header><div><span class="section-kicker">IA DE BYTE BAY</span><h2>¿Qué estás buscando?</h2></div><button id="aiAssistantClose" type="button" aria-label="Cerrar asistente">×</button></header><div class="ai-chat" id="aiChat"><article class="ai-message assistant">Hola, soy Asistente Byte. Puedo ayudarte a encontrar productos, ofertas y opciones similares.</article></div><div class="ai-suggestions"><button type="button" data-ai-question="¿Qué ofertas de tecnología tienen stock?">Ofertas de tecnología</button><button type="button" data-ai-question="Recomiéndame productos para el hogar">Para el hogar</button></div><form id="aiAssistantForm"><input id="aiAssistantInput" maxlength="500" placeholder="Ej.: Recomiéndame una laptop económica" required><button class="btn primary" type="submit">Enviar</button></form><small>Respuestas generadas con IA según el catálogo disponible.</small></section>
   <script src="app.js?v=60"></script>
+  <script src="site-orders.js?v=1"></script>
   <script src="site-enhancements.js?v=1"></script>
   <script src="site-settings.js?v=3"></script>
   <script src="site-privacy.js?v=7"></script>
