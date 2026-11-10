@@ -891,6 +891,7 @@ function syncPaymentUI(){}
 
 let bbCulqiPedido=null;
 let bbCulqiProcesando=false;
+let bbCulqiCreando=false;
 
 function culqiDisponible(){
   return Boolean(window.Culqi&&typeof window.Culqi.open==='function');
@@ -1098,6 +1099,7 @@ window.culqi=async function(){
 };
 
 document.querySelector('#payNow').onclick=async()=>{
+  if(bbCulqiCreando||bbCulqiProcesando) return;
   const count=cart.reduce((a,x)=>a+x.qty,0);
   if(!count){
     showToast('Agrega productos antes de pagar');
@@ -1148,6 +1150,7 @@ document.querySelector('#payNow').onclick=async()=>{
   }
 
   setPaymentStep(3);
+  bbCulqiCreando=true;
   try{
     const {data,error}=await supabaseClient.functions.invoke('crear-pago-culqi',{
       body:{
@@ -1185,6 +1188,8 @@ document.querySelector('#payNow').onclick=async()=>{
     console.error('Inicio de pago con Culqi:',error);
     setPaymentStep(2);
     showToast('No se pudo iniciar el pago. Revisa tu conexión e inténtalo nuevamente.');
+  }finally{
+    bbCulqiCreando=false;
   }
 };
 
