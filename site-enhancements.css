@@ -306,3 +306,39 @@ h1,h2,h3,h4,h5,h6{font-family:"Manrope","Inter",sans-serif;letter-spacing:-.02em
 .offers-notification-panel{border-radius:var(--radius-md);box-shadow:var(--shadow-lg)}
 @media(max-width:600px){.header-main{height:64px}}
 
+/* === UX POLISH: clean ecommerce (Temu-inspired, professional) === */
+.section-head{margin-bottom:24px}
+.section-head h2{font-size:24px;font-weight:700;letter-spacing:-.03em}
+.section-head p{color:var(--text-secondary);font-size:14px;margin-top:4px}
+.product-card{border:1px solid var(--border-subtle);border-radius:12px;overflow:hidden;background:var(--bg-surface);transition:transform .2s ease,box-shadow .2s ease}
+.product-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.product-image{aspect-ratio:1/1;height:auto;object-fit:cover;border-radius:0;background:var(--bg-elevated)}
+.product-card h3{font-size:14px;font-weight:500;color:var(--text-primary);line-height:1.4;margin:8px 0 4px}
+.price{font-size:18px;font-weight:700;color:var(--text-primary)}
+.price-old{font-size:13px;color:var(--text-secondary);text-decoration:line-through}
+.product-card .add{width:32px;height:32px;border-radius:8px;background:var(--accent);color:var(--bg-surface);border:0;font-size:18px;font-weight:600;display:grid;place-items:center;transition:background .15s}
+.product-card .add:hover{background:var(--accent-strong)}
+.hero{border-radius:16px;overflow:hidden}
+.hero-copy{padding:48px 40px}
+.hero h1{font-size:42px;font-weight:800;letter-spacing:-.04em;line-height:1.1}
+.hero p{font-size:16px;color:var(--text-secondary);line-height:1.6}
+.hero-actions .btn{padding:12px 24px;border-radius:10px;font-weight:600}
+.topbar{border-bottom:1px solid var(--border-subtle)}
+.header-main{height:68px}
+.brand{font-size:22px;letter-spacing:-.5px}
+.search{border-radius:8px;border:1px solid var(--border-subtle)}
+.search button{border-radius:0 8px 8px 0}
+.cart-button{border-radius:8px}
+.categories{gap:12px}
+.category-card{border:1px solid var(--border-subtle);border-radius:12px;padding:16px;transition:box-shadow .2s,transform .2s}
+.category-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.benefits{gap:16px}
+.benefit{border:1px solid var(--border-subtle);border-radius:12px;padding:20px}
+.footer{padding:48px 0 24px}
+.footer-grid{gap:32px}
+.footer a{color:var(--text-secondary);font-size:14px}
+.footer a:hover{color:var(--text-primary)}
+.checkout-card{border-radius:16px;box-shadow:var(--shadow-sm)}
+.checkout-step span{border-radius:8px}
+@media(max-width:600px){.hero h1{font-size:32px}.hero-copy{padding:32px 20px}.product-card{border-radius:10px}.search{border-radius:8px}}
+
