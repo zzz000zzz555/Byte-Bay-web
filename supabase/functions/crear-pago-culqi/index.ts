@@ -73,7 +73,7 @@ Deno.serve(async request => {
     }
 
     const entrada = body as Record<string, unknown>
-    const sesionToken = text(entrada.sesion_token)
+    const sesionToken = text(entrada.sesion_token).replace(/\\s+/g, '')
     if (!sesionToken || sesionToken.length > 5000) {
       return json({ error: 'Inicia sesión con una cuenta Byte Bay para comprar' }, 401, headers)
     }

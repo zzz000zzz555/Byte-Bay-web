@@ -101,7 +101,7 @@ Deno.serve(async request => {
     }
 
     const entrada = body as Json
-    const sesionToken = text(entrada.sesion_token)
+    const sesionToken = text(entrada.sesion_token).replace(/\\s+/g, '')
     const pedidoId = text(entrada.pedido_id)
     const token = text(entrada.token)
 

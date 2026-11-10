@@ -1095,10 +1095,15 @@ window.culqi=async function(){
 
   if(window.Culqi?.token?.id){
     const token=window.Culqi.token.id;
-    try{window.Culqi.close();}
-    catch(error){console.error('No se pudo cerrar Culqi Checkout:',error);}
+    try{window.Culqi.close();}catch(error){console.error('No se pudo cerrar Culqi Checkout:',error);}
     bbCulqiProcesando=true;
     setPaymentStep(3);
+    // Refresca el token de sesión antes de cobrar: evita 401 si la sesión
+    // se renovó mientras el cliente llenaba los datos de la tarjeta.
+    const sesionActual=await window.BBPrivacy?.obtenerSesionCliente?.();
+    if(sesionActual?.ok&&sesionActual.access_token){
+      pendiente.sesionToken=String(sesionActual.access_token).replace(/\\s+/g,'');
+    }
     try{
       const {data,error}=await supabaseClient.functions.invoke('cobrar-culqi',{
         body:{
@@ -1331,7 +1336,7 @@ document.querySelector('#payNow').onclick=async()=>{
       numeroPedido:data.numero_pedido,
       totalCentimos:Number(data.total_centimos),
       publicKey:data.public_key,
-      sesionToken:sesionCompra.access_token,
+      sesionToken:String(sesionCompra.access_token).replace(/\\s+/g,''),
       firma,
       expiraEnMs:Number.isFinite(expira)?expira-10000:Date.now()+10*60*1000
     };
