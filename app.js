@@ -490,15 +490,15 @@ const footerInfo={
   'Quiénes somos':{title:'Quiénes somos',body:'<p>Byte Bay es una tienda digital peruana de productos para hogar, tecnología, supermercado y más. Nuestro objetivo es que puedas comprar desde un solo lugar con información clara del producto, stock y precio.</p><p>El catálogo y el inventario se controlan desde nuestra plataforma para evitar publicar productos agotados o próximos a vencer.</p>'},
   'Trabaja con nosotros':{title:'Trabaja con nosotros',body:'<p>Si deseas formar parte de Byte Bay, envíanos por redes sociales:</p><ol><li>Tu nombre completo.</li><li>Distrito o ciudad.</li><li>Área de interés: ventas, almacén, reparto, atención al cliente o contenido.</li><li>Un medio de contacto.</li></ol><p>No envíes contraseñas, DNI completo ni códigos bancarios por mensaje.</p>'},
   'Sostenibilidad':{title:'Sostenibilidad',body:'<p>Byte Bay controla lotes, proveedores y fechas de vencimiento para reducir desperdicios.</p><ul><li>Productos a 30 días de vencer: descuento de 20%.</li><li>Productos a 21 días de vencer: descuento de 50%.</li><li>Productos a 7 días de vencer: se retiran del catálogo.</li><li>Productos dañados o devueltos: no se ofrecen para venta.</li></ul>'},
-  'Cómo comprar':{title:'Cómo comprar',body:'<ol><li>Busca el producto por nombre, marca o categoría.</li><li>Agrega la cantidad deseada al carrito.</li><li>Presiona <strong>Continuar compra</strong> e inicia sesión con tu cuenta Byte Bay.</li><li>Completa nombres, documento, dirección, correo y teléfono.</li><li>Presiona <strong>Pagar con Culqi</strong> y elige tarjeta o Yape en el formulario seguro.</li><li>Si eliges Yape, ingresa tu celular y código de aprobación solo en Culqi.</li><li>Vuelve a Byte Bay: el pago se confirma automáticamente.</li><li>Guarda tu código de pedido <strong>BERU-XXXXXXXX</strong>.</li></ol><p>El stock se reserva por 15 minutos y el pedido se confirma cuando Culqi acredita el pago.</p>'},
-  'Medios de pago':{title:'Medios de pago',body:'<p>Puedes pagar con <strong>tarjetas de crédito o débito</strong> (Visa, Mastercard, American Express y Diners) o con <strong>Yape</strong>, mediante <strong>Culqi</strong>.</p><ol><li>Presiona <strong>Pagar con Culqi</strong> y elige tu medio de pago.</li><li>Revisa que el monto coincida con el total del pedido.</li><li>Completa los datos en el formulario seguro de Culqi. Para Yape, el celular y código de aprobación se ingresan únicamente en Culqi.</li><li>El pago se confirma automáticamente en Byte Bay cuando Culqi lo acredita.</li></ol><p>Byte Bay no solicita ni almacena datos de tarjeta, CVV, claves bancarias ni códigos de aprobación de Yape.</p>'},
+  'Cómo comprar':{title:'Cómo comprar',body:'<ol><li>Busca el producto por nombre, marca o categoría.</li><li>Agrega la cantidad deseada al carrito.</li><li>Presiona <strong>Continuar compra</strong> e inicia sesión con tu cuenta Byte Bay.</li><li>Completa nombres, documento, dirección, correo y teléfono.</li><li>Elige Culqi (tarjeta o Yape) o Mercado Pago y continúa al checkout seguro del proveedor.</li><li>Vuelve a Byte Bay: el pedido se confirma solo cuando el proveedor acredita el pago.</li><li>Guarda tu código de pedido <strong>BERU-XXXXXXXX</strong>.</li></ol><p>El stock se reserva por 15 minutos y los pagos pendientes se concilian automáticamente.</p>'},
+  'Medios de pago':{title:'Medios de pago',body:'<p>Byte Bay ofrece <strong>Culqi</strong> (tarjeta y Yape, según disponibilidad del comercio) y <strong>Mercado Pago</strong> (medios que estén habilitados para tu cuenta).</p><ol><li>Elige el proveedor en el checkout.</li><li>Revisa que el monto coincida con el total del pedido.</li><li>Completa el pago únicamente en la página segura del proveedor elegido.</li><li>Byte Bay confirma el pedido cuando el proveedor acredita el pago.</li></ol><p>Byte Bay no solicita ni almacena datos de tarjeta, CVV, claves bancarias ni códigos de aprobación de Yape.</p>'},
   'Envíos y devoluciones':{title:'Envíos y devoluciones',body:'<p>El envío es gratis a todo el Perú, sin monto mínimo de compra.</p><p>Antes de registrar el pedido, confirma que tu dirección incluya calle, número, distrito y ciudad. Conserva tu código de pedido.</p><p>Para consultar un envío, corregir una dirección o reportar un problema, escribe por redes sociales con: nombre del comprador, código <strong>BERU-XXXXXXXX</strong> y una explicación breve.</p><p>No envíes fotos de documentos completos ni contraseñas.</p>'},
   'Centro de ayuda':{title:'Centro de ayuda',body:'<p>Elige el caso que necesitas resolver y envíanos estos datos por una red oficial:</p><ul><li><strong>Pedido pendiente:</strong> código BERU, nombre y comprobante del pago con tarjeta o Yape.</li><li><strong>Problema con producto:</strong> código BERU, nombre del producto y fotos claras.</li><li><strong>Cambio de dirección:</strong> código BERU y la dirección completa corregida.</li><li><strong>Producto agotado:</strong> nombre o código del producto para revisar alternativas.</li><li><strong>Acceso a cuenta:</strong> correo registrado. Nunca envíes tu contraseña.</li></ul><p>Las cuentas de redes oficiales están enlazadas abajo en el pie de página.</p>'},
-  'Preguntas frecuentes':{title:'Preguntas frecuentes',body:'<p><strong>¿Cómo registro un pedido?</strong></p><p>Agrega productos al carrito, inicia sesión con tu cuenta Byte Bay, completa tus datos de entrega y paga con tarjeta o Yape mediante Culqi. La confirmación es automática cuando Culqi acredita el pago.</p><p><strong>¿Qué medios de pago aceptan?</strong></p><p>Tarjetas de crédito y débito (Visa, Mastercard, American Express y Diners), además de Yape, procesados por Culqi. El celular y código de aprobación de Yape se ingresan únicamente en Culqi. Byte Bay no solicita ni almacena estos datos.</p><p><strong>¿Cómo sigo mi pedido?</strong></p><p>Guarda el código BERU que recibes al registrar la compra y consúltanos por nuestras redes oficiales.</p><p><strong>¿Puedo cambiar la dirección?</strong></p><p>Escríbenos con tu código BERU y la dirección corregida antes de que el pedido salga a reparto.</p><p><strong>¿Cómo elimino mi cuenta?</strong></p><p>Solicítalo por nuestras redes oficiales con el correo registrado. No envíes tu contraseña.</p>'},
+  'Preguntas frecuentes':{title:'Preguntas frecuentes',body:'<p><strong>¿Cómo registro un pedido?</strong></p><p>Agrega productos al carrito, inicia sesión con tu cuenta Byte Bay, completa los datos de entrega y elige Culqi o Mercado Pago. El pedido se confirma cuando el proveedor acredita el pago.</p><p><strong>¿Qué medios de pago aceptan?</strong></p><p>Culqi admite tarjetas y Yape si está habilitado para el comercio. Mercado Pago muestra los medios disponibles en su checkout. No ingreses datos de tarjeta ni códigos de aprobación fuera del proveedor.</p><p><strong>¿Cómo sigo mi pedido?</strong></p><p>Guarda el código BERU que recibes al registrar la compra y consúltanos por nuestras redes oficiales.</p><p><strong>¿Puedo cambiar la dirección?</strong></p><p>Escríbenos con tu código BERU y la dirección corregida antes de que el pedido salga a reparto.</p><p><strong>¿Cómo elimino mi cuenta?</strong></p><p>Solicítalo por nuestras redes oficiales con el correo registrado. No envíes tu contraseña.</p>'},
   'Contáctanos':{title:'Contáctanos',body:'<p>Escríbenos por cualquiera de nuestras redes oficiales. Incluye tu consulta y, si se trata de una compra, tu código BERU.</p><p><a href="https://tiktok.com/@bytebayperu" target="_blank" rel="noopener noreferrer">TikTok</a> · <a href="https://www.instagram.com/bytebayperu?stkn=b2Zlc3c4M2lrcjJw" target="_blank" rel="noopener noreferrer">Instagram</a> · <a href="https://youtube.com/@bytebayperu?si=4nyrzBNYliTeMwbu" target="_blank" rel="noopener noreferrer">YouTube</a> · <a href="https://x.com/bytebayperu" target="_blank" rel="noopener noreferrer">X</a> · <a href="https://www.facebook.com/share/19SYEVhY7c/" target="_blank" rel="noopener noreferrer">Facebook</a>.</p>'},
   'Libro de reclamaciones':{title:'Libro de reclamaciones',body:'<p>Para registrar un reclamo formal debes indicar: nombre completo, documento, correo, descripción del producto o servicio, número de pedido y el detalle de tu reclamo.</p><p>Esta sección quedará habilitada para envío real cuando configuremos el correo oficial del negocio y los datos legales requeridos.</p>'},
   'Privacidad':{title:'Privacidad',body:'<p>Byte Bay usa tu nombre, correo, teléfono, dirección y datos de pedido solo para registrar compras, verificar pagos, gestionar entregas y responder solicitudes.</p><p>Las contraseñas se guardan cifradas. Nunca te pediremos contraseña, datos de tarjeta, CVV, claves bancarias ni códigos de seguridad por redes sociales.</p>'},
-  'Términos':{title:'Términos de uso',body:'<p>Un pedido pagado con tarjeta o Yape se registra inicialmente como <strong>pendiente</strong> y se confirma automáticamente cuando Culqi acredita el pago. El stock se reserva por 15 minutos; si el pago no se completa, la reserva se libera.</p><p>El código de pedido <strong>BERU-XXXXXXXX</strong> identifica tu compra. Guárdalo hasta que el pedido sea entregado o resuelto.</p>'}
+  'Términos':{title:'Términos de uso',body:'<p>Un pedido se registra inicialmente como <strong>pendiente</strong> y se confirma cuando Culqi o Mercado Pago acredita el pago. El stock se reserva por 15 minutos; los intentos vencidos liberan la reserva.</p><p>El código de pedido <strong>BERU-XXXXXXXX</strong> identifica tu compra. Guárdalo hasta que el pedido sea entregado o resuelto.</p>'}
 };
 function openFooterInfo(info){
   let modal=document.querySelector('#footerInfoModal');
@@ -887,11 +887,32 @@ document.querySelector('#openCheckout').onclick=openCheckout;
 document.querySelector('#checkoutClose').onclick=closeCheckout;
 paymentNext.onclick=()=>setPaymentStep(2);
 
-function syncPaymentUI(){}
+function proveedorPagoSeleccionado(){
+  return document.querySelector('input[name="paymentProvider"]:checked')?.value||'culqi';
+}
+
+function syncPaymentUI(){
+  const proveedor=proveedorPagoSeleccionado();
+  document.querySelectorAll('#paymentMethods .payment-option').forEach(opcion=>{
+    opcion.classList.toggle('active',opcion.querySelector('input')?.value===proveedor);
+  });
+  document.querySelector('#payNow').textContent=proveedor==='mercado_pago'
+    ?'Continuar con Mercado Pago'
+    :'Pagar con Culqi';
+  document.querySelector('#walletPanel .panel-title').textContent=proveedor==='mercado_pago'
+    ?'Pago protegido por Mercado Pago'
+    :'Pago protegido por Culqi';
+}
+
+document.querySelectorAll('input[name="paymentProvider"]').forEach(opcion=>{
+  opcion.addEventListener('change',syncPaymentUI);
+});
+syncPaymentUI();
 
 let bbCulqiPedido=null;
 let bbCulqiProcesando=false;
 let bbCulqiCreando=false;
+let bbPaymentSessionChecking=false;
 
 function culqiDisponible(){
   return Boolean(window.Culqi&&typeof window.Culqi.open==='function');
@@ -934,6 +955,70 @@ async function consultarEstadoCulqi(pedidoId,sesionToken,intentos=10){
   }
   return ultimo;
 }
+
+async function consultarEstadoMercadoPago(pedidoId,sesionToken,intentos=4){
+  let ultimo=null;
+  for(let i=0;i<intentos;i++){
+    try{
+      const {data,error}=await supabaseClient.functions.invoke('consultar-pago',{
+        body:{sesion_token:sesionToken,pedido:pedidoId}
+      });
+      if(!error&&data?.ok){
+        ultimo=data;
+        if(['aprobado','rechazado','expirado','reembolsado','revision'].includes(data.estado)) break;
+      }else if(error){
+        console.error('Consulta del pago con Mercado Pago:',error);
+      }
+    }catch(error){
+      console.error('Consulta del pago con Mercado Pago:',error);
+    }
+    if(i<intentos-1) await new Promise(resolve=>setTimeout(resolve,2000));
+  }
+  return ultimo;
+}
+
+let bbRetornoMercadoPagoProcesado=false;
+window.addEventListener('bb:privacy-updated',async()=>{
+  if(bbRetornoMercadoPagoProcesado) return;
+  const url=new URL(window.location.href);
+  const resultado=url.searchParams.get('pago');
+  const pedidoId=url.searchParams.get('pedido');
+  if(!resultado||!pedidoId||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pedidoId)) return;
+  bbRetornoMercadoPagoProcesado=true;
+
+  let sesion;
+  try{
+    sesion=await window.BBPrivacy?.obtenerSesionCliente?.();
+  }catch(error){
+    console.error('Validación de sesión al volver de Mercado Pago:',error);
+    bbRetornoMercadoPagoProcesado=false;
+    mostrarBannerPago('pendiente','Pago por confirmar','No pudimos consultar tu sesión. Recarga la página para verificar el pago.');
+    return;
+  }
+  if(!sesion?.ok){
+    bbRetornoMercadoPagoProcesado=false;
+    mostrarBannerPago('pendiente','Pago por confirmar','Inicia sesión con la cuenta usada para comprar para consultar el estado del pedido.');
+    return;
+  }
+
+  const estado=await consultarEstadoMercadoPago(pedidoId,sesion.access_token);
+  if(estado?.estado==='aprobado'){
+    vaciarCarritoTrasPago();
+    mostrarBannerPago('exito','¡Pago confirmado!',`Tu compra quedó registrada. Pedido ${estado.numero_pedido}.`);
+  }else if(['rechazado','expirado'].includes(estado?.estado)){
+    mostrarBannerPago('fallo','El pago no se completó','Puedes volver al carrito e intentarlo nuevamente con Culqi o Mercado Pago.');
+  }else if(estado?.estado==='reembolsado'){
+    mostrarBannerPago('info','Pago reembolsado',`Mercado Pago registró un reembolso para el pedido ${estado.numero_pedido}.`);
+  }else if(estado?.estado==='revision'){
+    mostrarBannerPago('pendiente','Pago en revisión','Mercado Pago recibió el pago, pero Byte Bay debe verificarlo antes de confirmar el pedido. No intentes pagarlo otra vez.');
+  }else{
+    mostrarBannerPago('pendiente','Pago pendiente de confirmación','Mercado Pago todavía no confirma el pago. No vuelvas a pagar; puedes consultar el estado más tarde.');
+  }
+
+  url.searchParams.delete('pago');
+  url.searchParams.delete('pedido');
+  window.history.replaceState({},'',url);
+});
 
 function finalizarPagoCulqi(resultado){
   const numero=resultado?.numero_pedido?` Pedido ${resultado.numero_pedido}.`:'';
@@ -1099,7 +1184,7 @@ window.culqi=async function(){
 };
 
 document.querySelector('#payNow').onclick=async()=>{
-  if(bbCulqiCreando||bbCulqiProcesando) return;
+  if(bbCulqiCreando||bbCulqiProcesando||bbPaymentSessionChecking) return;
   const count=cart.reduce((a,x)=>a+x.qty,0);
   if(!count){
     showToast('Agrega productos antes de pagar');
@@ -1116,11 +1201,22 @@ document.querySelector('#payNow').onclick=async()=>{
     showToast('No se puede registrar la compra: la BD no está conectada.');
     return;
   }
-  if(!culqiDisponible()){
+  const proveedor=proveedorPagoSeleccionado();
+  if(proveedor==='culqi'&&!culqiDisponible()){
     showToast('El formulario de pago aún está cargando. Espera un momento e inténtalo nuevamente.');
     return;
   }
-  const sesionCompra=await window.BBPrivacy?.obtenerSesionCliente?.();
+  bbPaymentSessionChecking=true;
+  let sesionCompra;
+  try{
+    sesionCompra=await window.BBPrivacy?.obtenerSesionCliente?.();
+  }catch(error){
+    console.error('Validación de sesión al iniciar el pago:',error);
+    showToast('No pudimos validar tu sesión. Inténtalo nuevamente.');
+    return;
+  }finally{
+    bbPaymentSessionChecking=false;
+  }
   if(!sesionCompra?.ok){
     if(['SERVICIO_NO_DISPONIBLE','VALIDACION_NO_DISPONIBLE'].includes(sesionCompra?.error)){
       showToast('No pudimos validar tu sesión ahora. El carrito y tus datos se conservaron; inténtalo nuevamente.');
@@ -1143,6 +1239,62 @@ document.querySelector('#payNow').onclick=async()=>{
     cliente.telefono,
     cupon
   ].join('|');
+
+  if(proveedor==='mercado_pago'){
+    setPaymentStep(3);
+    bbCulqiCreando=true;
+    try{
+      const {data,error}=await supabaseClient.functions.invoke('crear-pago',{
+        body:{
+          articulos:cart.map(item=>({id_producto:item.id,cantidad:item.qty})),
+          cliente,
+          cupon,
+          sesion_token:sesionCompra.access_token
+        }
+      });
+
+      if(error||!data?.ok||!data?.checkout_url){
+        let detalle=data?.error||error?.message||'Mercado Pago no pudo iniciar el pago.';
+        try{
+          const cuerpo=await error?.context?.clone()?.json();
+          detalle=cuerpo?.error||detalle;
+        }catch(parseError){}
+        console.error('Inicio de pago con Mercado Pago:',error||data);
+        setPaymentStep(2);
+        showToast(detalle);
+        return;
+      }
+
+      let checkoutUrl;
+      try{
+        checkoutUrl=new URL(data.checkout_url);
+      }catch(error){
+        console.error('Mercado Pago devolvió una URL inválida:',error);
+        setPaymentStep(2);
+        showToast('Mercado Pago devolvió un enlace de pago no válido.');
+        return;
+      }
+      const host=checkoutUrl.hostname.toLowerCase();
+      if(checkoutUrl.protocol!=='https:'||![
+        'mercadopago.com',
+        'mercadopago.com.pe',
+        'mercadolibre.com'
+      ].some(domain=>host===domain||host.endsWith(`.${domain}`))){
+        console.error('Mercado Pago devolvió un dominio de pago no autorizado:',host);
+        setPaymentStep(2);
+        showToast('No se pudo validar el enlace seguro de Mercado Pago.');
+        return;
+      }
+      window.location.assign(checkoutUrl.href);
+    }catch(error){
+      console.error('Inicio de pago con Mercado Pago:',error);
+      setPaymentStep(2);
+      showToast('No se pudo iniciar el pago con Mercado Pago. Inténtalo nuevamente.');
+    }finally{
+      bbCulqiCreando=false;
+    }
+    return;
+  }
 
   if(bbCulqiPedido&&bbCulqiPedido.firma===firma&&Date.now()<bbCulqiPedido.expiraEnMs){
     abrirCheckoutCulqi(bbCulqiPedido);

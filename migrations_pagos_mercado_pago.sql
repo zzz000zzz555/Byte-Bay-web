@@ -338,7 +338,7 @@ begin
     ));
   end loop;
 
-  v_envio := case when v_subtotal >= 299 then 0 else 18 end;
+  v_envio := 0;  -- Envío gratis a todo el Perú, igual que Culqi y la tienda.
   v_descuento := round(v_subtotal * v_tasa, 2);
   v_total := greatest(v_subtotal - v_descuento + v_envio, 0);
 
