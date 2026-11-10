@@ -70,6 +70,7 @@
         <button data-admin-tab="ofertas">Ofertas</button>
         <button data-admin-tab="avisos" id="adminNotificationsTab">Avisos</button>
         <button data-admin-tab="clientes" id="adminClientsTab">Clientes</button>
+        <button data-admin-tab="pedidos" id="adminOrdersTab">Pedidos</button>
         <button data-admin-tab="movimientos">Movimientos</button>
         <button data-admin-tab="reclamos">Reclamaciones</button>
         <button data-admin-tab="auditoria" id="adminAuditTab">Auditoría</button>
@@ -196,6 +197,34 @@
           <button class="btn primary" type="submit">Programar aviso</button>
           <p id="notificationStatus" class="admin-status" aria-live="polite"></p>
         </form>
+      </section>
+
+      <section class="hidden" data-admin-section="pedidos">
+        <div class="admin-section-head">
+          <div><h2>Pedidos</h2><p>Gestiona el estado logístico, tracking y auditoría de cada pedido.</p></div>
+          <div class="admin-head-actions">
+            <button class="btn secondary" id="refreshOrders" type="button">Actualizar</button>
+          </div>
+        </div>
+        <div class="admin-filters admin-filters-wide">
+          <label>Buscar<input id="orderSearch" type="search" placeholder="Número de pedido o correo"></label>
+          <label>Estado<select id="orderStatusFilter"><option value="">Todos</option><option value="pendiente">Pendiente</option><option value="confirmado">Confirmado</option><option value="preparando">Preparando</option><option value="enviado">Enviado</option><option value="entregado">Entregado</option><option value="cancelado">Cancelado</option></select></label>
+        </div>
+        <div class="admin-card">
+          <div class="admin-table-wrap">
+            <table class="admin-table admin-table-orders">
+              <thead>
+                <tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Pago</th><th>Tracking</th><th>Acciones</th></tr>
+              </thead>
+              <tbody id="adminOrdersList"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="admin-card" id="orderDetailCard" style="display:none;margin-top:16px">
+          <h3 id="orderDetailTitle">Detalle del pedido</h3>
+          <div id="orderDetailBody"></div>
+          <div id="orderAuditLog" style="margin-top:16px"></div>
+        </div>
       </section>
 
       <section class="hidden" data-admin-section="movimientos">

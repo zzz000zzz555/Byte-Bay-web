@@ -60,6 +60,7 @@ function mostrarSeccion(seccion){
   if(seccion==='inventario'||seccion==='ofertas') cargarOpciones();
   if(seccion==='ofertas') cargarOfertas();
   if(seccion==='clientes'&&rolPersonal==='jefe') window.bbCargarClientes?.();
+  if(seccion==='pedidos') cargarPedidosAdmin();
   if(seccion==='movimientos'){if(window.bbCargarMovimientosFiltrados) window.bbCargarMovimientosFiltrados(); else cargarMovimientos();}
   if(seccion==='personal'&&rolPersonal==='jefe') cargarPersonal();
 }
@@ -183,3 +184,54 @@ $('#offerSearch').addEventListener('input',renderizarOfertas);$('#offerStatusFil
 $('#staffSearch').addEventListener('input',renderizarPersonal);$('#staffStatusFilter').addEventListener('change',renderizarPersonal);
 const esEnlaceRecuperacion=/[?&]code=|type=recovery/.test(`${window.location.search}${window.location.hash}`);
 if(!esEnlaceRecuperacion) validarSesion();
+async function cargarPedidosAdmin(){
+  const lista=$('#adminOrdersList'); if(!lista) return; lista.textContent='Cargando pedidos…';
+  const {data,error}=await supabaseClient.rpc('bb_admin_listar_pedidos');
+  if(error||!data?.ok){lista.textContent=error?.message||data?.error||'No se pudieron cargar los pedidos.';return;}
+  const pedidos=data.pedidos||[];
+  const filtroEstado=$('#orderStatusFilter')?.value||'';
+  const busqueda=($('#orderSearch')?.value||'').toLowerCase();
+  const filtrados=pedidos.filter(p=>{
+    if(filtroEstado&&p.estado!==filtroEstado) return false;
+    if(busqueda&&!p.numero.toLowerCase().includes(busqueda)&&!String(p.correo_cliente||'').toLowerCase().includes(busqueda)) return false;
+    return true;
+  });
+  if(!filtrados.length){lista.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Sin pedidos</td></tr>';return;}
+  lista.innerHTML=filtrados.map(p=>`<tr>
+    <td><strong>${escapar(p.numero)}</strong><br><small>${new Date(p.creado_en).toLocaleString('es-PE')}</small></td>
+    <td>${escapar(p.correo_cliente)}</td>
+    <td>S/ ${Number(p.total).toFixed(2)}</td>
+    <td><span class="order-status-badge ${p.estado}">${p.estado}</span></td>
+    <td>${p.estado_pago}</td>
+    <td>${p.tracking_number?`${escapar(p.carrier||'')} ${escapar(p.tracking_number)}`:'—'}</td>
+    <td class="actions">
+      <button class="btn secondary" onclick="cambiarEstadoPedido('${p.id}','${escapar(p.numero)}')">Estado</button>
+      <button class="btn secondary" onclick="verLogsPedido('${p.id}','${escapar(p.numero)}')">Historial</button>
+    </td>
+  </tr>`).join('');
+}
+async function cambiarEstadoPedido(id,numero){
+  const nuevo=prompt(`Nuevo estado para ${numero}:\npendiente, confirmado, preparando, enviado, entregado, cancelado`);
+  if(!nuevo) return;
+  const estado=nuevo.trim().toLowerCase();
+  const tracking=prompt('Número de guía (opcional):')||null;
+  const carrier=prompt('Transportista (opcional):')||null;
+  const motivo=prompt('Motivo/nota (opcional):')||null;
+  const {data,error}=await supabaseClient.rpc('bb_admin_cambiar_estado_pedido',{p_pedido_id:id,p_nuevo_estado:estado,p_tracking_number:tracking,p_carrier:carrier,p_motivo:motivo});
+  if(error||!data?.ok){alert(error?.message||data?.error||'Error al cambiar estado');return;}
+  if(data.sin_cambios){alert('Sin cambios');return;}
+  alert(`Estado cambiado: ${data.estado_anterior} → ${data.estado_nuevo}`);
+  cargarPedidosAdmin();
+}
+async function verLogsPedido(id,numero){
+  const {data,error}=await supabaseClient.rpc('bb_admin_listar_logs_pedido',{p_pedido_id:id});
+  if(error||!data?.ok){alert(error?.message||data?.error||'Error');return;}
+  const logs=data.logs||[];
+  if(!logs.length){alert('Sin historial de cambios.');return;}
+  const texto=logs.map(l=>`${new Date(l.creado_en).toLocaleString('es-PE')} — ${l.estado_anterior} → ${l.estado_nuevo}${l.motivo?` (${l.motivo})`:''}${l.tracking_number?` [${l.carrier||''} ${l.tracking_number}]`:''}`).join('\n');
+  alert(`Historial de ${numero}:\n\n${texto}`);
+}
+
+$('#refreshOrders')?.addEventListener('click',cargarPedidosAdmin);
+$('#orderStatusFilter')?.addEventListener('change',cargarPedidosAdmin);
+$('#orderSearch')?.addEventListener('input',cargarPedidosAdmin);
