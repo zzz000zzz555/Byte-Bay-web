@@ -554,8 +554,6 @@ function setAccountMode(mode){
   const isLogin=mode==='login';
   form.querySelector('.account-name-row').classList.toggle('hidden',isLogin);
   document.querySelector('#accountUsername').closest('label').classList.toggle('hidden',isLogin);
-  document.querySelector('#accountPasswordConfirm').closest('label').classList.toggle('hidden',isLogin);
-  document.querySelector('#accountPasswordConfirm').required=!isLogin;
   document.querySelector('#accountPassword').autocomplete=isLogin?'current-password':'new-password';
   document.querySelector('#accountTitle').textContent=isLogin?'Iniciar sesión':'Crear una cuenta';
   document.querySelector('#accountSubtitle').textContent=isLogin?'Ingresa con tu correo y contraseña de Byte Bay.':'Registra tus datos para continuar con Byte Bay.';
@@ -614,7 +612,6 @@ document.querySelector('#accountForm').onsubmit=async e=>{
   e.preventDefault();
   const email=document.querySelector('#accountEmail').value.trim().toLowerCase();
   const password=document.querySelector('#accountPassword').value;
-  const passwordConfirm=document.querySelector('#accountPasswordConfirm').value;
   const firstName=document.querySelector('#accountFirstName').value.trim();
   const lastName=document.querySelector('#accountLastName').value.trim();
   const username=document.querySelector('#accountUsername').value.trim();
@@ -643,7 +640,6 @@ document.querySelector('#accountForm').onsubmit=async e=>{
   if(username&&!/^[A-Za-z0-9._-]{3,30}$/.test(username)){status.textContent='El nombre de usuario solo admite letras, números, punto, guion o guion bajo.';return;}
   if(password.length<8){status.textContent='La contraseña debe tener al menos 8 caracteres.';return;}
   if(!/[A-Za-z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){status.textContent='La contraseña debe incluir letras, números y al menos un símbolo.';return;}
-  if(password!==passwordConfirm){status.textContent='Las contraseñas no coinciden.';return;}
   setAccountBusy(true,'Creando…');
   const payload={email,first_name:firstName||null,last_name:lastName||null,username:username||null};
   let registrado;
