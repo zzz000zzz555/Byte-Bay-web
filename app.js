@@ -193,48 +193,8 @@ document.querySelector('#heroNext').onclick=()=>{mostrarSlideHero(heroSlideIndex
 document.querySelector('#heroCarousel').addEventListener('mouseenter',()=>clearInterval(heroTimer));
 document.querySelector('#heroCarousel').addEventListener('mouseleave',reiniciarCarruselHero);
 
-const mercadoPagoReturn=new URLSearchParams(window.location.search).get('pago');
-const UUID_PATTERN=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const mercadoPagoCartState=(()=>{
-  try{
-    const saved=sessionStorage.getItem('bbMercadoPagoCheckout');
-    sessionStorage.removeItem('bbMercadoPagoCheckout');
-    if(!saved) return {cart:[],coupon:'',pedidoId:''};
-    const state=JSON.parse(saved);
-    const pedidoId=typeof state.pedidoId==='string'&&UUID_PATTERN.test(state.pedidoId)?state.pedidoId:'';
-    if(mercadoPagoReturn==='exito') return {cart:[],coupon:'',pedidoId};
-    if(!Array.isArray(state.cart)) return {cart:[],coupon:'',pedidoId};
-    const restoredCart=state.cart.filter(item=>
-      Number.isInteger(Number(item.id))&&Number(item.id)>0&&
-      Number.isInteger(Number(item.qty))&&Number(item.qty)>0&&
-      Number.isFinite(Number(item.price))&&Number(item.price)>=0
-    ).map(item=>({
-      id:Number(item.id),
-      name:typeof item.name==='string'?item.name.slice(0,200):'Producto',
-      price:Number(item.price),
-      img:imagenSegura(item.img),
-      brand:typeof item.brand==='string'?item.brand.slice(0,100):'BYTE BAY',
-      category:typeof item.category==='string'?item.category.slice(0,100):'',
-      qty:Number(item.qty)
-    }));
-    return {cart:restoredCart,coupon:typeof state.coupon==='string'?state.coupon:'',pedidoId};
-  }catch(error){
-    console.error('No se pudo restaurar el carrito después del pago:',error);
-    return {cart:[],coupon:'',pedidoId:''};
-  }
-})();
-const mercadoPagoPedido=(()=>{
-  const desdeUrl=new URLSearchParams(window.location.search).get('pedido')||'';
-  const candidato=(desdeUrl||mercadoPagoCartState.pedidoId||'').trim();
-  return UUID_PATTERN.test(candidato)?candidato:'';
-})();
 const CART_STORAGE_KEY='bbCart';
 function loadSavedCart(){
-  if(mercadoPagoReturn==='exito'){
-    try{localStorage.removeItem(CART_STORAGE_KEY);}
-    catch(error){console.error('No se pudo limpiar el carrito tras completar el pago:',error);}
-    return [];
-  }
   try{
     const saved=JSON.parse(localStorage.getItem(CART_STORAGE_KEY)||'[]');
     if(!Array.isArray(saved)) return [];
@@ -257,9 +217,9 @@ function loadSavedCart(){
     return [];
   }
 }
-let cart=mercadoPagoCartState.cart.length?mercadoPagoCartState.cart:loadSavedCart();
+let cart=loadSavedCart();
 let start=0;
-let discountRate=['BERU10','BYTE10'].includes(mercadoPagoCartState.coupon)?0.1:mercadoPagoCartState.coupon==='HOGAR15'?0.15:0;
+let discountRate=0;
 let shippingValue=0;
 let activeCategory='all';
 let activeQuery='';
@@ -530,15 +490,15 @@ const footerInfo={
   'Quiénes somos':{title:'Quiénes somos',body:'<p>Byte Bay es una tienda digital peruana de productos para hogar, tecnología, supermercado y más. Nuestro objetivo es que puedas comprar desde un solo lugar con información clara del producto, stock y precio.</p><p>El catálogo y el inventario se controlan desde nuestra plataforma para evitar publicar productos agotados o próximos a vencer.</p>'},
   'Trabaja con nosotros':{title:'Trabaja con nosotros',body:'<p>Si deseas formar parte de Byte Bay, envíanos por redes sociales:</p><ol><li>Tu nombre completo.</li><li>Distrito o ciudad.</li><li>Área de interés: ventas, almacén, reparto, atención al cliente o contenido.</li><li>Un medio de contacto.</li></ol><p>No envíes contraseñas, DNI completo ni códigos bancarios por mensaje.</p>'},
   'Sostenibilidad':{title:'Sostenibilidad',body:'<p>Byte Bay controla lotes, proveedores y fechas de vencimiento para reducir desperdicios.</p><ul><li>Productos a 30 días de vencer: descuento de 20%.</li><li>Productos a 21 días de vencer: descuento de 50%.</li><li>Productos a 7 días de vencer: se retiran del catálogo.</li><li>Productos dañados o devueltos: no se ofrecen para venta.</li></ul>'},
-  'Cómo comprar':{title:'Cómo comprar',body:'<ol><li>Busca el producto por nombre, marca o categoría.</li><li>Agrega la cantidad deseada al carrito.</li><li>Presiona <strong>Continuar compra</strong> e inicia sesión con tu cuenta Byte Bay.</li><li>Completa nombres, documento, dirección, correo y teléfono.</li><li>Presiona <strong>Pagar con Mercado Pago</strong> y completa el pago en la página segura de Mercado Pago.</li><li>Vuelve a Byte Bay: el pago se confirma automáticamente.</li><li>Guarda tu código de pedido <strong>BERU-XXXXXXXX</strong>.</li></ol><p>El stock se reserva por 15 minutos y el pedido se confirma cuando Mercado Pago acredita el pago.</p>'},
-  'Medios de pago':{title:'Medios de pago',body:'<p>El medio habilitado es <strong>Mercado Pago Checkout Pro</strong>. Según tu cuenta y el país, Mercado Pago puede ofrecer tarjetas, Yape u otros medios disponibles.</p><ol><li>Presiona <strong>Pagar con Mercado Pago</strong>.</li><li>Revisa que el monto coincida con el total del pedido.</li><li>Completa el pago en la página segura de Mercado Pago.</li><li>Vuelve a Byte Bay: confirmamos el pago automáticamente.</li></ol><p>Byte Bay no solicita ni almacena el número de tarjeta, CVV, claves bancarias ni contraseñas.</p>'},
+  'Cómo comprar':{title:'Cómo comprar',body:'<ol><li>Busca el producto por nombre, marca o categoría.</li><li>Agrega la cantidad deseada al carrito.</li><li>Presiona <strong>Continuar compra</strong> e inicia sesión con tu cuenta Byte Bay.</li><li>Completa nombres, documento, dirección, correo y teléfono.</li><li>Presiona <strong>Pagar con tarjeta</strong> y completa el pago en el formulario seguro de Culqi.</li><li>Vuelve a Byte Bay: el pago se confirma automáticamente.</li><li>Guarda tu código de pedido <strong>BERU-XXXXXXXX</strong>.</li></ol><p>El stock se reserva por 15 minutos y el pedido se confirma cuando Culqi acredita el pago.</p>'},
+  'Medios de pago':{title:'Medios de pago',body:'<p>El medio habilitado es <strong>tarjeta de crédito o débito</strong> (Visa, Mastercard, American Express y Diners), procesada por <strong>Culqi</strong>.</p><ol><li>Presiona <strong>Pagar con tarjeta</strong>.</li><li>Revisa que el monto coincida con el total del pedido.</li><li>Completa los datos de tu tarjeta en el formulario seguro de Culqi.</li><li>El pago se confirma automáticamente en Byte Bay.</li></ol><p>Byte Bay no solicita ni almacena el número de tarjeta, CVV, claves bancarias ni contraseñas.</p>'},
   'Envíos y devoluciones':{title:'Envíos y devoluciones',body:'<p>El envío es gratis a todo el Perú, sin monto mínimo de compra.</p><p>Antes de registrar el pedido, confirma que tu dirección incluya calle, número, distrito y ciudad. Conserva tu código de pedido.</p><p>Para consultar un envío, corregir una dirección o reportar un problema, escribe por redes sociales con: nombre del comprador, código <strong>BERU-XXXXXXXX</strong> y una explicación breve.</p><p>No envíes fotos de documentos completos ni contraseñas.</p>'},
-  'Centro de ayuda':{title:'Centro de ayuda',body:'<p>Elige el caso que necesitas resolver y envíanos estos datos por una red oficial:</p><ul><li><strong>Pedido pendiente:</strong> código BERU, nombre y comprobante de Mercado Pago.</li><li><strong>Problema con producto:</strong> código BERU, nombre del producto y fotos claras.</li><li><strong>Cambio de dirección:</strong> código BERU y la dirección completa corregida.</li><li><strong>Producto agotado:</strong> nombre o código del producto para revisar alternativas.</li><li><strong>Acceso a cuenta:</strong> correo registrado. Nunca envíes tu contraseña.</li></ul><p>Las cuentas de redes oficiales están enlazadas abajo en el pie de página.</p>'},
-  'Preguntas frecuentes':{title:'Preguntas frecuentes',body:'<p><strong>¿Cómo registro un pedido?</strong></p><p>Agrega productos al carrito, inicia sesión con tu cuenta Byte Bay, completa tus datos de entrega y paga con Mercado Pago. La confirmación es automática cuando Mercado Pago acredita el pago.</p><p><strong>¿Qué medios de pago aceptan?</strong></p><p>Mercado Pago Checkout Pro. Según tu cuenta y el país, puede ofrecer tarjetas, Yape u otros medios disponibles. Byte Bay no solicita ni almacena datos de tarjeta ni claves bancarias.</p><p><strong>¿Cómo sigo mi pedido?</strong></p><p>Guarda el código BERU que recibes al registrar la compra y consúltanos por nuestras redes oficiales.</p><p><strong>¿Puedo cambiar la dirección?</strong></p><p>Escríbenos con tu código BERU y la dirección corregida antes de que el pedido salga a reparto.</p><p><strong>¿Cómo elimino mi cuenta?</strong></p><p>Solicítalo por nuestras redes oficiales con el correo registrado. No envíes tu contraseña.</p>'},
+  'Centro de ayuda':{title:'Centro de ayuda',body:'<p>Elige el caso que necesitas resolver y envíanos estos datos por una red oficial:</p><ul><li><strong>Pedido pendiente:</strong> código BERU, nombre y comprobante del pago con tarjeta.</li><li><strong>Problema con producto:</strong> código BERU, nombre del producto y fotos claras.</li><li><strong>Cambio de dirección:</strong> código BERU y la dirección completa corregida.</li><li><strong>Producto agotado:</strong> nombre o código del producto para revisar alternativas.</li><li><strong>Acceso a cuenta:</strong> correo registrado. Nunca envíes tu contraseña.</li></ul><p>Las cuentas de redes oficiales están enlazadas abajo en el pie de página.</p>'},
+  'Preguntas frecuentes':{title:'Preguntas frecuentes',body:'<p><strong>¿Cómo registro un pedido?</strong></p><p>Agrega productos al carrito, inicia sesión con tu cuenta Byte Bay, completa tus datos de entrega y paga con tarjeta mediante Culqi. La confirmación es automática cuando Culqi acredita el pago.</p><p><strong>¿Qué medios de pago aceptan?</strong></p><p>Tarjetas de crédito y débito (Visa, Mastercard, American Express y Diners) procesadas por Culqi. Byte Bay no solicita ni almacena datos de tarjeta ni claves bancarias.</p><p><strong>¿Cómo sigo mi pedido?</strong></p><p>Guarda el código BERU que recibes al registrar la compra y consúltanos por nuestras redes oficiales.</p><p><strong>¿Puedo cambiar la dirección?</strong></p><p>Escríbenos con tu código BERU y la dirección corregida antes de que el pedido salga a reparto.</p><p><strong>¿Cómo elimino mi cuenta?</strong></p><p>Solicítalo por nuestras redes oficiales con el correo registrado. No envíes tu contraseña.</p>'},
   'Contáctanos':{title:'Contáctanos',body:'<p>Escríbenos por cualquiera de nuestras redes oficiales. Incluye tu consulta y, si se trata de una compra, tu código BERU.</p><p><a href="https://tiktok.com/@bytebayperu" target="_blank" rel="noopener noreferrer">TikTok</a> · <a href="https://www.instagram.com/bytebayperu?stkn=b2Zlc3c4M2lrcjJw" target="_blank" rel="noopener noreferrer">Instagram</a> · <a href="https://youtube.com/@bytebayperu?si=4nyrzBNYliTeMwbu" target="_blank" rel="noopener noreferrer">YouTube</a> · <a href="https://x.com/bytebayperu" target="_blank" rel="noopener noreferrer">X</a> · <a href="https://www.facebook.com/share/19SYEVhY7c/" target="_blank" rel="noopener noreferrer">Facebook</a>.</p>'},
   'Libro de reclamaciones':{title:'Libro de reclamaciones',body:'<p>Para registrar un reclamo formal debes indicar: nombre completo, documento, correo, descripción del producto o servicio, número de pedido y el detalle de tu reclamo.</p><p>Esta sección quedará habilitada para envío real cuando configuremos el correo oficial del negocio y los datos legales requeridos.</p>'},
   'Privacidad':{title:'Privacidad',body:'<p>Byte Bay usa tu nombre, correo, teléfono, dirección y datos de pedido solo para registrar compras, verificar pagos, gestionar entregas y responder solicitudes.</p><p>Las contraseñas se guardan cifradas. Nunca te pediremos contraseña, datos de tarjeta, CVV, claves bancarias ni códigos de seguridad por redes sociales.</p>'},
-  'Términos':{title:'Términos de uso',body:'<p>Un pedido pagado con Mercado Pago se registra inicialmente como <strong>pendiente</strong> y se confirma automáticamente cuando Mercado Pago acredita el pago. El stock se reserva por 15 minutos; si el pago no se completa, la reserva se libera.</p><p>El código de pedido <strong>BERU-XXXXXXXX</strong> identifica tu compra. Guárdalo hasta que el pedido sea entregado o resuelto.</p>'}
+  'Términos':{title:'Términos de uso',body:'<p>Un pedido pagado con tarjeta se registra inicialmente como <strong>pendiente</strong> y se confirma automáticamente cuando Culqi acredita el pago. El stock se reserva por 15 minutos; si el pago no se completa, la reserva se libera.</p><p>El código de pedido <strong>BERU-XXXXXXXX</strong> identifica tu compra. Guárdalo hasta que el pedido sea entregado o resuelto.</p>'}
 };
 function openFooterInfo(info){
   let modal=document.querySelector('#footerInfoModal');
@@ -929,6 +889,214 @@ paymentNext.onclick=()=>setPaymentStep(2);
 
 function syncPaymentUI(){}
 
+let bbCulqiPedido=null;
+let bbCulqiProcesando=false;
+
+function culqiDisponible(){
+  return Boolean(window.Culqi&&typeof window.Culqi.open==='function');
+}
+
+function firmaCarritoCompra(){
+  return JSON.stringify(cart.map(item=>[Number(item.id),Number(item.qty)]).sort((a,b)=>a[0]-b[0]));
+}
+
+function datosClienteCheckout(){
+  return {
+    correo:document.querySelector('#email').value.trim().toLowerCase(),
+    nombre_completo:document.querySelector('#fullName').value.trim(),
+    documento:document.querySelector('#documentId').value.trim(),
+    direccion:[
+      document.querySelector('#street').value.trim(),
+      document.querySelector('#streetNumber').value.trim(),
+      document.querySelector('#district').value.trim(),
+      document.querySelector('#city').value.trim()
+    ].join(', '),
+    telefono:document.querySelector('#phone').value.trim()
+  };
+}
+
+async function consultarEstadoCulqi(pedidoId,sesionToken,intentos=10){
+  let ultimo=null;
+  for(let i=0;i<intentos;i++){
+    try{
+      const {data,error}=await supabaseClient.functions.invoke('consultar-pago-culqi',{
+        body:{sesion_token:sesionToken,pedido:pedidoId}
+      });
+      if(!error&&data?.ok){
+        ultimo=data;
+        if(['aprobado','rechazado','expirado','reembolsado'].includes(data.estado)) break;
+      }
+    }catch(error){
+      console.error('Consulta del pago con Culqi:',error);
+    }
+    if(i<intentos-1) await new Promise(resolve=>setTimeout(resolve,3000));
+  }
+  return ultimo;
+}
+
+function finalizarPagoCulqi(resultado){
+  const numero=resultado?.numero_pedido?` Pedido ${resultado.numero_pedido}.`:'';
+  if(resultado?.estado==='aprobado'){
+    bbCulqiPedido=null;
+    vaciarCarritoTrasPago();
+    mostrarBannerPago('exito','¡Pago confirmado!',`Tu compra quedó registrada.${numero} Te contactaremos para coordinar la entrega.`);
+    closeCheckout();
+    return true;
+  }
+  if(resultado?.estado==='rechazado'||resultado?.estado==='expirado'){
+    bbCulqiPedido=null;
+    mostrarBannerPago('fallo','El pago no se completó',`Puedes volver a intentarlo desde tu carrito.${numero}`);
+    setPaymentStep(2);
+    return true;
+  }
+  if(resultado?.estado==='reembolsado'){
+    bbCulqiPedido=null;
+    mostrarBannerPago('info','Pago reembolsado',`Culqi registró un reembolso para este pedido.${numero}`);
+    setPaymentStep(2);
+    return true;
+  }
+  return false;
+}
+
+function abrirCheckoutCulqi(pendiente){
+  if(!culqiDisponible()){
+    setPaymentStep(2);
+    showToast('El formulario de pago aún está cargando. Recarga la página e inténtalo nuevamente.');
+    return;
+  }
+  try{
+    window.Culqi.publicKey=pendiente.publicKey;
+    window.Culqi.settings({
+      title:'Byte Bay',
+      currency:'PEN',
+      amount:pendiente.totalCentimos,
+      description:`Pedido ${pendiente.numeroPedido}`
+    });
+    window.Culqi.options({
+      lang:'es',
+      installments:false,
+      paymentMethods:{
+        tarjeta:true,
+        yape:false,
+        bancaMovil:false,
+        agente:false,
+        billetera:false,
+        cuotealo:false
+      },
+      style:{
+        logo:'https://zzz000zzz555.github.io/Byte-Bay-web/byte-bay-logo-transparent.png',
+        bannerColor:'#0b1220',
+        buttonBackground:'#1f6feb',
+        menuColor:'#1f6feb',
+        linksColor:'#1f6feb',
+        buttonText:'Pagar',
+        buttonTextColor:'#ffffff',
+        priceColor:'#0b1220'
+      }
+    });
+    setPaymentStep(2);
+    window.Culqi.open();
+  }catch(error){
+    console.error('No se pudo abrir Culqi Checkout:',error);
+    setPaymentStep(2);
+    showToast('No se pudo abrir el formulario de pago. Inténtalo nuevamente.');
+  }
+}
+
+window.culqi=async function(){
+  const pendiente=bbCulqiPedido;
+  if(!pendiente||bbCulqiProcesando) return;
+
+  if(window.Culqi?.token?.id){
+    const token=window.Culqi.token.id;
+    try{window.Culqi.close();}
+    catch(error){console.error('No se pudo cerrar Culqi Checkout:',error);}
+    bbCulqiProcesando=true;
+    setPaymentStep(3);
+    try{
+      const {data,error}=await supabaseClient.functions.invoke('cobrar-culqi',{
+        body:{
+          sesion_token:pendiente.sesionToken,
+          pedido_id:pendiente.pedidoId,
+          token
+        }
+      });
+
+      if(error){
+        let detalle='No se pudo completar el pago.';
+        let codigo='';
+        try{
+          const cuerpo=await error.context?.clone()?.json();
+          detalle=cuerpo?.error||detalle;
+          codigo=cuerpo?.codigo||'';
+        }catch(parseError){}
+        console.error('Cobro con Culqi:',error);
+
+        if(codigo==='AMBIGUO'){
+          showToast('Estamos verificando el pago…');
+          const estado=await consultarEstadoCulqi(pendiente.pedidoId,pendiente.sesionToken,6);
+          if(estado&&finalizarPagoCulqi(estado)) return;
+          mostrarBannerPago('pendiente','Pago pendiente de confirmación','No vuelvas a pagar todavía. Te avisaremos cuando se confirme.');
+          setPaymentStep(2);
+          return;
+        }
+
+        bbCulqiPedido=null;
+        setPaymentStep(2);
+        showToast(detalle);
+        return;
+      }
+
+      if(data?.ok===false&&data?.estado==='rechazado'){
+        bbCulqiPedido=null;
+        setPaymentStep(2);
+        mostrarBannerPago('fallo','El pago fue rechazado',data.error||'Revisa los datos de tu tarjeta e inténtalo nuevamente.');
+        showToast(data.error||'El pago fue rechazado.');
+        return;
+      }
+
+      if(data?.ok){
+        const estado=await consultarEstadoCulqi(pendiente.pedidoId,pendiente.sesionToken,data.estado==='aprobado'?1:10);
+        if(estado&&finalizarPagoCulqi(estado)) return;
+        if(!estado&&data.estado==='aprobado'){
+          bbCulqiPedido=null;
+          vaciarCarritoTrasPago();
+          mostrarBannerPago('exito','¡Pago confirmado!',`Tu compra quedó registrada. Pedido ${pendiente.numeroPedido}.`);
+          closeCheckout();
+          return;
+        }
+        mostrarBannerPago('pendiente','Pago pendiente de confirmación',`Pedido ${pendiente.numeroPedido}. Te avisaremos cuando se acredite; no vuelvas a pagar.`);
+        setPaymentStep(2);
+        return;
+      }
+
+      setPaymentStep(2);
+      showToast('No se pudo completar el pago. Inténtalo nuevamente.');
+    }catch(error){
+      console.error('Cobro con Culqi:',error);
+      setPaymentStep(2);
+      showToast('No se pudo completar el pago. Revisa tu conexión e inténtalo nuevamente.');
+    }finally{
+      bbCulqiProcesando=false;
+    }
+    return;
+  }
+
+  if(window.Culqi?.order){
+    try{window.Culqi.close();}
+    catch(error){console.error('No se pudo cerrar Culqi Checkout:',error);}
+    mostrarBannerPago('pendiente','Pago pendiente de confirmación','Te avisaremos cuando Culqi confirme la operación.');
+    setPaymentStep(2);
+    return;
+  }
+
+  const detalle=window.Culqi?.error?.user_message
+    ||window.Culqi?.error?.merchant_message
+    ||'No se pudo validar la tarjeta. Revisa los datos e inténtalo nuevamente.';
+  console.error('Culqi Checkout:',window.Culqi?.error);
+  showToast(detalle);
+};
+
 document.querySelector('#payNow').onclick=async()=>{
   const count=cart.reduce((a,x)=>a+x.qty,0);
   if(!count){
@@ -946,6 +1114,10 @@ document.querySelector('#payNow').onclick=async()=>{
     showToast('No se puede registrar la compra: la BD no está conectada.');
     return;
   }
+  if(!culqiDisponible()){
+    showToast('El formulario de pago aún está cargando. Espera un momento e inténtalo nuevamente.');
+    return;
+  }
   const sesionCompra=await window.BBPrivacy?.obtenerSesionCliente?.();
   if(!sesionCompra?.ok){
     if(['SERVICIO_NO_DISPONIBLE','VALIDACION_NO_DISPONIBLE'].includes(sesionCompra?.error)){
@@ -957,46 +1129,60 @@ document.querySelector('#payNow').onclick=async()=>{
     openAccountModal(true);
     return;
   }
+
+  const cliente=datosClienteCheckout();
+  const cupon=document.querySelector('#couponInput').value.trim().toUpperCase();
+  const firma=[
+    firmaCarritoCompra(),
+    cliente.correo,
+    cliente.nombre_completo,
+    cliente.documento,
+    cliente.direccion,
+    cliente.telefono,
+    cupon
+  ].join('|');
+
+  if(bbCulqiPedido&&bbCulqiPedido.firma===firma&&Date.now()<bbCulqiPedido.expiraEnMs){
+    abrirCheckoutCulqi(bbCulqiPedido);
+    return;
+  }
+
   setPaymentStep(3);
-  const cliente={
-    correo:document.querySelector('#email').value.trim().toLowerCase(),
-    nombre_completo:document.querySelector('#fullName').value.trim(),
-    documento:document.querySelector('#documentId').value.trim(),
-    direccion:[
-      document.querySelector('#street').value.trim(),
-      document.querySelector('#streetNumber').value.trim(),
-      document.querySelector('#district').value.trim(),
-      document.querySelector('#city').value.trim()
-    ].join(', '),
-    telefono:document.querySelector('#phone').value.trim()
-  };
   try{
-    const {data,error}=await supabaseClient.functions.invoke('crear-pago',{
+    const {data,error}=await supabaseClient.functions.invoke('crear-pago-culqi',{
       body:{
         articulos:cart.map(item=>({id_producto:item.id,cantidad:item.qty})),
         cliente,
-        cupon:document.querySelector('#couponInput').value.trim().toUpperCase(),
+        cupon,
         sesion_token:sesionCompra.access_token
       }
     });
-    if(error||!data?.checkout_url){
-      console.error('Mercado Pago checkout:',error||data);
+
+    if(error||!data?.pedido_id||!data?.public_key){
+      let detalle=data?.error||error?.message||'No se pudo iniciar el pago.';
+      try{
+        const cuerpo=await error?.context?.clone()?.json();
+        detalle=cuerpo?.error||detalle;
+      }catch(parseError){}
+      console.error('Inicio de pago con Culqi:',error||data);
       setPaymentStep(2);
-      showToast(data?.error||error?.message||'No se pudo iniciar el pago.');
+      showToast(detalle);
       return;
     }
-    try{
-      sessionStorage.setItem('bbMercadoPagoCheckout',JSON.stringify({
-        cart,
-        coupon:document.querySelector('#couponInput').value.trim().toUpperCase(),
-        pedidoId:data.pedido_id
-      }));
-    }catch(error){
-      console.error('No se pudo guardar temporalmente el carrito:',error);
-    }
-    window.location.assign(data.checkout_url);
+
+    const expira=Date.parse(data.expira_en);
+    bbCulqiPedido={
+      pedidoId:data.pedido_id,
+      numeroPedido:data.numero_pedido,
+      totalCentimos:Number(data.total_centimos),
+      publicKey:data.public_key,
+      sesionToken:sesionCompra.access_token,
+      firma,
+      expiraEnMs:Number.isFinite(expira)?expira-10000:Date.now()+10*60*1000
+    };
+    abrirCheckoutCulqi(bbCulqiPedido);
   }catch(error){
-    console.error('Mercado Pago checkout:',error);
+    console.error('Inicio de pago con Culqi:',error);
     setPaymentStep(2);
     showToast('No se pudo iniciar el pago. Revisa tu conexión e inténtalo nuevamente.');
   }
@@ -1131,57 +1317,6 @@ function vaciarCarritoTrasPago(){
   catch(error){console.error('No se pudo actualizar el carrito tras el pago:',error);}
 }
 
-async function confirmarEstadoPago(){
-  if(!['exito','fallo','pendiente'].includes(mercadoPagoReturn)) return;
-  const mensajes={
-    exito:{titulo:'Estamos confirmando tu pago con Mercado Pago',detalle:'No cierres esta página. Verificaremos el estado del pedido en unos segundos.'},
-    fallo:{titulo:'Mercado Pago informó que el pago no se completó',detalle:'Verificaremos el estado real antes de que vuelvas a intentarlo.'},
-    pendiente:{titulo:'Tu pago está pendiente de confirmación',detalle:'Mercado Pago todavía está procesando la operación.'}
-  }[mercadoPagoReturn];
-  mostrarBannerPago(mercadoPagoReturn==='fallo'?'fallo':'pendiente',mensajes.titulo,mensajes.detalle);
-
-  const sesion=await window.BBPrivacy?.obtenerSesionCliente?.();
-  if(!supabaseClient||!sesion?.ok||!mercadoPagoPedido){
-    mostrarBannerPago(mercadoPagoReturn==='exito'?'pendiente':'fallo',
-      mercadoPagoReturn==='exito'?'Pago enviado a revisión':'No pudimos verificar el pago',
-      'Inicia sesión con tu cuenta Byte Bay para consultar el estado de tu pedido.');
-    return;
-  }
-
-  let ultimo=null;
-  for(let intento=0;intento<10;intento++){
-    try{
-      const {data,error}=await supabaseClient.functions.invoke('consultar-pago',{
-        body:{sesion_token:sesion.access_token,pedido:mercadoPagoPedido}
-      });
-      if(!error&&data?.ok){
-        ultimo=data;
-        if(['aprobado','rechazado','expirado','reembolsado'].includes(data.estado)) break;
-      }
-    }catch(error){
-      console.error('Consulta del estado del pago:',error);
-    }
-    if(intento<9) await new Promise(resolve=>setTimeout(resolve,3000));
-  }
-
-  const numero=ultimo?.numero_pedido?` Pedido ${ultimo.numero_pedido}.`:'';
-  if(ultimo?.estado==='aprobado'){
-    vaciarCarritoTrasPago();
-    mostrarBannerPago('exito','¡Pago confirmado!',`Tu compra quedó registrada.${numero} Te contactaremos para coordinar la entrega.`);
-    return;
-  }
-  if(ultimo?.estado==='rechazado'||ultimo?.estado==='expirado'){
-    mostrarBannerPago('fallo','El pago no se completó',`Puedes volver a intentarlo desde tu carrito.${numero}`);
-    return;
-  }
-  if(ultimo?.estado==='reembolsado'){
-    mostrarBannerPago('info','Pago reembolsado',`Mercado Pago registró un reembolso para este pedido.${numero}`);
-    return;
-  }
-  mostrarBannerPago('pendiente','Pago pendiente de confirmación',
-    `Mercado Pago aún no confirma el pago.${numero} Te avisaremos cuando se acredite; no vuelvas a pagar.`);
-}
-
 function configurarAsistenteIA(){
   const panel=document.querySelector('#aiAssistantPanel'),boton=document.querySelector('#aiAssistantToggle'),chat=document.querySelector('#aiChat'),formulario=document.querySelector('#aiAssistantForm'),entrada=document.querySelector('#aiAssistantInput');
   const abrir=()=>{panel.classList.remove('hidden');entrada.focus();};
@@ -1250,19 +1385,8 @@ configurarAsistenteIA();
 iniciarCarruselHero();
 renderProducts();
 renderizarPersonalizacion();
-if(mercadoPagoCartState.cart.length){
-  document.querySelector('#couponInput').value=mercadoPagoCartState.coupon;
-}
 if(cart.length){
   if(!updateCart()) showToast('No se pudo guardar el carrito en este dispositivo.');
-}
-if(['exito','fallo','pendiente'].includes(mercadoPagoReturn)){
-  const urlLimpia=new URL(window.location.href);
-  urlLimpia.searchParams.delete('pago');
-  urlLimpia.searchParams.delete('pedido');
-  window.history.replaceState(null,'',urlLimpia);
-  if(document.readyState==='complete') setTimeout(confirmarEstadoPago,0);
-  else window.addEventListener('load',()=>confirmarEstadoPago(),{once:true});
 }
 loadCatalogFromSupabase();
 if(!supabaseClient){

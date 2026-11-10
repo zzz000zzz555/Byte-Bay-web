@@ -11,3 +11,15 @@ verify_jwt = false
 
 [functions.webhook-mercado-pago]
 verify_jwt = false
+
+[functions.crear-pago-culqi]
+verify_jwt = false
+
+[functions.cobrar-culqi]
+verify_jwt = false
+
+[functions.consultar-pago-culqi]
+verify_jwt = false
+
+[functions.webhook-culqi]
+verify_jwt = false

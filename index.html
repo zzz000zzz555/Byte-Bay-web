@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.emailjs.com; frame-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://*.culqi.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.culqi.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.emailjs.com https://api.culqi.com https://*.culqi.com; frame-src https://*.culqi.com">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="description" content="Byte Bay, compra y vende fácil. Tecnología, hogar, supermercado y más con envío gratis a todo el Perú.">
   <meta name="theme-color" content="#0d2b31">
@@ -26,6 +26,7 @@
   <!-- EmailJS permite enviar el correo desde la página sin exponer la contraseña de Gmail. -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://checkout.culqi.com/js/v4"></script>
 </head>
 <body>
   <header class="header">
@@ -248,16 +249,16 @@
         <article class="checkout-card checkout-steps">
           <div class="checkout-step"><span>1</span><div><strong>Tu carrito</strong><p>Revisa los productos antes de pagar.</p></div></div>
           <div class="checkout-step"><span>2</span><div><strong>Datos de entrega</strong><p>Escribe una dirección clara para evitar errores.</p></div></div>
-          <div class="checkout-step"><span>3</span><div><strong>Confirma el pago</strong><p>Completa el pago de forma segura en Mercado Pago.</p></div></div>
+          <div class="checkout-step"><span>3</span><div><strong>Confirma el pago</strong><p>Completa el pago de forma segura con Culqi.</p></div></div>
           <div class="checkout-note">Tus datos se procesan de forma segura y el resumen se actualiza al instante.</div>
-          <div class="checkout-note subtle">El pago se procesa en Mercado Pago. Byte Bay nunca recibe ni almacena los datos de tu tarjeta.</div>
+          <div class="checkout-note subtle">El pago se procesa en Culqi. Byte Bay nunca recibe ni almacena los datos de tu tarjeta.</div>
         </article>
         <article class="checkout-card">
           <div class="checkout-head">
             <h3>Medios de pago</h3>
             <span class="checkout-tag">Seguro</span>
           </div>
-          <div class="payment-methods" id="paymentMethods"><div class="payment-option active"><span><strong>Mercado Pago</strong><small>Tarjetas, Yape y otros medios dependen de la disponibilidad de Mercado Pago. Algunas opciones pueden requerir iniciar sesión.</small></span></div></div>
+          <div class="payment-methods" id="paymentMethods"><div class="payment-option active"><span><strong>Tarjeta de crédito o débito</strong><small>Visa, Mastercard, American Express y Diners. Pago procesado por Culqi; Byte Bay no recibe los datos de tu tarjeta.</small></span></div></div>
           <button class="btn primary payment-next" id="paymentNext" type="button">Continuar</button>
           <div class="checkout-form">
             <div class="form-row two">
@@ -278,8 +279,8 @@
             </div>
           </div>
           <div class="payment-panel" id="walletPanel">
-            <div class="panel-title">Pago protegido por Mercado Pago</div>
-            <p>Debes iniciar sesión con tu cuenta Byte Bay para comprar. El pedido quedará asociado a tu cuenta. Mercado Pago te mostrará los medios disponibles; según el método elegido, podría solicitar iniciar sesión o validar tu identidad.</p>
+            <div class="panel-title">Pago protegido por Culqi</div>
+            <p>Debes iniciar sesión con tu cuenta Byte Bay para comprar. El pedido quedará asociado a tu cuenta. Al confirmar, se abrirá el formulario seguro de Culqi para ingresar los datos de tu tarjeta.</p>
           </div>
           <div class="payment-box">
             <div><span>Subtotal</span><strong id="checkoutSubtotal">S/ 0.00</strong></div>
@@ -292,7 +293,7 @@
             <button class="btn secondary" type="submit">Aplicar</button>
           </form>
           <div class="checkout-actions">
-            <button class="btn primary checkout" id="payNow">Pagar con Mercado Pago</button>
+            <button class="btn primary checkout" id="payNow">Pagar con tarjeta</button>
             <button class="btn secondary checkout-secondary" id="saveCheckout">Guardar compra</button>
           </div>
           <div class="payment-processing hidden" id="paymentProcessing" aria-live="polite">
@@ -308,7 +309,7 @@
 
     </main>
 
-  <footer id="ayuda"><div class="wrap footer-grid"><div><a class="brand footer-brand" href="#"><span class="brand-logo"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></span></a><p>Comprar y vender debería sentirse fácil. Por eso reunimos variedad, buenos precios y una experiencia en la que puedes confiar.</p></div><div><h5>Acerca de Byte Bay</h5><a href="#">Quiénes somos</a><a href="#">Trabaja con nosotros</a><a href="#">Sostenibilidad</a></div><div><h5>Compra con confianza</h5><a href="#">Cómo comprar</a><a href="#">Medios de pago</a><a href="#">Envíos y devoluciones</a></div><div><h5>Redes oficiales</h5><a href="https://tiktok.com/@bytebayperu" target="_blank" rel="noopener noreferrer">TikTok · @bytebayperu</a><a href="https://www.instagram.com/bytebayperu?stkn=b2Zlc3c4M2lrcjJw" target="_blank" rel="noopener noreferrer">Instagram · @bytebayperu</a><a href="https://youtube.com/@bytebayperu?si=4nyrzBNYliTeMwbu" target="_blank" rel="noopener noreferrer">YouTube · @bytebayperu</a><a href="https://x.com/bytebayperu" target="_blank" rel="noopener noreferrer">X · @bytebayperu</a><a href="https://www.facebook.com/share/19SYEVhY7c/" target="_blank" rel="noopener noreferrer">Facebook · Byte Bay Perú</a></div><div><h5>¿Necesitas ayuda?</h5><a href="#">Centro de ayuda</a><a href="#">Contáctanos</a><a href="#" id="openClaimsForm">Libro de reclamaciones</a></div></div><div class="wrap footer-bottom"><span>© 2026 Byte Bay. Todos los derechos reservados.</span><div><a href="#">Privacidad</a><a href="#">Términos</a><span>Mercado Pago</span></div></div></footer>
+  <footer id="ayuda"><div class="wrap footer-grid"><div><a class="brand footer-brand" href="#"><span class="brand-logo"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></span></a><p>Comprar y vender debería sentirse fácil. Por eso reunimos variedad, buenos precios y una experiencia en la que puedes confiar.</p></div><div><h5>Acerca de Byte Bay</h5><a href="#">Quiénes somos</a><a href="#">Trabaja con nosotros</a><a href="#">Sostenibilidad</a></div><div><h5>Compra con confianza</h5><a href="#">Cómo comprar</a><a href="#">Medios de pago</a><a href="#">Envíos y devoluciones</a></div><div><h5>Redes oficiales</h5><a href="https://tiktok.com/@bytebayperu" target="_blank" rel="noopener noreferrer">TikTok · @bytebayperu</a><a href="https://www.instagram.com/bytebayperu?stkn=b2Zlc3c4M2lrcjJw" target="_blank" rel="noopener noreferrer">Instagram · @bytebayperu</a><a href="https://youtube.com/@bytebayperu?si=4nyrzBNYliTeMwbu" target="_blank" rel="noopener noreferrer">YouTube · @bytebayperu</a><a href="https://x.com/bytebayperu" target="_blank" rel="noopener noreferrer">X · @bytebayperu</a><a href="https://www.facebook.com/share/19SYEVhY7c/" target="_blank" rel="noopener noreferrer">Facebook · Byte Bay Perú</a></div><div><h5>¿Necesitas ayuda?</h5><a href="#">Centro de ayuda</a><a href="#">Contáctanos</a><a href="#" id="openClaimsForm">Libro de reclamaciones</a></div></div><div class="wrap footer-bottom"><span>© 2026 Byte Bay. Todos los derechos reservados.</span><div><a href="#">Privacidad</a><a href="#">Términos</a><span>Culqi</span></div></div></footer>
 
   <aside class="cart-drawer" id="cartDrawer" aria-hidden="true"><div class="cart-header"><div><small>TU COMPRA</small><h2>Carrito <span id="cartTitleCount">(0)</span></h2></div><button id="cartClose" aria-label="Cerrar carrito">×</button></div><div class="cart-items" id="cartItems"><div class="empty-cart"><span>▱</span><h3>Tu carrito está vacío</h3><p>Agrega productos para ver tu resumen de compra.</p></div></div><div class="cart-summary"><div><span>Subtotal</span><strong id="cartSubtotal">S/ 0.00</strong></div><div><span>Envío</span><strong class="free-shipping">Gratis</strong></div><p id="cartDeliveryNote">Envío gratis a todo el Perú. El cupón y el total final se calculan al instante.</p><button class="btn primary checkout" id="openCheckout">Continuar compra</button></div></aside><div class="overlay" id="overlay"></div>
   <div class="product-modal" id="productModal" aria-hidden="true">
@@ -470,7 +471,7 @@
   </section>
   <button id="aiAssistantToggle" class="ai-assistant-toggle" type="button" aria-label="Abrir Asistente Byte"><span>✦</span> Asistente Byte</button>
   <section id="aiAssistantPanel" class="ai-assistant-panel hidden" aria-label="Asistente Byte"><header><div><span class="section-kicker">IA DE BYTE BAY</span><h2>¿Qué estás buscando?</h2></div><button id="aiAssistantClose" type="button" aria-label="Cerrar asistente">×</button></header><div class="ai-chat" id="aiChat"><article class="ai-message assistant">Hola, soy Asistente Byte. Puedo ayudarte a encontrar productos, ofertas y opciones similares.</article></div><div class="ai-suggestions"><button type="button" data-ai-question="¿Qué ofertas de tecnología tienen stock?">Ofertas de tecnología</button><button type="button" data-ai-question="Recomiéndame productos para el hogar">Para el hogar</button></div><form id="aiAssistantForm"><input id="aiAssistantInput" maxlength="500" placeholder="Ej.: Recomiéndame una laptop económica" required><button class="btn primary" type="submit">Enviar</button></form><small>Respuestas generadas con IA según el catálogo disponible.</small></section>
-  <script src="app.js?v=53"></script>
+  <script src="app.js?v=54"></script>
   <script src="site-enhancements.js?v=1"></script>
   <script src="site-settings.js?v=3"></script>
   <script src="site-privacy.js?v=7"></script>
