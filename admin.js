@@ -201,26 +201,50 @@ async function cargarPedidosAdmin(){
     <td><strong>${escapar(p.numero)}</strong><br><small>${new Date(p.creado_en).toLocaleString('es-PE')}</small></td>
     <td>${escapar(p.correo_cliente)}</td>
     <td>S/ ${Number(p.total).toFixed(2)}</td>
-    <td><span class="order-status-badge ${p.estado}">${p.estado}</span></td>
+    <td><select class="admin-status-select" data-id="${p.id}" onchange="cambiarEstadoRapido(this)">
+      <option value="pendiente" ${p.estado==='pendiente'?'selected':''}>Pendiente</option>
+      <option value="confirmado" ${p.estado==='confirmado'?'selected':''}>Confirmado</option>
+      <option value="preparando" ${p.estado==='preparando'?'selected':''}>Preparando</option>
+      <option value="enviado" ${p.estado==='enviado'?'selected':''}>Enviado</option>
+      <option value="entregado" ${p.estado==='entregado'?'selected':''}>Entregado</option>
+      <option value="cancelado" ${p.estado==='cancelado'?'selected':''}>Cancelado</option>
+    </select></td>
     <td>${p.estado_pago}</td>
     <td>${p.tracking_number?`${escapar(p.carrier||'')} ${escapar(p.tracking_number)}`:'—'}</td>
     <td class="actions">
-      <button class="btn secondary" onclick="cambiarEstadoPedido('${p.id}','${escapar(p.numero)}')">Estado</button>
+      <button class="btn secondary" onclick="abrirEditorPedido('${p.id}','${escapar(p.numero)}','${p.estado}','${escapar(p.tracking_number||'')}','${escapar(p.carrier||'')}','${escapar(p.tracking_url||'')}')">Editar</button>
       <button class="btn secondary" onclick="verLogsPedido('${p.id}','${escapar(p.numero)}')">Historial</button>
     </td>
   </tr>`).join('');
 }
-async function cambiarEstadoPedido(id,numero){
+async function abrirEditorPedido(id,numero,estadoActual,tracking,carrier,url){
   document.querySelector('#orderStatusId').value=id;
-  document.querySelector('#orderStatusTitle').textContent='Cambiar estado: '+numero;
-  document.querySelector('#orderStatusDescription').textContent='Selecciona el nuevo estado logÃ­stico del pedido.';
-  document.querySelector('#orderStatusSelect').value='pendiente';
-  document.querySelector('#orderTrackingNumber').value='';
-  document.querySelector('#orderCarrier').value='';
-  document.querySelector('#orderTrackingUrl').value='';
+  document.querySelector('#orderStatusTitle').textContent='Editar pedido: '+numero;
+  document.querySelector('#orderStatusDescription').textContent='Cambia el estado y agrega datos de seguimiento.';
+  document.querySelector('#orderStatusSelect').value=estadoActual||'pendiente';
+  document.querySelector('#orderTrackingNumber').value=tracking||'';
+  document.querySelector('#orderCarrier').value=carrier||'';
+  document.querySelector('#orderTrackingUrl').value=url||'';
   document.querySelector('#orderStatusMotivo').value='';
   document.querySelector('#orderStatusFormStatus').textContent='';
   const d=document.querySelector('#orderStatusDialog'); if(d) d.showModal();
+}
+async function cambiarEstadoRapido(select){
+  const id=select.dataset.id;
+  const numero=select.dataset.numero;
+  const nuevoEstado=select.value;
+  const {data,error}=await supabaseClient.rpc('bb_admin_cambiar_estado_pedido',{p_pedido_id:id,p_nuevo_estado:nuevoEstado});
+  if(error||!data?.ok){
+    alert(error?.message||data?.error||'Error al cambiar estado');
+    cargarPedidosAdmin();
+    return;
+  }
+  // Si es "enviado", abrir editor para agregar tracking
+  if(nuevoEstado==='enviado'){
+    abrirEditorPedido(id,numero,nuevoEstado,'','','');
+  } else {
+    cargarPedidosAdmin();
+  }
 }
 async function verLogsPedido(id,numero){
   const {data,error}=await supabaseClient.rpc('bb_admin_listar_logs_pedido',{p_pedido_id:id});
