@@ -285,7 +285,7 @@ const supabaseClient=supabaseReady()?window.supabase.createClient(SUPABASE_URL,S
 
 async function loadCatalogFromSupabase(){
   if(!supabaseClient) return;
-  const {data,error}=await supabaseClient.from('catalogo_productos').select('*').order('id');
+  const {data,error}=await supabaseClient.from('catalogo_productos').select('*').order('id',{ascending:false});
   if(error){console.error('Supabase catalog:',error);showToast('No se pudo cargar el catálogo desde la base de datos.');return;}
   if(!data?.length){products=[];renderProducts();showToast('El catálogo todavía no tiene productos cargados.');return;}
   products=data.map(product=>({
