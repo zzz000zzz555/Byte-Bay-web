@@ -32,8 +32,11 @@ const IMAGEN_QR_RESPALDO='yape-qr-pendiente.svg';
 const imagenSegura=(url,respaldo=IMAGEN_PRODUCTO_RESPALDO)=>{
   const valor=String(url||'').trim();
   if(!valor) return respaldo;
-  const permitida=/^(https?:\/\/|\/|\.\/|\.\.\/|data:image\/|[a-z0-9._-]+\.(png|jpe?g|webp|gif|svg|avif)(\?|#|$))/i;
-  return permitida.test(valor)&&!/^(javascript|vbscript):/i.test(valor)?valor:respaldo;
+  const absoluta=/^https?:\/\/[^\s]+$/i;
+  const datos=/^data:image\/(png|jpe?g|webp|gif|svg\+xml|avif);base64,[a-z0-9+/=\s]+$/i;
+  const relativa=/^(?!\/\/)(?:\.{0,2}\/)?[a-z0-9._\-\/]+\.(png|jpe?g|webp|gif|svg|avif)(\?|#|$)/i;
+  const permitida=absoluta.test(valor)||datos.test(valor)||relativa.test(valor);
+  return permitida&&!/^(javascript|vbscript):/i.test(valor)?valor:respaldo;
 };
 const atributoRespaldo=archivo=>`onerror="this.onerror=null;this.src='${archivo}'"`;
 
