@@ -2,6 +2,7 @@
   const ORDEN_ESTADOS=['pendiente','confirmado','preparando','enviado','entregado'];
   function escHtml(v){return (window.BBStore?.escapeHtml||function(x){return String(x).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));})(v);}
   function moneyFn(v){return (window.BBStore?.money||function(x){return 'S/ '+Number(x).toFixed(2)})(v);}
+  function etiquetaEstado(estado){return ({pendiente:'Pendiente',confirmado:'Confirmado',preparando:'Preparando',enviado:'Enviado',entregado:'Entregado',cancelado:'Cancelado',aprobado:'Aprobado',rechazado:'Rechazado'})[estado]||estado;}
   function iconoEstado(estado){return ({pendiente:'⏳',confirmado:'✓',preparando:'📦',enviado:'🚚',entregado:'✅',cancelado:'✕'})[estado]||'•';}
   function abrirMisPedidos(){
     const modal=document.querySelector('#ordersModal');
