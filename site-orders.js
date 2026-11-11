@@ -37,13 +37,17 @@
           return `<div class="timeline-step ${cls} ${cancelado&&i===0?'cancelled':''}"><div class="timeline-dot">${iconoEstado(cancelado&&i===0?'cancelado':e)}</div><span>${etiquetaEstado(cancelado&&i===0?'cancelado':e)}</span></div>`;
         }).join('');
         const items=(p.items||[]).map(it=>`<div class="order-item"><span>${escapeHtml(it.nombre)} × ${it.cantidad}</span><span>${money(Number(it.precio)*Number(it.cantidad))}</span></div>`).join('');
+        const trackingInfo = p.tracking_number ? `<div class="order-tracking-info"><strong>Tracking:</strong> ${escapeHtml(p.carrier||'')} ${escapeHtml(p.tracking_number)}${p.tracking_url?` <a href="${escapeHtml(p.tracking_url)}" target="_blank" rel="noopener">Ver seguimiento</a>`:''}</div>` : '';
+        const whatsappMsg = p.estado==='enviado' ? `<div class="order-whatsapp-alert"><span>📱</span><div><strong>Tu pedido está en camino</strong><p>Por favor, estate atento a WhatsApp para que el repartidor se comunique contigo y coordine la entrega.</p></div></div>` : '';
         return `<article class="order-card">
           <div class="order-head">
             <div><strong>${escapeHtml(p.numero)}</strong><br><small>${new Date(p.creado_en).toLocaleString('es-PE')}</small></div>
             <span class="order-status-badge ${p.estado}">${etiquetaEstado(p.estado)}</span>
           </div>
           <div class="order-meta"><span>Total: <b>${money(Number(p.total))}</b></span><span>Método: <b>${escapeHtml(p.metodo_pago)}</b></span><span>Pago: <b>${etiquetaEstado(p.estado_pago)}</b></span></div>
+          ${trackingInfo}
           <div class="order-items">${items}</div>
+          ${whatsappMsg}
           ${cancelado?'':`<div class="order-timeline">${pasos}</div>`}
         </article>`;
       }).join('');

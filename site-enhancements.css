@@ -388,3 +388,9 @@ body{overflow-x:hidden}
 .modal,.checkout-modal,.account-modal,.orders-modal{animation:fadeIn .2s ease}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;transform:none!important}}
 @media(max-width:600px){.product-card:hover{transform:none}.hero:hover .hero-visual img{transform:none}}
+.order-tracking-info{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px;color:#0369a1}
+.order-tracking-info a{color:#2563eb;font-weight:600;text-decoration:underline}
+.order-whatsapp-alert{display:flex;gap:12px;align-items:flex-start;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:12px 14px;margin:12px 0;color:#065f46}
+.order-whatsapp-alert span{font-size:20px;flex-shrink:0}
+.order-whatsapp-alert strong{display:block;font-size:13px;margin-bottom:2px}
+.order-whatsapp-alert p{margin:0;font-size:12px;line-height:1.5}
