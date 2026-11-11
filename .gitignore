@@ -11,3 +11,4 @@ tmp/
 !migrations_checkout_cuenta_obligatoria.sql
 !insert_productos_prueba_mercado_pago.sql
 *.log
+!seed_100_productos.sql
