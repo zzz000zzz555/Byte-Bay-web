@@ -1,4 +1,9 @@
-const categories=[
+// Detectar token de recuperación de contraseña y redirigir al panel admin
+if(window.location.hash.includes('type=recovery')){
+  const adminUrl=new URL('admin.html',window.location.href);
+  adminUrl.hash=window.location.hash;
+  window.location.replace(adminUrl.href);
+}
   {name:'Supermercado',count:'2,480 productos',icon:'<path d="M4 5h2l2 10h10l2-7H7"></path><circle cx="9" cy="19" r="1.4"></circle><circle cx="17" cy="19" r="1.4"></circle>'},
   {name:'Tecnología',count:'1,250 productos',icon:'<rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8M12 17v4"></path>'},
   {name:'Electrohogar',count:'860 productos',icon:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"></path>'},
