@@ -77,6 +77,7 @@
         <button data-admin-tab="marca" id="adminBrandTab">Marca</button>
         <button data-admin-tab="personal" id="adminPeopleTab">Personal</button>
       </nav>
+      <button id="adminChangePassword" class="admin-logout" type="button" style="margin-bottom:8px">Cambiar contraseña</button>
       <button id="adminLogout" class="admin-logout">Cerrar sesión</button>
     </aside>
 
@@ -374,5 +375,21 @@
   <script src="admin-enhancements.js?v=3"></script>
   <script src="admin-pro.js?v=2"></script>
   <script src="admin-dashboard.js?v=2"></script>
+  <dialog id="adminChangePasswordDialog" class="admin-dialog" aria-labelledby="adminChangePasswordTitle">
+    <form id="adminChangePasswordForm" method="dialog" novalidate>
+      <div class="admin-dialog-head">
+        <h3 id="adminChangePasswordTitle">Cambiar contraseña</h3>
+        <button type="button" class="admin-dialog-close" id="adminChangePasswordCancel" aria-label="Cerrar">×</button>
+      </div>
+      <p class="admin-dialog-copy">Ingresa tu nueva contraseña. Debe tener al menos 10 caracteres.</p>
+      <label><span>Nueva contraseña</span><input id="adminNewPasswordValue" type="password" autocomplete="new-password" minlength="10" required></label>
+      <label><span>Confirmar contraseña</span><input id="adminConfirmPasswordValue" type="password" autocomplete="new-password" minlength="10" required></label>
+      <div class="admin-dialog-actions">
+        <button type="button" class="btn secondary" id="adminChangePasswordCancel2">Cancelar</button>
+        <button type="submit" class="btn primary">Guardar</button>
+      </div>
+      <div id="adminChangePasswordStatus" class="admin-status" aria-live="polite"></div>
+    </form>
+  </dialog>
 </body>
 </html>

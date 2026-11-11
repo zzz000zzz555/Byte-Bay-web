@@ -235,3 +235,25 @@ async function verLogsPedido(id,numero){
 $('#refreshOrders')?.addEventListener('click',cargarPedidosAdmin);
 $('#orderStatusFilter')?.addEventListener('change',cargarPedidosAdmin);
 $('#orderSearch')?.addEventListener('input',cargarPedidosAdmin);
+
+$('#adminChangePassword')?.addEventListener('click',function(){
+  const d=document.querySelector('#adminChangePasswordDialog');
+  if(d) d.showModal();
+  const s=document.querySelector('#adminChangePasswordStatus'); if(s) s.textContent='';
+});
+function cerrarDialogoCambioContrasena(){const d=document.querySelector('#adminChangePasswordDialog'); if(d) d.close();}
+document.querySelector('#adminChangePasswordCancel')?.addEventListener('click',cerrarDialogoCambioContrasena);
+document.querySelector('#adminChangePasswordCancel2')?.addEventListener('click',cerrarDialogoCambioContrasena);
+document.querySelector('#adminChangePasswordForm')?.addEventListener('submit',async function(e){
+  e.preventDefault();
+  const status=document.querySelector('#adminChangePasswordStatus');
+  const nueva=document.querySelector('#adminNewPasswordValue').value;
+  const confirmar=document.querySelector('#adminConfirmPasswordValue').value;
+  if(nueva.length<10){status.textContent='La contrasena debe tener al menos 10 caracteres.';return;}
+  if(nueva!==confirmar){status.textContent='Las contrasenas no coinciden.';return;}
+  status.textContent='Guardando...';
+  const r=await supabaseClient.auth.updateUser({password:nueva});
+  if(r.error){status.textContent='No se pudo cambiar: '+r.error.message;return;}
+  status.textContent='Contrasena actualizada correctamente.';
+  setTimeout(function(){cerrarDialogoCambioContrasena();document.querySelector('#adminNewPasswordValue').value='';document.querySelector('#adminConfirmPasswordValue').value='';},1200);
+});
