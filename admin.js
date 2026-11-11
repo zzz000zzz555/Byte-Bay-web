@@ -47,6 +47,8 @@ async function validarSesion(){
 }
 function mostrarAcceso(mensaje=''){$('#adminLogin').classList.remove('hidden');$('#adminApp').classList.add('hidden');$('#adminLoginStatus').textContent=mensaje;}
 function mostrarFormularioRecuperacion(){
+  $('#adminLogin').classList.remove('hidden');
+  $('#adminApp').classList.add('hidden');
   $('#adminLoginForm').classList.add('hidden');
   $('#adminForgotPassword').classList.add('hidden');
   $('#adminRecoveryForm').classList.remove('hidden');
@@ -84,9 +86,12 @@ $('#adminForgotPassword').onclick=async()=>{
     ? `No se pudo enviar el enlace: ${error.message}`
     : 'Si el correo corresponde a una cuenta, recibirás un enlace para cambiar la contraseña.';
 };
-supabaseClient.auth.onAuthStateChange(event=>{
+const enlaceRecuperacion=/[?&]code=|type=recovery/.test(`${window.location.search}${window.location.hash}`);
+supabaseClient.auth.onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY'){
     try{localStorage.removeItem('bbAdminPasswordRecoveryRequestedAt');}catch{}
+    mostrarFormularioRecuperacion();
+  }else if(event==='SIGNED_IN'&&session&&enlaceRecuperacion){
     mostrarFormularioRecuperacion();
   }
 });
@@ -200,7 +205,12 @@ if(errorRecuperacion){
     : 'No se pudo validar el enlace. Solicita uno nuevo para cambiar la contraseña.';
   window.history.replaceState({},document.title,window.location.pathname);
   mostrarAcceso(mensaje);
-}else if(!esEnlaceRecuperacion){
+}else if(esEnlaceRecuperacion){
+  mostrarFormularioRecuperacion();
+  supabaseClient.auth.getSession().then(({data})=>{
+    if(!data?.session) $('#adminLoginStatus').textContent='Validando el enlace de recuperación…';
+  }).catch(()=>{});
+}else{
   validarSesion();
 }
 async function cargarPedidosAdmin(){
@@ -325,6 +335,10 @@ document.querySelector('#adminChangePasswordForm')?.addEventListener('submit',as
   status.textContent='Guardando...';
   let r=await supabaseClient.auth.updateUser(codigo?{password:nueva,nonce:codigo}:{password:nueva});
   if(r.error?.code==='reauthentication_needed'&&!codigo){
+    if(typeof supabaseClient.auth.reauthenticate!=='function'){
+      status.textContent='Tu sesión necesita una verificación adicional. Cierra sesión, vuelve a entrar y cambia la contraseña, o usa “¿Olvidaste tu contraseña?” para restablecerla por correo.';
+      return;
+    }
     const reautenticacion=await supabaseClient.auth.reauthenticate();
     if(reautenticacion.error){status.textContent='No se pudo verificar tu sesión: '+reautenticacion.error.message;return;}
     campoCodigo.hidden=false;
