@@ -12,3 +12,4 @@ tmp/
 !insert_productos_prueba_mercado_pago.sql
 *.log
 !seed_100_productos.sql
+!migrations_catalogo_calidad.sql
