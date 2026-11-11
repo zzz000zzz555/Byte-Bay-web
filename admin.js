@@ -208,7 +208,9 @@ if(errorRecuperacion){
 }else if(esEnlaceRecuperacion){
   mostrarFormularioRecuperacion();
   supabaseClient.auth.getSession().then(({data})=>{
-    if(!data?.session) $('#adminLoginStatus').textContent='Validando el enlace de recuperación…';
+    $('#adminLoginStatus').textContent=data?.session
+      ? 'Enlace verificado. Crea tu nueva contraseña.'
+      : 'Validando el enlace de recuperación…';
   }).catch(()=>{});
 }else{
   validarSesion();
