@@ -394,3 +394,27 @@ body{overflow-x:hidden}
 .order-whatsapp-alert span{font-size:20px;flex-shrink:0}
 .order-whatsapp-alert strong{display:block;font-size:13px;margin-bottom:2px}
 .order-whatsapp-alert p{margin:0;font-size:12px;line-height:1.5}
+/* === LAYOUT POLISH: better distribution and spacing === */
+main, .page-content { padding-bottom: 0; }
+section { margin-bottom: 0; }
+.offers, .category-section, .promo-grid, .benefits, .notify-section, .checkout-section, .product-comments { padding: 64px 0; }
+.offers { background: var(--bg-elevated); }
+.hero { margin: 16px 0 0; }
+.product-grid { gap: 16px; }
+.categories { gap: 16px; }
+.promo-grid { gap: 20px; }
+.benefits { gap: 20px; }
+.section-head { margin-bottom: 32px; }
+.section-head h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; margin: 0 0 6px; }
+.section-head p { font-size: 15px; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+@media (max-width: 900px) {
+  .offers, .category-section, .promo-grid, .benefits, .notify-section, .checkout-section { padding: 48px 0; }
+  .section-head { margin-bottom: 24px; }
+  .section-head h2 { font-size: 24px; }
+}
+@media (max-width: 600px) {
+  .offers, .category-section, .promo-grid, .benefits, .notify-section, .checkout-section { padding: 36px 0; }
+  .section-head { margin-bottom: 20px; }
+  .section-head h2 { font-size: 20px; }
+  .product-grid { gap: 12px; }
+}
