@@ -94,6 +94,15 @@ Deno.serve(async (request) => {
       return Response.json({ ok: true }, { headers: corsHeaders })
     }
 
+    if (accion === 'cambiar_contrasena') {
+      const nuevaContrasena = cuerpo.contrasena
+      if (!contrasenaSegura(nuevaContrasena)) throw new Error('La contraseña debe tener al menos 10 caracteres, con mayúscula, minúscula, número y un símbolo (@$!%*#?&.)')
+      const { error: authError } = await admin.auth.admin.updateUserById(idUsuario, { password: nuevaContrasena })
+      if (authError) throw new Error('No se pudo cambiar la contraseña: ' + authError.message)
+      await admin.from('auditoria_personal').insert({ id_usuario: caller.user.id, accion: 'cambiar_contrasena', entidad: 'personal', id_entidad: idUsuario, detalle: { correo: objetivo.correo } })
+      return Response.json({ ok: true }, { headers: corsHeaders })
+    }
+
     if (accion === 'cambiar_estado') {
       const activo = cuerpo.activo === true, motivo = texto(cuerpo.motivo_anulacion)
       if (!activo && !motivo) throw new Error('Indica el motivo de la anulación')

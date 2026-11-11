@@ -429,5 +429,22 @@
       <button type="button" class="btn primary" id="orderLogsOk" onclick="document.querySelector('#orderLogsDialog').close()">Cerrar</button>
     </div>
   </dialog>
+  <dialog id="staffPasswordDialog" class="admin-dialog" aria-labelledby="staffPasswordTitle">
+    <form id="staffPasswordForm" method="dialog" novalidate>
+      <div class="admin-dialog-head">
+        <h3 id="staffPasswordTitle">Cambiar contraseña</h3>
+        <button type="button" class="admin-dialog-close" id="staffPasswordCancel" aria-label="Cerrar" onclick="document.querySelector('#staffPasswordDialog').close()">×</button>
+      </div>
+      <input type="hidden" id="staffPasswordUserId">
+      <p id="staffPasswordDescription" class="admin-dialog-copy"></p>
+      <label><span>Nueva contraseña</span><input id="staffPasswordNew" type="password" minlength="10" autocomplete="new-password" required></label>
+      <label><span>Confirmar contraseña</span><input id="staffPasswordConfirm" type="password" minlength="10" autocomplete="new-password" required></label>
+      <div class="admin-dialog-actions">
+        <button type="button" class="btn secondary" id="staffPasswordCancel2" onclick="document.querySelector('#staffPasswordDialog').close()">Cancelar</button>
+        <button type="submit" class="btn primary">Guardar</button>
+      </div>
+      <div id="staffPasswordStatus" class="admin-status" aria-live="polite"></div>
+    </form>
+  </dialog>
 </body>
 </html>
