@@ -189,6 +189,7 @@ async function cargarPedidosAdmin(){
   const {data,error}=await supabaseClient.rpc('bb_admin_listar_pedidos');
   if(error||!data?.ok){lista.textContent=error?.message||data?.error||'No se pudieron cargar los pedidos.';return;}
   const pedidos=data.pedidos||[];
+  window.pedidosData=pedidos;
   const filtroEstado=$('#orderStatusFilter')?.value||'';
   const busqueda=($('#orderSearch')?.value||'').toLowerCase();
   const filtrados=pedidos.filter(p=>{
@@ -303,3 +304,91 @@ document.querySelector('#adminChangePasswordForm')?.addEventListener('submit',as
   status.textContent='Contrasena actualizada correctamente.';
   setTimeout(function(){cerrarDialogoCambioContrasena();document.querySelector('#adminNewPasswordValue').value='';document.querySelector('#adminConfirmPasswordValue').value='';},1200);
 });
+
+async function exportarPedidos() {
+  if (typeof XLSX === 'undefined') { alert('No se pudo cargar el modulo de exportacion Excel.'); return; }
+  const pedidos = window.pedidosData || [];
+  if (!pedidos.length) { alert('No hay pedidos para exportar. Actualiza la lista primero.'); return; }
+  const filtroEstado = (document.querySelector('#orderStatusFilter') && document.querySelector('#orderStatusFilter').value) || '';
+  const busqueda = ((document.querySelector('#orderSearch') && document.querySelector('#orderSearch').value) || '').trim().toLowerCase();
+  const filtrados = pedidos.filter(function(p) {
+    if (filtroEstado && p.estado !== filtroEstado) return false;
+    if (busqueda && !p.numero.toLowerCase().includes(busqueda) && !String(p.correo_cliente||'').toLowerCase().includes(busqueda)) return false;
+    return true;
+  });
+  if (!filtrados.length) { alert('No hay datos para exportar con los filtros actuales.'); return; }
+
+  const hoy = new Date().toISOString().slice(0,10);
+  const libro = XLSX.utils.book_new();
+  const encabezados = ['N Pedido','Cliente','Correo','Total (S/)','Estado','Estado de pago','Metodo de pago','Tracking','Transportista','Fecha creacion','Fecha actualizacion'];
+  const matriz = [
+    ['BYTE BAY - Reporte de pedidos'],
+    ['Periodo: todos - Filtro estado: ' + (filtroEstado || 'todos') + ' - Busqueda: ' + (busqueda || 'ninguna')],
+    ['Generado: ' + new Date().toLocaleString('es-PE') + ' - Byte Bay'],
+    [],
+    encabezados
+  ];
+  filtrados.forEach(function(p) {
+    matriz.push([
+      p.numero,
+      p.correo_cliente,
+      p.correo_cliente,
+      Number(p.total),
+      (p.estado||'').toUpperCase(),
+      (p.estado_pago||'').toUpperCase(),
+      p.metodo_pago,
+      p.tracking_number || '---',
+      p.carrier || '---',
+      new Date(p.creado_en).toLocaleString('es-PE'),
+      new Date(p.actualizado_en).toLocaleString('es-PE')
+    ]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(matriz);
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: encabezados.length - 1 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: encabezados.length - 1 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: encabezados.length - 1 } }
+  ];
+  ws['!cols'] = [
+    { wch: 20 }, { wch: 28 }, { wch: 30 }, { wch: 12 }, { wch: 14 },
+    { wch: 16 }, { wch: 16 }, { wch: 20 }, { wch: 16 }, { wch: 22 }, { wch: 22 }
+  ];
+  ws['!autofilter'] = {
+    ref: XLSX.utils.encode_range({ s: { r: 4, c: 0 }, e: { r: 4 + filtrados.length, c: encabezados.length - 1 } })
+  };
+
+  for (let fila = 5; fila < 5 + filtrados.length; fila++) {
+    const celda = XLSX.utils.encode_cell({ r: fila, c: 3 });
+    if (ws[celda] && typeof ws[celda].v === 'number') ws[celda].z = '"S/ "#,##0.00';
+  }
+
+  XLSX.utils.book_append_sheet(libro, ws, 'Pedidos');
+
+  const estados = {};
+  filtrados.forEach(function(p) { estados[p.estado] = (estados[p.estado] || 0) + 1; });
+  const totalMonto = filtrados.reduce(function(s, p) { return s + Number(p.total); }, 0);
+  const wsResumen = XLSX.utils.aoa_to_sheet([
+    ['BYTE BAY - Resumen de pedidos'],
+    ['Generado: ' + new Date().toLocaleString('es-PE')],
+    [],
+    ['Indicador', 'Valor'],
+    ['Total de pedidos', filtrados.length],
+    ['Monto total', totalMonto],
+    ...Object.entries(estados).map(function(e) { return ['Pedidos ' + e[0], e[1]]; }),
+    ['Pedidos con tracking', filtrados.filter(function(p) { return p.tracking_number; }).length],
+    ['Pedidos cancelados', filtrados.filter(function(p) { return p.estado === 'cancelado'; }).length]
+  ]);
+  wsResumen['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } }
+  ];
+  wsResumen['!cols'] = [{ wch: 32 }, { wch: 16 }];
+  const celdaMonto = XLSX.utils.encode_cell({ r: 5, c: 1 });
+  if (wsResumen[celdaMonto]) wsResumen[celdaMonto].z = '"S/ "#,##0.00';
+  XLSX.utils.book_append_sheet(libro, wsResumen, 'Resumen');
+
+  XLSX.writeFile(libro, 'pedidos-byte-bay-' + hoy + '.xlsx');
+  alert('Archivo pedidos-byte-bay-' + hoy + '.xlsx generado correctamente.');
+}
+document.querySelector('#exportOrders')?.addEventListener('click', exportarPedidos);
