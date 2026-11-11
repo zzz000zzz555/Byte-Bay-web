@@ -1,6 +1,15 @@
-// Detectar token de recuperación de contraseña y redirigir al panel admin
-if(window.location.hash.includes('type=recovery')){
+// Mantener la recuperación del personal en el panel, incluso si Auth redirige al sitio.
+const parametrosAuth=new URLSearchParams(window.location.search);
+const parametrosHashAuth=new URLSearchParams(window.location.hash.slice(1));
+let solicitudRecuperacionAdminReciente=false;
+try{
+  const solicitadaEn=Number(localStorage.getItem('bbAdminPasswordRecoveryRequestedAt'));
+  solicitudRecuperacionAdminReciente=solicitadaEn>0&&Date.now()-solicitadaEn<24*60*60*1000;
+}catch{}
+if(parametrosHashAuth.get('type')==='recovery'||parametrosAuth.get('type')==='recovery'||
+  (solicitudRecuperacionAdminReciente&&(parametrosAuth.has('code')||parametrosAuth.has('error_code')))){
   const adminUrl=new URL('admin.html',window.location.href);
+  adminUrl.search=window.location.search;
   adminUrl.hash=window.location.hash;
   window.location.replace(adminUrl.href);
 }
@@ -578,7 +587,15 @@ document.querySelector('#accountLogout').onclick=async()=>{
   }catch(error){
     console.warn('Cierre de sesión:',error);
   }
-  localStorage.removeItem('beruAccount');updateAccountHeader();showToast('Sesión cerrada correctamente.');
+  // Limpiar todo el estado local independientemente del resultado
+  try{localStorage.removeItem('beruAccount');}catch(e){}
+  try{localStorage.removeItem('bbSession');}catch(e){}
+  try{localStorage.removeItem('bbGuestId');}catch(e){}
+  try{localStorage.removeItem('beruNotifications');}catch(e){}
+  updateAccountHeader();
+  showToast('Sesión cerrada correctamente.');
+  // Forzar recarga de la página para limpiar estado residual
+  setTimeout(()=>{window.location.reload();},500);
 };
 async function guardarSesionGoogle(user){
   const esGoogle=user?.app_metadata?.provider==='google'||user?.identities?.some(identidad=>identidad.provider==='google');
@@ -640,7 +657,11 @@ document.querySelector('#accountForm').onsubmit=async e=>{
     }
     const cuenta=resultado.cuenta||{};
     localStorage.setItem('beruAccount',JSON.stringify({id:cuenta.id||null,name:`${cuenta.nombres||''} ${cuenta.apellidos||''}`.trim()||'Cliente',username:cuenta.nombre_usuario||email.split('@')[0],email:cuenta.correo||email,verified:true}));
-    updateAccountHeader();status.textContent=resultado.token?'Sesión iniciada con token seguro.':'Sesión iniciada correctamente.';e.target.reset();setTimeout(closeAccountModal,700);return;
+    updateAccountHeader();
+    status.textContent=resultado.token?'Sesión iniciada con token seguro.':'Sesión iniciada correctamente.';
+    e.target.reset();
+    setTimeout(closeAccountModal,700);
+    return;
   }
   if(username&&!/^[A-Za-z0-9._-]{3,30}$/.test(username)){status.textContent='El nombre de usuario solo admite letras, números, punto, guion o guion bajo.';return;}
   if(password.length<8){status.textContent='La contraseña debe tener al menos 8 caracteres.';return;}
