@@ -75,15 +75,20 @@ $('#adminForgotPassword').onclick=async()=>{
   const correo=$('#adminEmail').value.trim();
   if(!correo){$('#adminLoginStatus').textContent='Escribe tu correo laboral para enviarte el enlace.';$('#adminEmail').focus();return;}
   $('#adminForgotPassword').disabled=true;
+  try{localStorage.setItem('bbAdminPasswordRecoveryRequestedAt',String(Date.now()));}catch{}
   const redirectTo=`${window.location.origin}${window.location.pathname}`;
   const {error}=await supabaseClient.auth.resetPasswordForEmail(correo,{redirectTo});
   $('#adminForgotPassword').disabled=false;
+  if(error){try{localStorage.removeItem('bbAdminPasswordRecoveryRequestedAt');}catch{}}
   $('#adminLoginStatus').textContent=error
     ? `No se pudo enviar el enlace: ${error.message}`
     : 'Si el correo corresponde a una cuenta, recibirás un enlace para cambiar la contraseña.';
 };
 supabaseClient.auth.onAuthStateChange(event=>{
-  if(event==='PASSWORD_RECOVERY') mostrarFormularioRecuperacion();
+  if(event==='PASSWORD_RECOVERY'){
+    try{localStorage.removeItem('bbAdminPasswordRecoveryRequestedAt');}catch{}
+    mostrarFormularioRecuperacion();
+  }
 });
 $('#adminRecoveryForm').onsubmit=async event=>{
   event.preventDefault();
@@ -185,8 +190,19 @@ $('#productSearch').addEventListener('input',renderizarCatalogo);$('#productCate
 $('#inventorySearch').addEventListener('input',renderizarInventario);$('#inventoryStatusFilter').addEventListener('change',renderizarInventario);
 $('#offerSearch').addEventListener('input',renderizarOfertas);$('#offerStatusFilter').addEventListener('change',renderizarOfertas);
 $('#staffSearch').addEventListener('input',renderizarPersonal);$('#staffStatusFilter').addEventListener('change',renderizarPersonal);
+const parametrosRecuperacion=new URLSearchParams(window.location.search);
+const errorRecuperacion=parametrosRecuperacion.get('error_code');
 const esEnlaceRecuperacion=/[?&]code=|type=recovery/.test(`${window.location.search}${window.location.hash}`);
-if(!esEnlaceRecuperacion) validarSesion();
+if(errorRecuperacion){
+  try{localStorage.removeItem('bbAdminPasswordRecoveryRequestedAt');}catch{}
+  const mensaje=errorRecuperacion==='otp_expired'
+    ? 'El enlace venció o ya fue utilizado. Solicita otro y abre únicamente el correo más reciente.'
+    : 'No se pudo validar el enlace. Solicita uno nuevo para cambiar la contraseña.';
+  window.history.replaceState({},document.title,window.location.pathname);
+  mostrarAcceso(mensaje);
+}else if(!esEnlaceRecuperacion){
+  validarSesion();
+}
 async function cargarPedidosAdmin(){
   const lista=$('#adminOrdersList'); if(!lista) return; lista.textContent='Cargando pedidos…';
   const {data,error}=await supabaseClient.rpc('bb_admin_listar_pedidos');
@@ -289,6 +305,8 @@ $('#orderSearch')?.addEventListener('input',cargarPedidosAdmin);
 $('#adminChangePassword')?.addEventListener('click',function(){
   const d=document.querySelector('#adminChangePasswordDialog');
   if(d) d.showModal();
+  document.querySelector('#adminPasswordReauthField').hidden=true;
+  document.querySelector('#adminPasswordReauthCode').value='';
   const s=document.querySelector('#adminChangePasswordStatus'); if(s) s.textContent='';
 });
 function cerrarDialogoCambioContrasena(){const d=document.querySelector('#adminChangePasswordDialog'); if(d) d.close();}
@@ -299,13 +317,24 @@ document.querySelector('#adminChangePasswordForm')?.addEventListener('submit',as
   const status=document.querySelector('#adminChangePasswordStatus');
   const nueva=document.querySelector('#adminNewPasswordValue').value;
   const confirmar=document.querySelector('#adminConfirmPasswordValue').value;
-  if(nueva.length<10){status.textContent='La contrasena debe tener al menos 10 caracteres.';return;}
-  if(nueva!==confirmar){status.textContent='Las contrasenas no coinciden.';return;}
+  const codigo=document.querySelector('#adminPasswordReauthCode').value.trim();
+  const campoCodigo=document.querySelector('#adminPasswordReauthField');
+  if(nueva.length<10){status.textContent='La contraseña debe tener al menos 10 caracteres.';return;}
+  if(nueva!==confirmar){status.textContent='Las contraseñas no coinciden.';return;}
+  if(!campoCodigo.hidden&&!codigo){status.textContent='Escribe el código que enviamos a tu correo.';return;}
   status.textContent='Guardando...';
-  const r=await supabaseClient.auth.updateUser({password:nueva});
+  let r=await supabaseClient.auth.updateUser(codigo?{password:nueva,nonce:codigo}:{password:nueva});
+  if(r.error?.code==='reauthentication_needed'&&!codigo){
+    const reautenticacion=await supabaseClient.auth.reauthenticate();
+    if(reautenticacion.error){status.textContent='No se pudo verificar tu sesión: '+reautenticacion.error.message;return;}
+    campoCodigo.hidden=false;
+    document.querySelector('#adminPasswordReauthCode').focus();
+    status.textContent='Te enviamos un código de seguridad. Escríbelo para confirmar el cambio.';
+    return;
+  }
   if(r.error){status.textContent='No se pudo cambiar: '+r.error.message;return;}
-  status.textContent='Contrasena actualizada correctamente.';
-  setTimeout(function(){cerrarDialogoCambioContrasena();document.querySelector('#adminNewPasswordValue').value='';document.querySelector('#adminConfirmPasswordValue').value='';},1200);
+  status.textContent='Contraseña actualizada correctamente.';
+  setTimeout(function(){cerrarDialogoCambioContrasena();document.querySelector('#adminNewPasswordValue').value='';document.querySelector('#adminConfirmPasswordValue').value='';document.querySelector('#adminPasswordReauthCode').value='';campoCodigo.hidden=true;},1200);
 });
 
 async function exportarPedidos() {

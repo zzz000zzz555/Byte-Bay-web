@@ -371,11 +371,6 @@
       <p class="admin-status" id="clientStatusMessage" aria-live="polite"></p>
     </form>
   </dialog>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-  <script src="admin.js?v=13"></script>
-  <script src="admin-enhancements.js?v=3"></script>
-  <script src="admin-pro.js?v=2"></script>
-  <script src="admin-dashboard.js?v=2"></script>
   <dialog id="adminChangePasswordDialog" class="admin-dialog" aria-labelledby="adminChangePasswordTitle">
     <form id="adminChangePasswordForm" method="dialog" novalidate>
       <div class="admin-dialog-head">
@@ -385,6 +380,7 @@
       <p class="admin-dialog-copy">Ingresa tu nueva contraseña. Debe tener al menos 10 caracteres.</p>
       <label><span>Nueva contraseña</span><input id="adminNewPasswordValue" type="password" autocomplete="new-password" minlength="10" required></label>
       <label><span>Confirmar contraseña</span><input id="adminConfirmPasswordValue" type="password" autocomplete="new-password" minlength="10" required></label>
+      <label id="adminPasswordReauthField" hidden><span>Código enviado a tu correo</span><input id="adminPasswordReauthCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12"></label>
       <div class="admin-dialog-actions">
         <button type="button" class="btn secondary" id="adminChangePasswordCancel2">Cancelar</button>
         <button type="submit" class="btn primary">Guardar</button>
@@ -446,5 +442,10 @@
       <div id="staffPasswordStatus" class="admin-status" aria-live="polite"></div>
     </form>
   </dialog>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="admin.js?v=14"></script>
+  <script src="admin-enhancements.js?v=3"></script>
+  <script src="admin-pro.js?v=2"></script>
+  <script src="admin-dashboard.js?v=2"></script>
 </body>
 </html>
