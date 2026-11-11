@@ -53,9 +53,7 @@
       }).join('');
     }catch(err){console.error('Mis pedidos:',err);cont.innerHTML='<p class="orders-empty">No pudimos cargar tus pedidos.</p>';}
   }
-  document.addEventListener('DOMContentLoaded',function(){
-    document.querySelector('#ordersOpen')?.addEventListener('click',abrirMisPedidos);
-    document.querySelector('#ordersClose')?.addEventListener('click',cerrarMisPedidos);
-    document.querySelector('#ordersModal')?.addEventListener('click',e=>{if(e.target.id==='ordersModal')cerrarMisPedidos();});
-  });
+  document.querySelector('#ordersOpen')?.addEventListener('click',abrirMisPedidos);
+  document.querySelector('#ordersClose')?.addEventListener('click',cerrarMisPedidos);
+  document.querySelector('#ordersModal')?.addEventListener('click',e=>{if(e.target.id==='ordersModal')cerrarMisPedidos();});
 })();
