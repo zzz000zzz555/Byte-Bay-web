@@ -211,26 +211,48 @@ async function cargarPedidosAdmin(){
   </tr>`).join('');
 }
 async function cambiarEstadoPedido(id,numero){
-  const nuevo=prompt(`Nuevo estado para ${numero}:\npendiente, confirmado, preparando, enviado, entregado, cancelado`);
-  if(!nuevo) return;
-  const estado=nuevo.trim().toLowerCase();
-  const tracking=prompt('Número de guía (opcional):')||null;
-  const carrier=prompt('Transportista (opcional):')||null;
-  const motivo=prompt('Motivo/nota (opcional):')||null;
-  const {data,error}=await supabaseClient.rpc('bb_admin_cambiar_estado_pedido',{p_pedido_id:id,p_nuevo_estado:estado,p_tracking_number:tracking,p_carrier:carrier,p_motivo:motivo});
-  if(error||!data?.ok){alert(error?.message||data?.error||'Error al cambiar estado');return;}
-  if(data.sin_cambios){alert('Sin cambios');return;}
-  alert(`Estado cambiado: ${data.estado_anterior} → ${data.estado_nuevo}`);
-  cargarPedidosAdmin();
+  document.querySelector('#orderStatusId').value=id;
+  document.querySelector('#orderStatusTitle').textContent='Cambiar estado: '+numero;
+  document.querySelector('#orderStatusDescription').textContent='Selecciona el nuevo estado logÃ­stico del pedido.';
+  document.querySelector('#orderStatusSelect').value='pendiente';
+  document.querySelector('#orderTrackingNumber').value='';
+  document.querySelector('#orderCarrier').value='';
+  document.querySelector('#orderTrackingUrl').value='';
+  document.querySelector('#orderStatusMotivo').value='';
+  document.querySelector('#orderStatusFormStatus').textContent='';
+  const d=document.querySelector('#orderStatusDialog'); if(d) d.showModal();
 }
 async function verLogsPedido(id,numero){
   const {data,error}=await supabaseClient.rpc('bb_admin_listar_logs_pedido',{p_pedido_id:id});
   if(error||!data?.ok){alert(error?.message||data?.error||'Error');return;}
   const logs=data.logs||[];
-  if(!logs.length){alert('Sin historial de cambios.');return;}
-  const texto=logs.map(l=>`${new Date(l.creado_en).toLocaleString('es-PE')} — ${l.estado_anterior} → ${l.estado_nuevo}${l.motivo?` (${l.motivo})`:''}${l.tracking_number?` [${l.carrier||''} ${l.tracking_number}]`:''}`).join('\n');
-  alert(`Historial de ${numero}:\n\n${texto}`);
+  if(!logs.length){document.querySelector('#orderLogsBody').textContent='Sin historial de cambios.';}
+  else{
+    document.querySelector('#orderLogsBody').innerHTML=logs.map(l=>`<div style="padding:8px 0;border-bottom:1px solid #eee"><strong>${l.estado_anterior} â†’ ${l.estado_nuevo}</strong><br><small>${new Date(l.creado_en).toLocaleString('es-PE')}</small>${l.motivo?`<br><em>${l.motivo}</em>`:''}${l.tracking_number?`<br>Tracking: ${l.carrier||''} ${l.tracking_number}`:''}</div>`).join('');
+  }
+  document.querySelector('#orderLogsTitle').textContent='Historial: '+numero;
+  const d=document.querySelector('#orderLogsDialog'); if(d) d.showModal();
 }
+document.querySelector('#orderStatusForm')?.addEventListener('submit',async function(e){
+  e.preventDefault();
+  const id=document.querySelector('#orderStatusId').value;
+  const estado=document.querySelector('#orderStatusSelect').value;
+  const tracking=document.querySelector('#orderTrackingNumber').value.trim()||null;
+  const carrier=document.querySelector('#orderCarrier').value.trim()||null;
+  const url=document.querySelector('#orderTrackingUrl').value.trim()||null;
+  const motivo=document.querySelector('#orderStatusMotivo').value.trim()||null;
+  const status=document.querySelector('#orderStatusFormStatus');
+  status.textContent='Guardando...';
+  const {data,error}=await supabaseClient.rpc('bb_admin_cambiar_estado_pedido',{p_pedido_id:id,p_nuevo_estado:estado,p_tracking_number:tracking,p_carrier:carrier,p_tracking_url:url,p_motivo:motivo});
+  if(error||!data?.ok){status.textContent=error?.message||data?.error||'Error al cambiar estado';return;}
+  if(data.sin_cambios){status.textContent='Sin cambios';setTimeout(()=>document.querySelector('#orderStatusDialog')?.close(),800);return;}
+  status.textContent=`Estado cambiado: ${data.estado_anterior} â†’ ${data.estado_nuevo}`;
+  setTimeout(()=>{document.querySelector('#orderStatusDialog')?.close();cargarPedidosAdmin();},1000);
+});
+document.querySelector('#orderStatusCancel')?.addEventListener('click',()=>document.querySelector('#orderStatusDialog')?.close());
+document.querySelector('#orderStatusCancel2')?.addEventListener('click',()=>document.querySelector('#orderStatusDialog')?.close());
+document.querySelector('#orderLogsCancel')?.addEventListener('click',()=>document.querySelector('#orderLogsDialog')?.close());
+document.querySelector('#orderLogsOk')?.addEventListener('click',()=>document.querySelector('#orderLogsDialog')?.close());
 
 $('#refreshOrders')?.addEventListener('click',cargarPedidosAdmin);
 $('#orderStatusFilter')?.addEventListener('change',cargarPedidosAdmin);

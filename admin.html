@@ -391,5 +391,42 @@
       <div id="adminChangePasswordStatus" class="admin-status" aria-live="polite"></div>
     </form>
   </dialog>
+  <dialog id="orderStatusDialog" class="admin-dialog" aria-labelledby="orderStatusTitle">
+    <form id="orderStatusForm" method="dialog" novalidate>
+      <div class="admin-dialog-head">
+        <h3 id="orderStatusTitle">Cambiar estado del pedido</h3>
+        <button type="button" class="admin-dialog-close" id="orderStatusCancel" aria-label="Cerrar">×</button>
+      </div>
+      <input type="hidden" id="orderStatusId">
+      <p id="orderStatusDescription" class="admin-dialog-copy"></p>
+      <label><span>Nuevo estado</span><select id="orderStatusSelect" required>
+        <option value="pendiente">Pendiente</option>
+        <option value="confirmado">Confirmado</option>
+        <option value="preparando">Preparando / Empaquetado</option>
+        <option value="enviado">Enviado / En camino</option>
+        <option value="entregado">Entregado</option>
+        <option value="cancelado">Cancelado</option>
+      </select></label>
+      <label><span>Número de guía (tracking)</span><input id="orderTrackingNumber" type="text" placeholder="Ej: 1234567890"></label>
+      <label><span>Transportista</span><input id="orderCarrier" type="text" placeholder="Ej: Olva, Shalom, Urbano"></label>
+      <label><span>URL de seguimiento (opcional)</span><input id="orderTrackingUrl" type="url" placeholder="https://..."></label>
+      <label><span>Motivo / Nota interna</span><textarea id="orderStatusMotivo" rows="2" maxlength="500" placeholder="Nota visible solo para admin"></textarea></label>
+      <div class="admin-dialog-actions">
+        <button type="button" class="btn secondary" id="orderStatusCancel2">Cancelar</button>
+        <button type="submit" class="btn primary">Guardar cambios</button>
+      </div>
+      <div id="orderStatusFormStatus" class="admin-status" aria-live="polite"></div>
+    </form>
+  </dialog>
+  <dialog id="orderLogsDialog" class="admin-dialog" aria-labelledby="orderLogsTitle">
+    <div class="admin-dialog-head">
+      <h3 id="orderLogsTitle">Historial de auditoría</h3>
+      <button type="button" class="admin-dialog-close" id="orderLogsCancel" aria-label="Cerrar">×</button>
+    </div>
+    <div id="orderLogsBody" class="admin-dialog-copy" style="white-space:pre-line;max-height:400px;overflow:auto"></div>
+    <div class="admin-dialog-actions">
+      <button type="button" class="btn primary" id="orderLogsOk">Cerrar</button>
+    </div>
+  </dialog>
 </body>
 </html>
