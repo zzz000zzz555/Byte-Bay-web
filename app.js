@@ -306,6 +306,9 @@ async function loadCatalogFromSupabase(){
     availability:product.disponibilidad,
     rating:Number(product.calificacion||0).toFixed(1),
     description:product.descripcion||'Consulta las características principales de este producto antes de añadirlo al carrito.',
+    shortPresentation:product.short_presentation||'',
+    verifiableFeatures:product.verifiable_features||'',
+    benefitsSummary:product.benefits_summary||'',
     img:imagenSegura(product.url_imagen||product.image_url),
     videoUrl:product.video_url||'',
     gender:product.genero||'Mixto',
@@ -1410,7 +1413,15 @@ function openProductModal(id){
   document.querySelector('#modalRating').innerHTML=`★★★★★ <span>${escapeHtml(lastViewedProduct.rating??'')}</span>`;
   document.querySelector('#modalPrice').textContent=money(lastViewedProduct.price);
   document.querySelector('#modalOld').textContent=money(lastViewedProduct.old);
-  document.querySelector('#modalDescription').textContent=lastViewedProduct.description||'Consulta las características principales de este producto antes de añadirlo al carrito.';
+  const descEl=document.querySelector('#modalDescription');
+  if(descEl){
+    const blocks=[];
+    if(lastViewedProduct.shortPresentation) blocks.push(`<p><strong>¿Qué es?</strong> ${escapeHtml(lastViewedProduct.shortPresentation)}</p>`);
+    if(lastViewedProduct.verifiableFeatures) blocks.push(`<p><strong>¿Qué ofrece?</strong> ${escapeHtml(lastViewedProduct.verifiableFeatures)}</p>`);
+    if(lastViewedProduct.benefitsSummary) blocks.push(`<p><strong>Beneficios:</strong> ${escapeHtml(lastViewedProduct.benefitsSummary)}</p>`);
+    if(!blocks.length) blocks.push(`<p>${escapeHtml(lastViewedProduct.description||'Consulta las características principales de este producto antes de añadirlo al carrito.')}</p>`);
+    descEl.innerHTML=blocks.join('');
+  }
   const specs=lastViewedProduct.specs||{};
   const specsHtml=Object.keys(specs).length?`<div class="modal-specs"><strong>Especificaciones técnicas</strong><dl>${Object.entries(specs).map(([k,v])=>`<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl>${lastViewedProduct.gender?`<p><strong>Género:</strong> ${escapeHtml(lastViewedProduct.gender)}</p>`:''}${lastViewedProduct.videoUrl?`<p><a href="${escapeHtml(lastViewedProduct.videoUrl)}" target="_blank" rel="noopener">Ver video de presentación</a></p>`:''}</div>`:'';
   const modalSpecs=document.querySelector('#modalSpecs'); if(modalSpecs) modalSpecs.innerHTML=specsHtml;
