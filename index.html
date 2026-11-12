@@ -333,7 +333,20 @@
     <div class="product-modal-card">
       <button class="product-modal-close" id="closeProductModal" aria-label="Cerrar detalle">×</button>
       <div class="product-modal-grid">
-        <div class="product-modal-media"><span id="modalAngleLabel" class="angle-label">Ángulo actual: Vista Frontal</span><div id="modalMediaThumbs" class="media-thumbs"></div><img id="modalImage" src="" alt=""></div>
+        <div class="product-modal-media coolbox-gallery">
+  <div id="modalMediaThumbs" class="media-thumbs-vertical"></div>
+  <div class="product-main-stage">
+    <span class="angle-badge-pill" id="modalAngleLabel">Ángulo actual: Vista Frontal</span>
+    <button class="gallery-nav gallery-prev" id="galleryPrev" type="button" aria-label="Anterior">&#8249;</button>
+    <img id="modalImage" src="" alt="">
+    <button class="gallery-nav gallery-next" id="galleryNext" type="button" aria-label="Siguiente">&#8250;</button>
+    <div class="gallery-actions">
+      <button class="gallery-action-btn" type="button" aria-label="Favorito">&#9825;</button>
+      <button class="gallery-action-btn" type="button" aria-label="Compartir">&#8635;</button>
+    </div>
+    <div class="gallery-dots" id="galleryDots"></div>
+  </div>
+</div>
         <div class="product-modal-info">
           <nav id="modalBreadcrumb" class="breadcrumb" aria-label="Miga de pan"></nav>
           <span class="product-meta" id="modalBrand"></span>
@@ -515,7 +528,7 @@
   </section>
   <button id="aiAssistantToggle" class="ai-assistant-toggle" type="button" aria-label="Abrir Asistente Byte"><span>✦</span> Asistente Byte</button>
   <section id="aiAssistantPanel" class="ai-assistant-panel hidden" aria-label="Asistente Byte"><header><div><span class="section-kicker">IA DE BYTE BAY</span><h2>¿Qué estás buscando?</h2></div><button id="aiAssistantClose" type="button" aria-label="Cerrar asistente">×</button></header><div class="ai-chat" id="aiChat"><article class="ai-message assistant">Hola, soy Asistente Byte. Puedo ayudarte a encontrar productos, ofertas y opciones similares.</article></div><div class="ai-suggestions"><button type="button" data-ai-question="¿Qué ofertas de tecnología tienen stock?">Ofertas de tecnología</button><button type="button" data-ai-question="Recomiéndame productos para el hogar">Para el hogar</button></div><form id="aiAssistantForm"><input id="aiAssistantInput" maxlength="500" placeholder="Ej.: Recomiéndame una laptop económica" required><button class="btn primary" type="submit">Enviar</button></form><small>Respuestas generadas con IA según el catálogo disponible.</small></section>
-  <script src="app.js?v=73"></script>
+  <script src="app.js?v=74"></script>
   <script src="site-orders.js?v=6"></script>
   <script src="site-motion.js?v=1"></script>
   <script src="site-enhancements.js?v=3"></script>

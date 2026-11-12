@@ -1422,65 +1422,70 @@ async function openProductModal(id){
   lastViewedProduct=products.find(p=>p.id===id);
   if(!lastViewedProduct) return;
   registrarProductoVisto(id);
-  const modalImage=document.querySelector('#modalImage');
+
   modalImage.src=imagenSegura(lastViewedProduct.img);
   modalImage.onerror=()=>{modalImage.onerror=null;modalImage.src=IMAGEN_PRODUCTO_RESPALDO;};
   modalImage.alt=lastViewedProduct.name;
-  // galeria multi-angulo: exactamente 5 miniaturas debajo de la imagen principal
+  // galeria estilo Coolbox: miniaturas verticales + imagen principal + flechas + dots
+
   const angleLabel=document.querySelector('#modalAngleLabel');
   const mediaContainer=document.querySelector('#modalMediaThumbs');
-  const setMain=(url,tipo='imagen',angulo='Vista Frontal')=>{
-    const v=document.querySelector('#modalVideo');
-    if(tipo==='video'){
-      modalImage.style.display='none';
-      if(!v){const nv=document.createElement('video');nv.id='modalVideo';nv.controls=true;nv.style.width='100%';modalImage.parentNode.insertBefore(nv,modalImage);}
-      const nv=document.querySelector('#modalVideo'); nv.src=url; nv.style.display='block';
-    } else {
-      if(v) v.style.display='none';
-      modalImage.style.display='block';
-      modalImage.src=imagenSegura(url);
+  const prevBtn=document.querySelector('#galleryPrev');
+  const nextBtn=document.querySelector('#galleryNext');
+  const dotsContainer=document.querySelector('#galleryDots');
+  let galleryImages=[];
+  let galleryIndex=0;
+  const setMain=(idx)=>{
+    if(!galleryImages.length) return;
+    galleryIndex=Math.max(0,Math.min(idx,galleryImages.length-1));
+    const item=galleryImages[galleryIndex];
+    modalImage.src=imagenSegura(item.url);
+    modalImage.alt=lastViewedProduct.name;
+    if(angleLabel) angleLabel.textContent='Ángulo actual: '+(item.angulo||'Vista Frontal');
+    // update active thumb
+    mediaContainer.querySelectorAll('.coolbox-thumb').forEach((btn,i)=>btn.classList.toggle('active',i===galleryIndex));
+    // dots
+    if(dotsContainer){
+      dotsContainer.innerHTML=galleryImages.map((_,i)=>`<span class="gallery-dot ${i===galleryIndex?'active':''}"></span>`).join('');
     }
-    if(angleLabel) angleLabel.textContent='Ángulo actual: '+angulo;
+    // arrows visibility
+    if(prevBtn) prevBtn.style.display=galleryImages.length>1?'flex':'none';
+    if(nextBtn) nextBtn.style.display=galleryImages.length>1?'flex':'none';
   };
   modalImage.src=imagenSegura(lastViewedProduct.img);
   modalImage.onerror=()=>{modalImage.onerror=null;modalImage.src=IMAGEN_PRODUCTO_RESPALDO;};
   modalImage.alt=lastViewedProduct.name;
-  if(angleLabel) angleLabel.textContent='Ángulo actual: Vista Frontal';
+  if(angleLabel){ angleLabel.style.display='none'; }
+  // build unique image list
+  const uniqueUrls=new Set();
+  const list=[];
+  const addImg=(url,angulo='Vista Frontal',tipo='imagen')=>{
+    if(!url) return;
+    if(uniqueUrls.has(url)) return;
+    uniqueUrls.add(url);
+    list.push({url,angulo,tipo});
+  };
+  addImg(lastViewedProduct.img,'Vista Frontal','imagen');
+  if(lastViewedProduct.videoUrl) addImg(lastViewedProduct.videoUrl,'Video de presentación','video');
+  galleryImages=list;
   if(mediaContainer){
     mediaContainer.innerHTML='';
-    const frontalUrl=lastViewedProduct.img;
-    const makeThumb=(url,tipo,angulo,label)=>{
-      const btn=document.createElement('button');
-      btn.type='button'; btn.className='angle-thumb-btn';
-      btn.innerHTML=tipo==='video'?`<span>▶ Video</span>`:`<img src="${escapeHtml(imagenSegura(url))}" alt="${escapeHtml(label)}"><span>${escapeHtml(label)}</span>`;
-      btn.onclick=()=>setMain(url,tipo,angulo);
-      mediaContainer.appendChild(btn);
-    };
-    // 5 angulos fijos
-    makeThumb(frontalUrl,'imagen','Vista Frontal','Frente');
-    makeThumb(frontalUrl,'imagen','Lado Derecho','Lado Der.');
-    makeThumb(frontalUrl,'imagen','Lado Izquierdo','Lado Izq.');
-    makeThumb(frontalUrl,'imagen','Espalda / Atrás','Espalda');
-    if(lastViewedProduct.videoUrl) makeThumb(lastViewedProduct.videoUrl,'video','Video de presentación','Detalle / Video');
-    else makeThumb(frontalUrl,'imagen','Detalle / Empaque','Detalle');
-    // intentar reemplazar con media real si existe
-    if(supabaseClient){
-      supabaseClient.from('product_media').select('url,tipo,angulo,orden').eq('id_producto',lastViewedProduct.id).order('orden',{ascending:true}).then(({data})=>{
-        const media=data||[];
-        const mapAngulo={'frontal':0,'derecho':1,'izquierdo':2,'posterior':3,'detalle':4};
-        media.forEach(m=>{
-          const key=(m.angulo||'').toLowerCase();
-          // find matching thumb index
-          const idx=Object.keys(mapAngulo).findIndex(k=>key.includes(k));
-          if(idx>=0 && mediaContainer.children[idx]){
-            const btn=mediaContainer.children[idx];
-            btn.innerHTML = (m.tipo==='video')?`<span>▶ Video</span>`:`<img src="${escapeHtml(imagenSegura(m.url))}" alt=""><span>${escapeHtml(btn.querySelector('span')?.textContent||'')}</span>`;
-            btn.onclick=()=>setMain(m.url,m.tipo||'imagen', m.angulo||'Ángulo');
-          }
-        });
-      });
-    }
+    // fetch product_media for more angles
+    (async()=>{
+      if(supabaseClient){
+        const {data}=await supabaseClient.from('product_media').select('url,tipo,angulo,orden').eq('id_producto',lastViewedProduct.id).order('orden',{ascending:true});
+        (data||[]).forEach(m=>{ if(m.url) addImg(m.url,m.angulo||'Ángulo',m.tipo||'imagen'); });
+      }
+      galleryImages=[...list];
+      // render thumbs
+      if(galleryImages.length<=1){ mediaContainer.style.display='none'; if(prevBtn) prevBtn.style.display='none'; if(nextBtn) nextBtn.style.display='none'; if(dotsContainer) dotsContainer.style.display='none'; }
+      else { mediaContainer.style.display='flex'; mediaContainer.innerHTML=galleryImages.map((item,i)=>`<button type="button" class="coolbox-thumb ${i===0?'active':''}" data-idx="${i}"><img src="${escapeHtml(imagenSegura(item.url))}" alt=""></button>`).join(''); }
+      mediaContainer.querySelectorAll('.coolbox-thumb').forEach(btn=>btn.onclick=()=>setMain(Number(btn.dataset.idx)));
+      setMain(0);
+    })();
   }
+  if(prevBtn) prevBtn.onclick=()=>setMain(galleryIndex-1);
+  if(nextBtn) nextBtn.onclick=()=>setMain(galleryIndex+1);
   document.querySelector('#modalBrand').textContent=`${lastViewedProduct.brand} · ${lastViewedProduct.category}`;
   document.querySelector('#modalName').textContent=lastViewedProduct.name;
   document.querySelector('#modalRating').innerHTML=`★★★★★ <span>${escapeHtml(lastViewedProduct.rating??'')}</span>`;
