@@ -1,4 +1,4 @@
-const supabaseClient = window.BBStore?.client || window.supabase?.createClient('https://inwugycvtaaceugvtfpv.supabase.co','sb_publishable_5cTHcYI6byM03VSffW0OlQ_JlBB8D9u');
+const sbClient = window.BBStore?.client || window.supabase?.createClient('https://inwugycvtaaceugvtfpv.supabase.co','sb_publishable_5cTHcYI6byM03VSffW0OlQ_JlBB8D9u');
 const siteEscape = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
 }[char]));
@@ -7,12 +7,12 @@ const claimsStatus = document.querySelector('#claimsStatus');
 
 async function cargarAvisosOferta() {
   const lista = document.querySelector('#offersNotificationList');
-  if (!supabaseClient) {
+  if (!sbClient) {
     lista.textContent = 'El servicio de avisos no está disponible.';
     return;
   }
   lista.textContent = 'Cargando avisos…';
-  const { data, error } = await supabaseClient.rpc('listar_notificaciones_ofertas_publicas');
+  const { data, error } = await sbClient.rpc('listar_notificaciones_ofertas_publicas');
   if (error) {
     lista.textContent = 'No se pudieron cargar los avisos.';
     console.error('Public notifications:', error);
@@ -64,7 +64,7 @@ document.querySelector('#claimsForm').addEventListener('submit', async event => 
   const form = event.currentTarget;
   const valor = nombre => form.elements[nombre].value.trim();
   const boton = document.querySelector('#claimsSubmit');
-  if (!supabaseClient) {
+  if (!sbClient) {
     claimsStatus.textContent = 'El servicio de reclamaciones no está disponible. Intenta más tarde.';
     return;
   }
@@ -73,7 +73,7 @@ document.querySelector('#claimsForm').addEventListener('submit', async event => 
   let data;
   let error;
   try {
-    ({ data, error } = await supabaseClient.functions.invoke('reclamos-publicos', {
+    ({ data, error } = await sbClient.functions.invoke('reclamos-publicos', {
       body: new FormData(form)
     }));
   } catch (requestError) {
@@ -102,7 +102,7 @@ document.querySelector('#claimsForm').addEventListener('submit', async event => 
 });
 
 async function aplicarConfiguracionPublica() {
-  const { data, error } = await supabaseClient.rpc('obtener_configuracion_publica');
+  const { data, error } = await sbClient.rpc('obtener_configuracion_publica');
   if (error) {
     console.error('Public site configuration:', error);
     return;
@@ -142,6 +142,6 @@ async function aplicarConfiguracionPublica() {
   }
 }
 
-if (window.supabaseClient || window.BBStore?.client) {
+if (window.sbClient || window.BBStore?.client) {
   aplicarConfiguracionPublica();
 }
