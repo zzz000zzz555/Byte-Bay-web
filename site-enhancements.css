@@ -453,3 +453,10 @@ section { margin-bottom: 0; }
   .section-head h2 { font-size: 20px; }
   .product-grid { gap: 12px; }
 }
+.breadcrumb{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:#64748b;margin-bottom:8px;}
+.breadcrumb a{color:#2563eb;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.modal-specs{margin:12px 0;padding:10px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;}
+.modal-specs dl{display:grid;grid-template-columns:140px 1fr;gap:6px 10px;margin:8px 0 0;}
+.modal-specs dt{font-weight:600;color:#334155;}
+.modal-specs dd{margin:0;color:#0f172a;}
