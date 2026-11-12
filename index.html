@@ -35,7 +35,11 @@
       <button class="mobile-menu settings-toggle" id="settingsToggle" type="button" aria-label="Abrir configuración y preferencias" aria-expanded="false" aria-controls="settingsDrawer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
       <a class="brand" href="#" aria-label="Byte Bay inicio"><span class="brand-logo"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></span></a>
       <form class="search" id="searchForm"><input id="searchInput" type="search" placeholder="Busca productos, marcas y más" aria-label="Buscar productos"><button type="submit" aria-label="Buscar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg></button></form>
-      <button class="account header-action" data-action="account"><span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span><span><small>Mi cuenta</small><strong>Ingresar</strong></span></button><button class="orders-button header-action" id="ordersOpen" type="button" aria-label="Mis pedidos"><span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="M9 12h6M9 16h6"></path></svg></span><span><small>Pedidos</small> <strong>Mis pedidos</strong></span></button><button class="account-logout hidden" id="accountLogout" type="button">Salir</button>
+      <button class="account header-action" data-action="account"><span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span><span><small>Mi cuenta</small><strong>Ingresar</strong></span></button><button class="header-action orders-button" id="ordersOpen" type="button" aria-label="Mis pedidos">
+  <span class="header-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path></svg></span>
+  <span class="header-action-text"><small>Seguimiento</small><strong>Mis pedidos</strong></span>
+  <span class="orders-badge" id="ordersBadge" hidden>0</span>
+</button><button class="account-logout hidden" id="accountLogout" type="button">Salir</button>
       <button class="cart-button" id="cartOpen" aria-label="Abrir carrito"><svg class="cart-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 1.9-1.5L21 8H6"></path></svg><span class="cart-count" id="cartCount">0</span></button>
     </div>
     <nav class="nav wrap" id="mainNav"><button class="departments" id="departmentsBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg> Departamentos <span>⌄</span></button><a href="#ofertas">Ofertas</a><a href="#novedades">Novedades</a><a href="#" data-category="Supermercado">Supermercado</a><a href="#" data-category="Tecnología">Tecnología</a><a href="#" data-category="Hogar">Hogar</a></nav>
@@ -383,11 +387,24 @@
   </div>
   <div class="orders-modal" id="ordersModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ordersTitle">
     <div class="orders-card">
-      <button class="orders-close" id="ordersClose" type="button" aria-label="Cerrar">×</button>
-      <span class="section-kicker">MIS PEDIDOS</span>
-      <h2 id="ordersTitle">Rastreo de pedidos</h2>
-      <p class="orders-subtitle">Consulta el estado de tus compras Byte Bay en tiempo real.</p>
-      <div id="ordersList" class="orders-list"><p class="orders-empty">Inicia sesión para ver tus pedidos.</p></div>
+      <button class="orders-close" id="ordersClose" type="button" aria-label="Cerrar">&times;</button>
+      <div class="orders-header">
+        <div>
+          <span class="section-kicker">MIS PEDIDOS</span>
+          <h2 id="ordersTitle">&#128230; Mis Pedidos y Seguimiento en Vivo</h2>
+          <p class="orders-subtitle">Consulta el estado de tus compras Byte Bay en tiempo real.</p>
+        </div>
+        <input type="search" id="ordersSearch" placeholder="Buscar por numero o producto" class="orders-search">
+      </div>
+      <div class="orders-tabs">
+        <button class="orders-tab active" data-status="all">Todos los pedidos</button>
+        <button class="orders-tab" data-status="proceso">En proceso</button>
+        <button class="orders-tab" data-status="camino">En camino</button>
+        <button class="orders-tab" data-status="entregado">Entregados</button>
+        <button class="orders-tab" data-status="cancelado">Cancelados</button>
+      </div>
+      <div id="ordersList" class="orders-list"><p class="orders-empty">Inicia sesion para ver tus pedidos.</p></div>
+    </div>
     </div>
   </div>
   <section class="claims-modal" id="claimsModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="claimsTitle">

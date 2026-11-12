@@ -1714,6 +1714,6 @@ window.BBStore={
   money,
   openAccountModal,
   updateAccountHeader,
-  refreshPersonalization:renderizarPersonalizacion
-};
+  refreshPersonalization:renderizarPersonalizacion,
+  addToCart
 window.dispatchEvent(new Event('bb:store-ready'));
