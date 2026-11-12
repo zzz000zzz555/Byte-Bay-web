@@ -411,12 +411,13 @@ function toggleFavorite(id,button){
   if(activeFilter==='favorites') renderProducts();
 }
 
-function addToCart(id){
+function addToCart(id,cantidad=1){
   const product=products.find(x=>x.id===id);
   if(!product||product.stock<=0){showToast('Este producto está agotado.');return;}
+  const cantidadSegura=Math.max(1,Math.min(Number(cantidad)||1,product.stock));
   const found=cart.find(x=>x.id===id);
-  if(found&&found.qty>=product.stock){showToast(`Solo quedan ${product.stock} unidades.`);return;}
-  found?found.qty++:cart.push({...product,qty:1});
+  if(found&&found.qty+cantidadSegura>product.stock){showToast(`Solo quedan ${product.stock} unidades.`);return;}
+  found?found.qty+=cantidadSegura:cart.push({...product,qty:cantidadSegura});
   const cartSaved=updateCart();
   window.BBPrivacy?.registrarEvento?.('CARRITO',{idProducto:product.id,categoria:product.category});
   const account=JSON.parse(localStorage.getItem('beruAccount')||'null');
@@ -1401,9 +1402,21 @@ function openProductModal(id){
   const disponibilidad=document.querySelector('#modalAvailability');
   disponibilidad.className=`availability ${lastViewedProduct.stock<=0?'unavailable':lastViewedProduct.stock<=5?'low-stock':''}`;
   disponibilidad.textContent=lastViewedProduct.stock<=0?'Producto agotado':lastViewedProduct.stock<=5?`Últimas ${lastViewedProduct.stock} unidades`:'Disponible para entrega';
+  const qtyInput=document.querySelector('#modalQty');
+  if(qtyInput){qtyInput.value='1';qtyInput.max=lastViewedProduct.stock||1;}
+  const syncQty=delta=>{
+    if(!qtyInput||!lastViewedProduct) return;
+    const next=Math.max(1,Math.min(Number(qtyInput.value||1)+delta,lastViewedProduct.stock||1));
+    qtyInput.value=next;
+  };
+  document.querySelector('#modalQtyMinus')?.addEventListener('click',()=>syncQty(-1),{once:true});
+  // bind fresh handlers by replacing nodes to avoid duplicates
+  const minus=document.querySelector('#modalQtyMinus'), plus=document.querySelector('#modalQtyPlus');
+  if(minus){const m=minus.cloneNode(true);minus.replaceWith(m);m.addEventListener('click',()=>syncQty(-1));}
+  if(plus){const pl=plus.cloneNode(true);plus.replaceWith(pl);pl.addEventListener('click',()=>syncQty(1));}
   document.querySelector('#modalAddToCart').disabled=lastViewedProduct.stock<=0;
   document.querySelector('#modalAddToCart').textContent=lastViewedProduct.stock<=0?'Producto agotado':'Agregar al carrito';
-  document.querySelector('#modalAddToCart').onclick=()=>{addToCart(lastViewedProduct.id);closeProductModal();};
+  document.querySelector('#modalAddToCart').onclick=()=>{const q=Number(document.querySelector('#modalQty')?.value||1);addToCart(lastViewedProduct.id,q);closeProductModal();};
   const cuenta=JSON.parse(localStorage.getItem('beruAccount')||'null');
   const usaGoogle=cuenta?.provider==='google';
   document.querySelector('#productCommentForm').reset();
