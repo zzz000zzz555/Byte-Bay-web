@@ -1418,7 +1418,7 @@ document.querySelector('#payNow').onclick=async()=>{
 
 document.querySelector('#saveCheckout').onclick=()=>showToast('Tu compra quedó guardada para continuar después');
 
-function openProductModal(id){
+async function openProductModal(id){
   lastViewedProduct=products.find(p=>p.id===id);
   if(!lastViewedProduct) return;
   registrarProductoVisto(id);
