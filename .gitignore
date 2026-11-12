@@ -14,3 +14,4 @@ tmp/
 !seed_100_productos.sql
 !migrations_catalogo_calidad.sql
 !migrations_enterprise_rbac_catalogo.sql
+!migrations_stock_en_vivo.sql
