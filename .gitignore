@@ -13,3 +13,4 @@ tmp/
 *.log
 !seed_100_productos.sql
 !migrations_catalogo_calidad.sql
+!migrations_enterprise_rbac_catalogo.sql
