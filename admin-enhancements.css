@@ -48,3 +48,7 @@
 .dark-mode .automatic-offer-status.status-programada{background:#263c5c;color:#c0d7ff}
 .dark-mode .automatic-offer-status.status-finalizada{background:#353b3d;color:#d4d9da}
 @media(max-width:600px){.automatic-offer-row{flex-direction:column}}
+
+.icon-btn{width:34px;height:34px;border:1px solid #e2e8f0;background:#fff;border-radius:8px;cursor:pointer;font-size:16px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease;}
+.icon-btn:hover{background:#f8fafc;border-color:#cbd5e1;transform:translateY(-1px);}
+.admin-actions{display:flex;gap:6px;}

@@ -59,6 +59,7 @@ let filtroPedidos='all';
     modal.classList.add('open');
     modal.setAttribute('aria-hidden','false');
     document.body.classList.add('checkout-open');
+    if(window.cachedUserOrders){ pedidosCache=window.cachedUserOrders; renderizarPedidos(); }
     cargarMisPedidos();
     document.querySelectorAll('.orders-tab').forEach(btn=>{btn.onclick=()=>{document.querySelectorAll('.orders-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');filtroPedidos=btn.dataset.status;renderizarPedidos();};});
     const search=document.querySelector('#ordersSearch'); if(search) search.oninput=()=>renderizarPedidos();
@@ -99,5 +100,23 @@ let filtroPedidos='all';
   window.verDetallePedido=function(id){const p=pedidosCache.find(x=>String(x.id)===String(id)); if(!p) return; alert('Pedido '+p.numero+'\nEstado: '+p.estado+'\nTotal: S/ '+Number(p.total).toFixed(2));};
   window.descargarBoleta=function(id){const p=pedidosCache.find(x=>String(x.id)===String(id)); if(!p) return; const w=window.open('','_blank'); w.document.write('<h1>Boleta Byte Bay</h1><p>Pedido: '+p.numero+'</p><p>Total: S/ '+Number(p.total).toFixed(2)+'</p>'); w.document.close(); w.print();};
   window.volverAComprar=function(id){const p=pedidosCache.find(x=>String(x.id)===String(id)); if(!p) return; (p.items||[]).forEach(it=>{ if(window.BBStore?.addToCart) window.BBStore.addToCart(it.id_producto, it.cantidad); }); };
+
+
+  async function prefetchUserOrders(){
+    try{
+      const sesion=await window.BBPrivacy?.obtenerSesionCliente?.();
+      if(!sesion?.ok) return;
+      const sb=window.BBStore?.client||window.supabaseClient;
+      if(!sb) return;
+      const {data}=await sb.rpc('bb_listar_pedidos_cliente',{p_access_token:sesion.access_token});
+      if(data?.ok && Array.isArray(data.pedidos)){
+        window.cachedUserOrders=data.pedidos;
+        const badge=document.querySelector('#ordersBadge');
+        if(badge){ badge.textContent=data.pedidos.length; badge.hidden=data.pedidos.length===0; }
+      }
+    }catch(e){ console.warn('prefetch orders', e); }
+  }
+  if('requestIdleCallback' in window) requestIdleCallback(()=>prefetchUserOrders(), {timeout:2000});
+  else setTimeout(prefetchUserOrders, 1500);
 
 })();
