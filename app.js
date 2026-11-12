@@ -1715,5 +1715,6 @@ window.BBStore={
   openAccountModal,
   updateAccountHeader,
   refreshPersonalization:renderizarPersonalizacion,
-  addToCart
+  addToCart,
+};
 window.dispatchEvent(new Event('bb:store-ready'));

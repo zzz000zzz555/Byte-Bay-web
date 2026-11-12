@@ -1,3 +1,4 @@
+const supabaseClient = window.BBStore?.client || window.supabase?.createClient('https://inwugycvtaaceugvtfpv.supabase.co','sb_publishable_5cTHcYI6byM03VSffW0OlQ_JlBB8D9u');
 const siteEscape = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
 }[char]));
@@ -141,6 +142,6 @@ async function aplicarConfiguracionPublica() {
   }
 }
 
-if (supabaseClient) {
+if (window.supabaseClient || window.BBStore?.client) {
   aplicarConfiguracionPublica();
 }

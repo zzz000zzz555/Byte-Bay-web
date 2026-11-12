@@ -22,7 +22,7 @@ let filtroPedidos='all';
       if(busqueda && !(p.numero||'').toLowerCase().includes(busqueda) && !(p.items||[]).some(it=>(it.nombre||'').toLowerCase().includes(busqueda))) return false;
       return true;
     });
-    if(!lista.length){ cont.innerHTML='<div class="orders-empty-state"><div class="empty-icon">📦</div><p>No hay pedidos en esta categoría.</p><button class="btn secondary" onclick="window.location.hash='#ofertas'">Explorar ofertas del catálogo</button></div>'; return; }
+    if(!lista.length){ cont.innerHTML='<div class="orders-empty-state"><div class="empty-icon">📦</div><p>No hay pedidos en esta categoría.</p><a class="btn secondary" href="#ofertas">Explorar ofertas del catálogo</a></div>'; return; }
     cont.innerHTML=lista.map(p=>{
       const cancelado=p.estado==='cancelado';
       const idx=ORDEN_ESTADOS.indexOf(p.estado);
