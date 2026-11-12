@@ -460,3 +460,8 @@ section { margin-bottom: 0; }
 .modal-specs dl{display:grid;grid-template-columns:140px 1fr;gap:6px 10px;margin:8px 0 0;}
 .modal-specs dt{font-weight:600;color:#334155;}
 .modal-specs dd{margin:0;color:#0f172a;}
+
+.media-thumbs{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.media-thumb{width:56px;height:56px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#fff;padding:0;cursor:pointer;}
+.media-thumb img{width:100%;height:100%;object-fit:cover;}
+.media-thumb span{display:flex;align-items:center;justify-content:center;height:100%;font-size:20px;}

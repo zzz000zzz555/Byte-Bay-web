@@ -1407,9 +1407,32 @@ function openProductModal(id){
   lastViewedProduct=products.find(p=>p.id===id);
   if(!lastViewedProduct) return;
   registrarProductoVisto(id);
-  document.querySelector('#modalImage').src=imagenSegura(lastViewedProduct.img);
-  document.querySelector('#modalImage').onerror=()=>{document.querySelector('#modalImage').onerror=null;document.querySelector('#modalImage').src=IMAGEN_PRODUCTO_RESPALDO;};
-  document.querySelector('#modalImage').alt=lastViewedProduct.name;
+  const modalImage=document.querySelector('#modalImage');
+  modalImage.src=imagenSegura(lastViewedProduct.img);
+  modalImage.onerror=()=>{modalImage.onerror=null;modalImage.src=IMAGEN_PRODUCTO_RESPALDO;};
+  modalImage.alt=lastViewedProduct.name;
+  // galeria multi-angulo + video
+  const mediaContainer=document.querySelector('#modalMediaThumbs');
+  if(mediaContainer){
+    mediaContainer.innerHTML='';
+    const renderThumb=(url,tipo='imagen')=>{
+      const btn=document.createElement('button');
+      btn.type='button'; btn.className='media-thumb';
+      btn.innerHTML=tipo==='video'?`<span>▶</span>`:`<img src="${escapeHtml(imagenSegura(url))}" alt="">`;
+      btn.onclick=()=>{
+        if(tipo==='video'){ modalImage.style.display='none'; let v=document.querySelector('#modalVideo'); if(!v){v=document.createElement('video');v.id='modalVideo';v.controls=true;v.style.width='100%';modalImage.parentNode.insertBefore(v,modalImage);} v.src=url; v.style.display='block'; }
+        else { const v=document.querySelector('#modalVideo'); if(v) v.style.display='none'; modalImage.style.display='block'; modalImage.src=imagenSegura(url); }
+      };
+      mediaContainer.appendChild(btn);
+    };
+    renderThumb(lastViewedProduct.img,'imagen');
+    if(lastViewedProduct.videoUrl) renderThumb(lastViewedProduct.videoUrl,'video');
+    (async()=>{
+      if(!supabaseClient) return;
+      const {data}=await supabaseClient.from('product_media').select('url,tipo,angulo,orden').eq('id_producto',lastViewedProduct.id).order('orden',{ascending:true});
+      (data||[]).forEach(m=>{ if(m.url && m.url!==lastViewedProduct.img) renderThumb(m.url,m.tipo||'imagen'); });
+    })();
+  }
   document.querySelector('#modalBrand').textContent=`${lastViewedProduct.brand} · ${lastViewedProduct.category}`;
   document.querySelector('#modalName').textContent=lastViewedProduct.name;
   document.querySelector('#modalRating').innerHTML=`★★★★★ <span>${escapeHtml(lastViewedProduct.rating??'')}</span>`;
