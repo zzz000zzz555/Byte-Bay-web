@@ -1474,7 +1474,16 @@ function openProductModal(id){
   document.querySelector('#modalName').textContent=lastViewedProduct.name;
   document.querySelector('#modalRating').innerHTML=`★★★★★ <span>${escapeHtml(lastViewedProduct.rating??'')}</span>`;
   document.querySelector('#modalPrice').textContent=money(lastViewedProduct.price);
-  document.querySelector('#modalOld').textContent=money(lastViewedProduct.old);
+  const modalOld=document.querySelector('#modalOld');
+  if(modalOld){
+    if(Number(lastViewedProduct.old)>Number(lastViewedProduct.price)){
+      modalOld.textContent=money(lastViewedProduct.old);
+      modalOld.style.display='';
+    } else {
+      modalOld.textContent='';
+      modalOld.style.display='none';
+    }
+  }
   const descEl=document.querySelector('#modalDescription');
   if(descEl){
     const blocks=[];
