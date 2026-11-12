@@ -262,7 +262,7 @@ function tarjetaProducto(producto,motivo=''){
   const nombre=escapeHtml(producto.name||'');
   const marca=escapeHtml(producto.brand||'');
   const calificacion=escapeHtml(producto.rating??'');
-  return `<article class="product-card ${agotado?'sold-out':''}" data-id="${id}" data-category="${categoria}">${descuento>0?`<span class="discount">-${descuento}%</span>`:''}<button class="wish ${favorites.has(id)?'active':''}" data-fav="${id}" aria-label="Guardar producto">${favorites.has(id)?'♥':'♡'}</button><div class="product-image"><img src="${escapeHtml(imagenSegura(producto.img))}" alt="${nombre}" loading="lazy" decoding="async" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}></div><span class="product-meta">${marca} · ${categoria}</span><h3>${nombre}</h3>${motivo?`<span class="product-reason">¿Por qué veo este producto? · ${escapeHtml(motivo)}</span>`:''}<div class="rating">★★★★★ <span>${calificacion}</span></div>${descuento>0&&Number(producto.old)>Number(producto.price)?`<span class="old-price">${money(Number(producto.old)||0)}</span>`:''}<div class="price-row"><strong class="price">${money(Number(producto.price)||0)}</strong><button class="add" data-id="${id}" aria-label="Agregar al carrito" ${agotado?'disabled':''}>${agotado?'Agotado':'+'}</button></div><div class="availability ${agotado?'unavailable':stock<=5?'low-stock':''}">${agotado?'Producto agotado':stock<=5?`Últimas ${stock} unidades`:'Disponible'}</div></article>`;
+  return `<article class="product-card ${agotado?'sold-out':''}" data-id="${id}" data-category="${categoria}">${descuento>0?`<span class="discount">-${descuento}%</span>`:''}<button class="wish ${favorites.has(id)?'active':''}" data-fav="${id}" aria-label="Guardar producto">${favorites.has(id)?'♥':'♡'}</button><div class="product-image"><img src="${escapeHtml(imagenSegura(producto.img))}" alt="${nombre}" loading="lazy" decoding="async" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}></div><span class="product-meta">${marca} · ${categoria}</span><h3>${nombre}</h3>${motivo?`<span class="product-reason">¿Por qué veo este producto? · ${escapeHtml(motivo)}</span>`:''}<div class="rating">★★★★★ <span>${calificacion}</span></div>${descuento>0&&Number(producto.old)>Number(producto.price)?`<span class="old-price">${money(Number(producto.old)||0)}</span>`:''}<div class="price-row"><strong class="price">${money(Number(producto.price)||0)}</strong><button class="add" data-id="${id}" aria-label="Agregar al carrito" ${agotado?'disabled':''}>${agotado?'Agotado':'+'}</button></div>${calcularPUM(producto)?`<div class="pum">${calcularPUM(producto)}</div>`:''}<div class="availability ${agotado?'unavailable':stock<=5?'low-stock':''}">${agotado?'Producto agotado':stock<=5?`Últimas ${stock} unidades`:'Disponible'}</div></article>`;
 }
 function renderizarPersonalizacion(){
   if(window.BBPrivacy?.renderizarRecomendaciones){window.BBPrivacy.renderizarRecomendaciones();return;}
@@ -355,6 +355,21 @@ async function sendNotificationEmail({email,wants}){
 }
 
 const money=n=>`S/ ${n.toLocaleString('es-PE',{minimumFractionDigits:2})}`;
+function calcularPUM(producto){
+  const nombre=String(producto.name||'');
+  const m=nombre.match(/(\d+(?:[\.,]\d+)?)\s*(kg|g|l|ml|litro|litros)/i);
+  if(!m) return '';
+  const val=parseFloat(m[1].replace(',','.'));
+  const unit=m[2].toLowerCase();
+  let baseKg=val;
+  if(unit==='g') baseKg=val/1000;
+  else if(unit==='ml') baseKg=val/1000;
+  else if(unit==='kg'||unit==='l'||unit==='litro'||unit==='litros') baseKg=val;
+  if(!baseKg) return '';
+  const pum=Number(producto.price)/baseKg;
+  const label=(unit==='g'||unit==='kg')?'kg':'litro';
+  return `S/ ${pum.toFixed(2)} x ${label}`;
+}
 
 document.querySelector('#categoryList').innerHTML=categories.map(c=>`<a class="category-card" href="#" data-category="${escapeHtml(c.name)}"><span class="cat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg></span><strong>${escapeHtml(c.name)}</strong><small>${escapeHtml(c.count)}</small></a>`).join('');
 
@@ -1470,6 +1485,7 @@ function openProductModal(id){
   document.querySelector('#modalName').textContent=lastViewedProduct.name;
   document.querySelector('#modalRating').innerHTML=`★★★★★ <span>${escapeHtml(lastViewedProduct.rating??'')}</span>`;
   document.querySelector('#modalPrice').textContent=money(lastViewedProduct.price);
+  const pumEl=document.querySelector('#modalPum'); if(pumEl) pumEl.textContent=calcularPUM(lastViewedProduct);
   const modalOld=document.querySelector('#modalOld');
   if(modalOld){
     if(Number(lastViewedProduct.old)>Number(lastViewedProduct.price)){
