@@ -343,6 +343,8 @@
           <div id="modalPum" class="pum"></div>
           <p id="modalDescription"></p>
 <div id="modalSpecs" class="modal-specs"></div>
+          <div id="modalVariantes" class="modal-variantes"></div>
+          <button id="sizeGuideBtn" class="btn secondary" type="button" style="display:none">Guía de tallas</button>
           <div class="modal-qty"><button type="button" id="modalQtyMinus" aria-label="Disminuir cantidad">-</button><input id="modalQty" type="number" min="1" value="1" aria-label="Cantidad"><button type="button" id="modalQtyPlus" aria-label="Aumentar cantidad">+</button></div>
           <div class="modal-purchase-info"><span id="modalAvailability" class="availability"></span><span class="modal-secure-note">Compra protegida · Pago verificado</span></div>
           <ul class="modal-benefits">
@@ -513,11 +515,12 @@
   </section>
   <button id="aiAssistantToggle" class="ai-assistant-toggle" type="button" aria-label="Abrir Asistente Byte"><span>✦</span> Asistente Byte</button>
   <section id="aiAssistantPanel" class="ai-assistant-panel hidden" aria-label="Asistente Byte"><header><div><span class="section-kicker">IA DE BYTE BAY</span><h2>¿Qué estás buscando?</h2></div><button id="aiAssistantClose" type="button" aria-label="Cerrar asistente">×</button></header><div class="ai-chat" id="aiChat"><article class="ai-message assistant">Hola, soy Asistente Byte. Puedo ayudarte a encontrar productos, ofertas y opciones similares.</article></div><div class="ai-suggestions"><button type="button" data-ai-question="¿Qué ofertas de tecnología tienen stock?">Ofertas de tecnología</button><button type="button" data-ai-question="Recomiéndame productos para el hogar">Para el hogar</button></div><form id="aiAssistantForm"><input id="aiAssistantInput" maxlength="500" placeholder="Ej.: Recomiéndame una laptop económica" required><button class="btn primary" type="submit">Enviar</button></form><small>Respuestas generadas con IA según el catálogo disponible.</small></section>
-  <script src="app.js?v=71"></script>
+  <script src="app.js?v=72"></script>
   <script src="site-orders.js?v=6"></script>
   <script src="site-motion.js?v=1"></script>
   <script src="site-enhancements.js?v=3"></script>
   <script src="site-settings.js?v=3"></script>
   <script src="site-privacy.js?v=7"></script>
+<dialog id="sizeGuideDialog" class="size-guide-dialog"><div class="size-guide-card"><h3>Guía de tallas</h3><table><tr><th>Talla Perú</th><th>EUR</th><th>US</th><th>cm</th></tr><tr><td>38</td><td>40</td><td>7</td><td>24.5</td></tr><tr><td>39</td><td>41</td><td>7.5</td><td>25</td></tr><tr><td>40</td><td>42</td><td>8</td><td>25.5</td></tr><tr><td>41</td><td>43</td><td>8.5</td><td>26</td></tr><tr><td>42</td><td>44</td><td>9</td><td>26.5</td></tr></table><button class="btn primary" onclick="document.querySelector('#sizeGuideDialog').close()">Cerrar</button></div></dialog>
 </body>
 </html>

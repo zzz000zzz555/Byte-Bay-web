@@ -1508,6 +1508,25 @@ function openProductModal(id){
   const specs=lastViewedProduct.specs||{};
   const specsHtml=Object.keys(specs).length?`<div class="modal-specs"><strong>Especificaciones técnicas</strong><dl>${Object.entries(specs).map(([k,v])=>`<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl>${lastViewedProduct.gender?`<p><strong>Género:</strong> ${escapeHtml(lastViewedProduct.gender)}</p>`:''}${lastViewedProduct.videoUrl?`<p><a href="${escapeHtml(lastViewedProduct.videoUrl)}" target="_blank" rel="noopener">Ver video de presentación</a></p>`:''}</div>`:'';
   const modalSpecs=document.querySelector('#modalSpecs'); if(modalSpecs) modalSpecs.innerHTML=specsHtml;
+  const variantesEl=document.querySelector('#modalVariantes'); if(variantesEl){
+    variantesEl.innerHTML='Cargando opciones...';
+    if(supabaseClient){
+      const {data}=await supabaseClient.from('catalogo_productos').select('id,nombre,precio_venta,url_imagen').eq('marca',lastViewedProduct.brand).eq('categoria',lastViewedProduct.category).neq('id',lastViewedProduct.id).limit(8);
+      const vars=data||[];
+      if(vars.length){
+        variantesEl.innerHTML='<strong>Otras opciones disponibles:</strong><div class="variant-chips">'+vars.map(v=>`<button class="variant-chip" data-id="${v.id}">${escapeHtml(v.nombre)} - S/ ${Number(v.precio_venta).toFixed(2)}</button>`).join('')+'</div>';
+        variantesEl.querySelectorAll('.variant-chip').forEach(b=>b.onclick=()=>openProductModal(Number(b.dataset.id)));
+      } else variantesEl.innerHTML='';
+    } else variantesEl.innerHTML='';
+  }
+  // size guide button
+  const sizeGuideBtn=document.querySelector('#sizeGuideBtn');
+  if(sizeGuideBtn){
+    const cat=String(lastViewedProduct.category||'').toLowerCase();
+    const show=/moda|ropa|calzado|zapatilla/.test(cat);
+    sizeGuideBtn.style.display=show?'inline-block':'none';
+    sizeGuideBtn.onclick=()=>{const d=document.querySelector('#sizeGuideDialog'); if(d) d.showModal();};
+  }
   const disponibilidad=document.querySelector('#modalAvailability');
   disponibilidad.className=`availability ${lastViewedProduct.stock<=0?'unavailable':lastViewedProduct.stock<=5?'low-stock':''}`;
   disponibilidad.textContent=lastViewedProduct.stock<=0?'Producto agotado':lastViewedProduct.stock<=5?`Últimas ${lastViewedProduct.stock} unidades`:'Disponible para entrega';

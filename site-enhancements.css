@@ -531,3 +531,11 @@ section { margin-bottom: 0; }
 
 .rbac-switches{display:flex;gap:12px;flex-wrap:wrap;}
 .rbac-switches label{display:inline-flex;align-items:center;gap:4px;font-size:13px;}
+
+.variant-chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;}
+.variant-chip{border:1px solid #e2e8f0;background:#f8fafc;border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer;}
+.variant-chip:hover{background:#0f172a;color:#fff;}
+.modal-variantes{margin:10px 0;}
+.size-guide-dialog{border:none;border-radius:16px;padding:20px;max-width:420px;width:90%;}
+.size-guide-card table{width:100%;border-collapse:collapse;margin:12px 0;}
+.size-guide-card th,.size-guide-card td{border:1px solid #e2e8f0;padding:6px;text-align:center;}
