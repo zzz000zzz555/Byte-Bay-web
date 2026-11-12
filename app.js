@@ -240,6 +240,9 @@ let start=0;
 let discountRate=0;
 let shippingValue=0;
 let activeCategory='all';
+let activeBrand='all';
+let activeGender='all';
+let inStockOnly=false;
 let activeQuery='';
 let notificationSubscription=JSON.parse(localStorage.getItem('beruNotifications')||'null');
 let activeFilter='all';
@@ -353,6 +356,9 @@ document.querySelector('#categoryList').innerHTML=categories.map(c=>`<a class="c
 function getVisibleProducts(){
   let list=soloOfertas?products.filter(p=>Number(p.discount)>0):products;
   if(activeCategory!=='all') list=list.filter(p=>p.category===activeCategory);
+  if(activeBrand!=='all') list=list.filter(p=>p.brand===activeBrand);
+  if(activeGender!=='all') list=list.filter(p=>(p.gender||'Mixto')===activeGender);
+  if(inStockOnly) list=list.filter(p=>Number(p.stock)>0);
   if(activeQuery) list=list.filter(p=>(p.name+p.brand+p.category).toLowerCase().includes(activeQuery));
   if(activeFilter==='price-low') list=[...list].sort((a,b)=>a.price-b.price);
   if(activeFilter==='price-high') list=[...list].sort((a,b)=>b.price-a.price);
@@ -368,10 +374,19 @@ function actualizarOpcionesCategorias(){
   const categoriasDisponibles=[...new Set(origen.map(producto=>producto.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
   selector.innerHTML='<option value="all">Todas las categorías</option>'+categoriasDisponibles.map(categoria=>`<option value="${escapeHtml(categoria)}">${escapeHtml(categoria)}</option>`).join('');
   selector.value=activeCategory;
+  const brandSelector=document.querySelector('#catalogBrandFilter');
+  if(brandSelector){
+    const marcasDisponibles=[...new Set(origen.map(producto=>producto.brand).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+    brandSelector.innerHTML='<option value="all">Todas las marcas</option>'+marcasDisponibles.map(marca=>`<option value="${escapeHtml(marca)}">${escapeHtml(marca)}</option>`).join('');
+    brandSelector.value=activeBrand;
+  }
 }
 function sincronizarFiltrosCatalogo(){
   const categoria=document.querySelector('#catalogCategoryFilter'),precio=document.querySelector('#catalogPriceFilter'),modo=document.querySelector('#catalogOfferFilter');
   if(categoria) categoria.value=activeCategory;
+  const marca=document.querySelector('#catalogBrandFilter'); if(marca) marca.value=activeBrand;
+  const genero=document.querySelector('#catalogGenderFilter'); if(genero) genero.value=activeGender;
+  const stock=document.querySelector('#catalogInStockOnly'); if(stock) stock.checked=inStockOnly;
   if(precio) precio.value=['price-low','price-high'].includes(activeFilter)?activeFilter:'';
   if(modo) modo.value=soloOfertas?'ofertas':'catalogo';
 }
