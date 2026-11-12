@@ -540,46 +540,44 @@ section { margin-bottom: 0; }
 .size-guide-card table{width:100%;border-collapse:collapse;margin:12px 0;}
 .size-guide-card th,.size-guide-card td{border:1px solid #e2e8f0;padding:6px;text-align:center;}
 
-/* === RESPONSIVE MOBILE FIXES === */
+
+/* === RESPONSIVE MOBILE FIXES v2 === */
 @media (max-width: 768px) {
-  /* Header: two rows, compact icons */
-  .header-main { flex-wrap: wrap; gap: 8px; }
-  .header-action.orders-button { padding: 6px 8px; gap: 6px; height: 40px; }
+  /* Header: two clean rows */
+  .header-main { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .brand { flex: 0 0 auto; }
+  .brand-logo { width: 110px; height: 38px; }
+  .header-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+  .header-action { padding: 6px 8px; height: 40px; border-radius: 10px; }
   .header-action-text small { display: none; }
   .header-action-text strong { font-size: 12px; }
   .header-action-icon { width: 20px; height: 20px; }
-  .orders-badge { top: -4px; right: -4px; }
-  /* Search full width below */
-  .search { width: 100%; margin-top: 8px; }
-  /* Hero card */
-  .hero-card { max-width: 65%; bottom: 12px; left: 12px; right: auto; padding: 10px 14px; border-radius: 12px; background: rgba(15,23,42,0.88); backdrop-filter: blur(6px); }
-  .hero-badge { width: 64px; height: 64px; top: 12px; right: 12px; }
-  /* AI button compact */
-  .ai-assistant-toggle { padding: 10px 14px; font-size: 13px; bottom: 16px; right: 16px; z-index: 90; }
-  /* Modal: single column, horizontal thumbs */
-  .product-modal-card { width: 100%; max-height: 92vh; border-radius: 20px 20px 0 0; overflow-y: auto; padding: 16px; }
-  .product-modal-grid { grid-template-columns: 1fr; gap: 16px; align-items: start; }
-  .product-modal-media { flex-direction: column; }
-  .media-thumbs-vertical { flex-direction: row; overflow-x: auto; gap: 8px; justify-content: center; width: 100%; }
-  .coolbox-thumb { flex: 0 0 auto; }
-  .product-main-stage { height: 250px; }
-  .product-main-stage img { max-height: 220px; }
-  /* Sticky bottom action bar */
-  .modal-purchase-info { position: sticky; bottom: 0; background: #fff; padding: 10px; border-top: 1px solid #e2e8f0; }
-  /* Catalog grid: 2 columns */
-  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .product-image { height: 140px; padding: 8px; }
-  .product-image img { max-height: 120px; }
-  .product-card h3 { font-size: 12px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  /* Orders modal tabs horizontal scroll */
-  .orders-tabs { overflow-x: auto; white-space: nowrap; flex-wrap: nowrap; }
-  .orders-tab { flex: 0 0 auto; }
-  /* Orders timeline fit */
+  .orders-badge { top: -4px; right: -4px; font-size: 10px; min-width: 16px; height: 16px; }
+  .search { width: 100%; margin-top: 8px; order: 3; }
+  .search input { height: 40px; font-size: 14px; }
+  /* Hero */
+  .hero { padding: 16px 0; }
+  .hero-card { max-width: 70%; bottom: 10px; left: 10px; right: auto; padding: 8px 12px; border-radius: 10px; background: rgba(15,23,42,0.9); }
+  .hero-badge { width: 56px; height: 56px; top: 10px; right: 10px; font-size: 10px; }
+  /* AI button */
+  .ai-assistant-toggle { padding: 8px 12px; font-size: 12px; bottom: 12px; right: 12px; }
+  /* Product grid: 2 columns */
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .product-image { height: 130px; padding: 6px; }
+  .product-image img { max-height: 110px; }
+  .product-card h3 { font-size: 11px; line-clamp: 2; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+  .product-meta { font-size: 10px; }
+  .price { font-size: 14px; }
+  /* Modal */
+  .product-modal-card { width: 100%; max-height: 95vh; border-radius: 16px 16px 0 0; padding: 12px; }
+  .product-modal-grid { grid-template-columns: 1fr; gap: 12px; }
+  .product-main-stage { height: 220px; padding: 12px; }
+  .product-main-stage img { max-height: 190px; }
+  .media-thumbs-vertical { flex-direction: row; overflow-x: auto; gap: 6px; }
+  .coolbox-thumb { flex: 0 0 auto; width: 56px; }
+  /* Orders modal */
+  .orders-card { width: 100%; border-radius: 16px 16px 0 0; padding: 12px; }
+  .orders-tabs { overflow-x: auto; white-space: nowrap; flex-wrap: nowrap; gap: 6px; }
+  .orders-tab { flex: 0 0 auto; padding: 6px 10px; font-size: 12px; }
   .order-timeline { overflow-x: auto; }
-}
-@media (min-width: 769px) and (max-width: 1199px) {
-  .product-grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (min-width: 1200px) {
-  .product-grid { grid-template-columns: repeat(4, 1fr); }
 }
