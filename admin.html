@@ -77,6 +77,7 @@
         <button data-admin-tab="auditoria" id="adminAuditTab">Auditoría</button>
         <button data-admin-tab="marca" id="adminBrandTab">Marca</button>
         <button data-admin-tab="personal" id="adminPeopleTab">Personal</button>
+        <button data-admin-tab="roles" id="adminRolesTab">Roles y credenciales</button>
       </nav>
       <button id="adminChangePassword" class="admin-logout" type="button" style="margin-bottom:8px">Cambiar contraseña</button>
       <button id="adminLogout" class="admin-logout">Cerrar sesión</button>
@@ -321,6 +322,34 @@
           <div class="admin-card"><div class="admin-filters"><input id="staffSearch" type="search" placeholder="Buscar nombre, correo o rol"><select id="staffStatusFilter"><option value="">Todos los estados</option><option value="activo">Activos</option><option value="anulado">Anulados</option></select></div><div id="adminStaffList" class="admin-list"></div></div>
         </div>
       </section>
+      <section class="hidden" data-admin-section="roles">
+        <div class="admin-section-head"><div><h2>Roles y credenciales (RBAC)</h2><p>Gestiona módulos, roles y permisos granulares.</p></div><button class="btn secondary" id="adminRefreshRoles" type="button">Actualizar</button></div>
+        <div class="admin-two-columns">
+          <div class="admin-card">
+            <h3>Módulos del sistema</h3>
+            <div id="adminModulesList" class="admin-list"></div>
+            <form id="adminModuleForm" class="admin-form">
+              <label><span>Clave</span><input id="moduleKey" required></label>
+              <label><span>Nombre</span><input id="moduleName" required></label>
+              <label><span>Descripción</span><input id="moduleDesc"></label>
+              <button class="btn primary" type="submit">Guardar módulo</button>
+            </form>
+          </div>
+          <div class="admin-card">
+            <h3>Roles</h3>
+            <select id="roleSelector" class="admin-select"></select>
+            <form id="adminRoleForm" class="admin-form">
+              <label><span>Nombre del rol</span><input id="roleName" required></label>
+              <label><span>Descripción</span><input id="roleDesc"></label>
+              <button class="btn primary" type="submit">Guardar rol</button>
+            </form>
+            <h3>Matriz de permisos</h3>
+            <div id="permissionMatrix" class="admin-list"></div>
+            <button class="btn primary" id="savePermissions" type="button">Guardar permisos</button>
+          </div>
+        </div>
+      </section>
+
       <section class="hidden" data-admin-section="clientes">
         <div class="admin-section-head">
           <div><h2>Clientes</h2><p>Consulta, filtra por fecha de registro y administra el estado de las cuentas.</p></div>

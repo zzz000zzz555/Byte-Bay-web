@@ -107,7 +107,7 @@ $('#adminRecoveryForm').onsubmit=async event=>{
   await validarSesion();
 };
 $('#adminLogout').onclick=async()=>{await supabaseClient.auth.signOut();rolPersonal='';mostrarAcceso('Sesión cerrada correctamente.');};
-document.querySelectorAll('[data-admin-tab]').forEach(boton=>boton.onclick=()=>{if(boton.dataset.adminTab==='personal'&&rolPersonal!=='jefe')return;mostrarSeccion(boton.dataset.adminTab);});
+document.querySelectorAll('[data-admin-tab]').forEach(boton=>boton.onclick=()=>{if(boton.dataset.adminTab==='personal'&&rolPersonal!=='jefe')return;if(boton.dataset.adminTab==='roles'&&rolPersonal!=='jefe')return;mostrarSeccion(boton.dataset.adminTab);if(boton.dataset.adminTab==='roles')cargarRolesRBAC();});
 
 async function cargarOpciones(){
   const [productos,proveedores,catalogo]=await Promise.all([supabaseClient.rpc('listar_productos_inventario_personal'),supabaseClient.rpc('listar_proveedores_personal'),supabaseClient.from('catalogo_productos').select('id,nombre,url_imagen')]);
@@ -465,3 +465,77 @@ async function exportarPedidos() {
   alert('Archivo pedidos-byte-bay-' + hoy + '.xlsx generado correctamente.');
 }
 document.querySelector('#exportOrders')?.addEventListener('click', exportarPedidos);
+async function cargarRolesRBAC(){
+  const modList=document.querySelector('#adminModulesList');
+  const roleSel=document.querySelector('#roleSelector');
+  const matrix=document.querySelector('#permissionMatrix');
+  if(!modList||!roleSel||!matrix) return;
+  modList.textContent='Cargando...';
+  const [{data:mods},{data:roles}] = await Promise.all([
+    supabaseClient.from('system_modules').select('*').order('nombre'),
+    supabaseClient.from('roles').select('*').order('nombre')
+  ]);
+  const modules=mods||[];
+  const rolesList=roles||[];
+  modList.innerHTML=modules.map(m=>`<div class="admin-list-item"><div><strong>${escapar(m.nombre)}</strong><span>${escapar(m.clave)}</span></div></div>`).join('')||'Sin módulos';
+  roleSel.innerHTML=rolesList.map(r=>`<option value="${r.id}">${escapar(r.nombre)}</option>`).join('');
+  async function renderMatrix(){
+    const rid=roleSel.value;
+    if(!rid){matrix.innerHTML='';return;}
+    const {data:perms}=await supabaseClient.from('role_permissions').select('*').eq('id_rol',rid);
+    const byMod=new Map((perms||[]).map(p=>[p.id_modulo,p]));
+    matrix.innerHTML=modules.map(m=>{
+      const p=byMod.get(m.id)||{};
+      return `<div class="admin-list-item">
+        <div><strong>${escapar(m.nombre)}</strong></div>
+        <div class="rbac-switches">
+          <label><input type="checkbox" data-mod="${m.id}" data-perm="ver" ${p.puede_ver?'checked':''}> Ver</label>
+          <label><input type="checkbox" data-mod="${m.id}" data-perm="crear" ${p.puede_crear?'checked':''}> Crear</label>
+          <label><input type="checkbox" data-mod="${m.id}" data-perm="editar" ${p.puede_editar?'checked':''}> Editar</label>
+          <label><input type="checkbox" data-mod="${m.id}" data-perm="eliminar" ${p.puede_eliminar?'checked':''}> Eliminar</label>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  roleSel.onchange=renderMatrix;
+  await renderMatrix();
+  document.querySelector('#savePermissions').onclick=async()=>{
+    const rid=roleSel.value;
+    if(!rid) return;
+    const checks=matrix.querySelectorAll('input[type="checkbox"]');
+    const byMod=new Map();
+    checks.forEach(c=>{
+      const mid=c.dataset.mod;
+      if(!byMod.has(mid)) byMod.set(mid,{id_rol:rid,id_modulo:mid,puede_ver:false,puede_crear:false,puede_editar:false,puede_eliminar:false});
+      const perm=c.dataset.perm;
+      const key = perm==='ver'?'puede_ver':perm==='crear'?'puede_crear':perm==='editar'?'puede_editar':'puede_eliminar';
+      byMod.get(mid)[key]=c.checked;
+    });
+    for(const [mid,v] of byMod){
+      await supabaseClient.from('role_permissions').upsert(v,{onConflict:'id_rol,id_modulo'});
+    }
+    informar('Permisos guardados.');
+  };
+}
+document.querySelector('#adminModuleForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const clave=document.querySelector('#moduleKey').value.trim();
+  const nombre=document.querySelector('#moduleName').value.trim();
+  const desc=document.querySelector('#moduleDesc').value.trim();
+  const {error}=await supabaseClient.from('system_modules').upsert({clave,nombre,descripcion:desc,activo:true},{onConflict:'clave'});
+  if(error) return informar(error.message);
+  informar('Módulo guardado.');
+  e.target.reset();
+  cargarRolesRBAC();
+});
+document.querySelector('#adminRoleForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const nombre=document.querySelector('#roleName').value.trim();
+  const desc=document.querySelector('#roleDesc').value.trim();
+  const {error}=await supabaseClient.from('roles').upsert({nombre,descripcion:desc,activo:true},{onConflict:'nombre'});
+  if(error) return informar(error.message);
+  informar('Rol guardado.');
+  e.target.reset();
+  cargarRolesRBAC();
+});
+document.querySelector('#adminRefreshRoles')?.addEventListener('click',cargarRolesRBAC);
