@@ -321,7 +321,7 @@ async function loadCatalogFromSupabase(){
   iniciarCarruselHero();
 }
 
-async function cargarComentariosProducto(idProducto){
+async function cargarComentariosProducto(idProducto, filtro='all'){
   const lista=document.querySelector('#productCommentsList');
   const resumen=document.querySelector('#commentsSummary');
   lista.textContent='Cargando comentarios...';
@@ -330,7 +330,9 @@ async function cargarComentariosProducto(idProducto){
     .select('id,autor,calificacion,comentario,creado_en')
     .eq('id_producto',idProducto).order('creado_en',{ascending:false}).limit(20);
   if(error){lista.textContent='Los comentarios estarán disponibles después de actualizar la base de datos.';resumen.textContent='Reseñas no disponibles';return;}
-  const comentarios=data||[];
+  let comentarios=data||[];
+  if(filtro==='good') comentarios=comentarios.filter(c=>Number(c.calificacion)>=4);
+  if(filtro==='bad') comentarios=comentarios.filter(c=>Number(c.calificacion)<=3);
   const promedio=comentarios.length?comentarios.reduce((total,item)=>total+Number(item.calificacion),0)/comentarios.length:0;
   resumen.innerHTML=comentarios.length?`<strong>${promedio.toFixed(1)}</strong><span aria-label="${promedio.toFixed(1)} de 5 estrellas">${'★'.repeat(Math.round(promedio))}${'☆'.repeat(5-Math.round(promedio))}</span><small>${comentarios.length} ${comentarios.length===1?'reseña':'reseñas'}</small>`:'Aún no hay reseñas';
   lista.innerHTML=comentarios.length?comentarios.map(comentario=>`<article class="product-comment"><header><div><strong>${escapeHtml(comentario.autor)}</strong><small>${new Date(comentario.creado_en).toLocaleDateString('es-PE',{year:'numeric',month:'short',day:'numeric'})}</small></div><span class="product-comment-stars" aria-label="${Number(comentario.calificacion)} de 5 estrellas">${'★'.repeat(Number(comentario.calificacion))}${'☆'.repeat(5-Number(comentario.calificacion))}</span></header><p>${escapeHtml(comentario.comentario)}</p></article>`).join(''):'Sé la primera persona en compartir su experiencia con este producto.';
@@ -1450,6 +1452,7 @@ function openProductModal(id){
   actualizarContadorComentario();
    document.querySelector('#commentStatus').textContent=cuenta?.verified?'Tu cuenta estÃ¡ verificada. La reseÃ±a quedarÃ¡ pendiente de revisiÃ³n.':'Debes iniciar sesiÃ³n. Las reseÃ±as se publican despuÃ©s de la revisiÃ³n.';
   cargarComentariosProducto(lastViewedProduct.id);
+  document.querySelectorAll('[data-review-filter]').forEach(btn=>{btn.onclick=()=>{document.querySelectorAll('[data-review-filter]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');cargarComentariosProducto(lastViewedProduct.id,btn.dataset.reviewFilter);};});
   document.querySelector('#productModal').classList.add('open');
   document.querySelector('#productModal').setAttribute('aria-hidden','false');
 }
