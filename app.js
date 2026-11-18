@@ -302,6 +302,12 @@ async function abrirPackModal(id){
     const {data:prod}=await supabaseClient.from('productos').select('id,nombre,url_imagen,precio').eq('id',it.id_producto).maybeSingle();
     return {nombre:prod?.nombre||'Producto', img:prod?.url_imagen, precio:prod?.precio, cantidad:it.cantidad};
   }));
+  // render individual product images in modal gallery
+  const gallery=document.querySelector('#modalMediaThumbs');
+  if(gallery){
+    gallery.style.display='flex';
+    gallery.innerHTML=itemDetails.map(it=>`<button type="button" class="coolbox-thumb" title="${escapeHtml(it.nombre)}"><img src="${escapeHtml(imagenSegura(it.img||'imagen-producto-predeterminada.svg'))}" alt="${escapeHtml(it.nombre)}"></button>`).join('');
+  }
   lastViewedProduct={id:pack.id, name:pack.nombre, brand:'Byte Bay', category:'Pack', price:Number(pack.precio_especial), old:Number(pack.precio_especial), stock:Number(pack.stock), rating:'5.0', description:pack.descripcion||'Pack combo de productos.', img: (itemDetails[0]?.img||'imagen-producto-predeterminada.svg'), gender:'Mixto', specs:{'Productos incluidos':itemDetails.length+' items','Stock de packs':pack.stock+' unidades'}, videoUrl:''};
   // open modal manually
   document.querySelector('#modalImage').src=imagenSegura(lastViewedProduct.img);
