@@ -340,7 +340,7 @@ async function cargarPacksTienda(){
     }
     return {...p,img};
   }));
-  grid.innerHTML=packsWithImg.map(p=>`<article class="product-card" data-pack="${p.id}"><div class="product-image"><img src="${escapeHtml(imagenSegura(p.img))}" alt="${escapeHtml(p.nombre)}" loading="lazy"></div><h3>${escapeHtml(p.nombre)}</h3><div class="price-row"><strong class="price">${money(Number(p.precio_especial)||0)}</strong><button class="add" data-pack="${p.id}">+</button></div><div class="availability">Pack disponible: ${p.stock} unidades</div></article>`).join('');
+  grid.innerHTML=packsWithImg.map(p=>`<article class="product-card" data-pack="${p.id}"><div class="product-image"><img src="${escapeHtml(imagenSegura(p.img))}" alt="${escapeHtml(p.nombre)}" loading="lazy"></div><h3>${escapeHtml(p.nombre)}</h3><div class="price-row"><span class="old-price">${money(Number(p.suma_individual)||0)}</span><strong class="price">${money(Number(p.precio_especial)||0)}</strong><button class="add" data-pack="${p.id}">+</button></div><div class="availability">Ahorras ${money((Number(p.suma_individual)||0)-(Number(p.precio_especial)||0))} • Pack disponible: ${p.stock} unidades</div></article>`).join('');
   grid.querySelectorAll('.product-card').forEach(card=>{
     card.addEventListener('click',e=>{
       if(e.target.closest('.add')) return;
