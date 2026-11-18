@@ -575,7 +575,48 @@ async function cargarPacks(){
     const {data:items}=await supabaseClient.from('pack_items').select('id_pack,id_producto,cantidad').in('id_pack',ids);
     (items||[]).forEach(it=>{if(!itemsByPack.has(it.id_pack)) itemsByPack.set(it.id_pack,[]); itemsByPack.get(it.id_pack).push(it);});
   }
-  list.innerHTML=(packs||[]).length?(packs||[]).map(p=>`<article class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_especial).toFixed(2)} • Stock: ${p.stock} • Items: ${(itemsByPack.get(p.id)||[]).length}</span></div></article>`).join(''):'Sin packs registrados.';
+  list.innerHTML=(packs||[]).length?(packs||[]).map(p=>`<article class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_especial).toFixed(2)} • Stock: ${p.stock} • Items: ${(itemsByPack.get(p.id)||[]).length} • ${p.activo?'Activo':'Inactivo'}</span></div><div class="admin-actions"><button class="icon-btn" data-edit-pack="${p.id}" title="Editar">&#9998;</button><button class="icon-btn" data-toggle-pack="${p.id}" data-active="${p.activo}" title="${p.activo?'Desactivar':'Activar'}">${p.activo?'&#128065;':'&#128683;'}</button><button class="icon-btn" data-delete-pack="${p.id}" title="Eliminar">&#128465;</button></div></article>`).join(''):'Sin packs registrados.';
+  // bind edit
+  list.querySelectorAll('[data-edit-pack]').forEach(b=>b.addEventListener('click',async()=>{
+    const id=Number(b.dataset.editPack);
+    const pack=(packs||[]).find(x=>x.id===id);
+    if(!pack) return;
+    document.querySelector('#packName').value=pack.nombre||'';
+    document.querySelector('#packDesc').value=pack.descripcion||'';
+    document.querySelector('#packPrice').value=pack.precio_especial;
+    document.querySelector('#packStock').value=pack.stock;
+    document.querySelector('#packStart').value=pack.inicia_en?new Date(pack.inicia_en).toISOString().slice(0,16):'';
+    document.querySelector('#packEnd').value=pack.termina_en?new Date(pack.termina_en).toISOString().slice(0,16):'';
+    // load items
+    const {data:items}=await supabaseClient.from('pack_items').select('id_producto,cantidad').eq('id_pack',id);
+    packSelected=[];
+    for(const it of (items||[])){
+      const {data:prod}=await supabaseClient.from('productos').select('id,nombre,precio').eq('id',it.id_producto).maybeSingle();
+      if(prod) packSelected.push({id:prod.id,nombre:prod.nombre,precio:Number(prod.precio),qty:it.cantidad});
+    }
+    renderPackSelected();
+    // store editing id
+    document.querySelector('#adminPackForm').dataset.editingId=id;
+  }));
+  // toggle
+  list.querySelectorAll('[data-toggle-pack]').forEach(b=>b.addEventListener('click',async()=>{
+    const id=Number(b.dataset.togglePack);
+    const activo=b.dataset.active!=='true';
+    const {error}=await supabaseClient.from('packs').update({activo}).eq('id',id);
+    if(error){informar(error.message);return;}
+    informar(activo?'Pack activado.':'Pack desactivado.');
+    cargarPacks();
+  }));
+  // delete
+  list.querySelectorAll('[data-delete-pack]').forEach(b=>b.addEventListener('click',async()=>{
+    const id=Number(b.dataset.deletePack);
+    if(!confirm('¿Eliminar este pack?')) return;
+    await supabaseClient.from('pack_items').delete().eq('id_pack',id);
+    const {error}=await supabaseClient.from('packs').delete().eq('id',id);
+    if(error){informar(error.message);return;}
+    informar('Pack eliminado.');
+    cargarPacks();
+  }));
 }
 
 // Estado de productos seleccionados para el pack
@@ -638,13 +679,25 @@ document.querySelector('#adminPackForm')?.addEventListener('submit',async e=>{
   const start=document.querySelector('#packStart').value;
   const end=document.querySelector('#packEnd').value;
   if(!packSelected.length){informar('Agrega al menos un producto.');return;}
-  const {data:pack,error}=await supabaseClient.from('packs').insert({nombre,descripcion:desc,precio_especial:precio,stock,inicia_en:start?new Date(start).toISOString():new Date().toISOString(),termina_en:end?new Date(end).toISOString():null,activo:true}).select('id').single();
+  const editingId=document.querySelector('#adminPackForm').dataset.editingId;
+  let packId;
+  if(editingId){
+    const {error}=await supabaseClient.from('packs').update({nombre,descripcion:desc,precio_especial:precio,stock,inicia_en:start?new Date(start).toISOString():new Date().toISOString(),termina_en:end?new Date(end).toISOString():null}).eq('id',editingId);
+    if(error){informar(error.message);return;}
+    packId=Number(editingId);
+    await supabaseClient.from('pack_items').delete().eq('id_pack',packId);
+  } else {
+    const {data:pack,error}=await supabaseClient.from('packs').insert({nombre,descripcion:desc,precio_especial:precio,stock,inicia_en:start?new Date(start).toISOString():new Date().toISOString(),termina_en:end?new Date(end).toISOString():null,activo:true}).select('id').single();
+    if(error){informar(error.message);return;}
+    packId=pack.id;
+  }
   if(error){informar(error.message);return;}
-  const items=packSelected.map(p=>({id_pack:pack.id,id_producto:p.id,cantidad:p.qty}));
+  const items=packSelected.map(p=>({id_pack:packId,id_producto:p.id,cantidad:p.qty}));
   const {error:e2}=await supabaseClient.from('pack_items').insert(items);
   if(e2){informar(e2.message);return;}
   informar('Pack guardado.');
   e.target.reset();
+  delete document.querySelector('#adminPackForm').dataset.editingId;
   packSelected=[];
   renderPackSelected();
   cargarPacks();
@@ -690,7 +743,48 @@ async function cargarPacks(){
     const {data:items}=await supabaseClient.from('pack_items').select('id_pack,id_producto,cantidad').in('id_pack',ids);
     (items||[]).forEach(it=>{if(!itemsByPack.has(it.id_pack)) itemsByPack.set(it.id_pack,[]); itemsByPack.get(it.id_pack).push(it);});
   }
-  list.innerHTML=(packs||[]).length?(packs||[]).map(p=>`<article class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_especial).toFixed(2)} • Stock: ${p.stock} • Items: ${(itemsByPack.get(p.id)||[]).length}</span></div></article>`).join(''):'Sin packs registrados.';
+  list.innerHTML=(packs||[]).length?(packs||[]).map(p=>`<article class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_especial).toFixed(2)} • Stock: ${p.stock} • Items: ${(itemsByPack.get(p.id)||[]).length} • ${p.activo?'Activo':'Inactivo'}</span></div><div class="admin-actions"><button class="icon-btn" data-edit-pack="${p.id}" title="Editar">&#9998;</button><button class="icon-btn" data-toggle-pack="${p.id}" data-active="${p.activo}" title="${p.activo?'Desactivar':'Activar'}">${p.activo?'&#128065;':'&#128683;'}</button><button class="icon-btn" data-delete-pack="${p.id}" title="Eliminar">&#128465;</button></div></article>`).join(''):'Sin packs registrados.';
+  // bind edit
+  list.querySelectorAll('[data-edit-pack]').forEach(b=>b.addEventListener('click',async()=>{
+    const id=Number(b.dataset.editPack);
+    const pack=(packs||[]).find(x=>x.id===id);
+    if(!pack) return;
+    document.querySelector('#packName').value=pack.nombre||'';
+    document.querySelector('#packDesc').value=pack.descripcion||'';
+    document.querySelector('#packPrice').value=pack.precio_especial;
+    document.querySelector('#packStock').value=pack.stock;
+    document.querySelector('#packStart').value=pack.inicia_en?new Date(pack.inicia_en).toISOString().slice(0,16):'';
+    document.querySelector('#packEnd').value=pack.termina_en?new Date(pack.termina_en).toISOString().slice(0,16):'';
+    // load items
+    const {data:items}=await supabaseClient.from('pack_items').select('id_producto,cantidad').eq('id_pack',id);
+    packSelected=[];
+    for(const it of (items||[])){
+      const {data:prod}=await supabaseClient.from('productos').select('id,nombre,precio').eq('id',it.id_producto).maybeSingle();
+      if(prod) packSelected.push({id:prod.id,nombre:prod.nombre,precio:Number(prod.precio),qty:it.cantidad});
+    }
+    renderPackSelected();
+    // store editing id
+    document.querySelector('#adminPackForm').dataset.editingId=id;
+  }));
+  // toggle
+  list.querySelectorAll('[data-toggle-pack]').forEach(b=>b.addEventListener('click',async()=>{
+    const id=Number(b.dataset.togglePack);
+    const activo=b.dataset.active!=='true';
+    const {error}=await supabaseClient.from('packs').update({activo}).eq('id',id);
+    if(error){informar(error.message);return;}
+    informar(activo?'Pack activado.':'Pack desactivado.');
+    cargarPacks();
+  }));
+  // delete
+  list.querySelectorAll('[data-delete-pack]').forEach(b=>b.addEventListener('click',async()=>{
+    const id=Number(b.dataset.deletePack);
+    if(!confirm('¿Eliminar este pack?')) return;
+    await supabaseClient.from('pack_items').delete().eq('id_pack',id);
+    const {error}=await supabaseClient.from('packs').delete().eq('id',id);
+    if(error){informar(error.message);return;}
+    informar('Pack eliminado.');
+    cargarPacks();
+  }));
 }
 document.querySelector('#adminPackForm')?.addEventListener('submit',async e=>{
   e.preventDefault();
@@ -702,7 +796,18 @@ document.querySelector('#adminPackForm')?.addEventListener('submit',async e=>{
   const end=document.querySelector('#packEnd').value;
   const selected=[...document.querySelector('#packProducts').selectedOptions].map(o=>Number(o.value));
   if(!selected.length){informar('Selecciona al menos un producto.');return;}
-  const {data:pack,error}=await supabaseClient.from('packs').insert({nombre,descripcion:desc,precio_especial:precio,stock,inicia_en:start?new Date(start).toISOString():new Date().toISOString(),termina_en:end?new Date(end).toISOString():null,activo:true}).select('id').single();
+  const editingId=document.querySelector('#adminPackForm').dataset.editingId;
+  let packId;
+  if(editingId){
+    const {error}=await supabaseClient.from('packs').update({nombre,descripcion:desc,precio_especial:precio,stock,inicia_en:start?new Date(start).toISOString():new Date().toISOString(),termina_en:end?new Date(end).toISOString():null}).eq('id',editingId);
+    if(error){informar(error.message);return;}
+    packId=Number(editingId);
+    await supabaseClient.from('pack_items').delete().eq('id_pack',packId);
+  } else {
+    const {data:pack,error}=await supabaseClient.from('packs').insert({nombre,descripcion:desc,precio_especial:precio,stock,inicia_en:start?new Date(start).toISOString():new Date().toISOString(),termina_en:end?new Date(end).toISOString():null,activo:true}).select('id').single();
+    if(error){informar(error.message);return;}
+    packId=pack.id;
+  }
   if(error){informar(error.message);return;}
   const items=selected.map(id=>({id_pack:pack.id,id_producto:id,cantidad:1}));
   const {error:e2}=await supabaseClient.from('pack_items').insert(items);
