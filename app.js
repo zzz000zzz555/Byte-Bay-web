@@ -14,17 +14,21 @@ if(parametrosHashAuth.get('type')==='recovery'||parametrosAuth.get('type')==='re
   window.location.replace(adminUrl.href);
 }
 const categories=[
-  {name:'Supermercado',count:'2,480 productos',icon:'<path d="M4 5h2l2 10h10l2-7H7"></path><circle cx="9" cy="19" r="1.4"></circle><circle cx="17" cy="19" r="1.4"></circle>'},
-  {name:'Tecnología',count:'1,250 productos',icon:'<rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8M12 17v4"></path>'},
-  {name:'Electrohogar',count:'860 productos',icon:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"></path>'},
-  {name:'Hogar',count:'1,720 productos',icon:'<path d="m3 11 9-7 9 7"></path><path d="M5 10v10h14V10"></path><path d="M10 20v-6h4v6"></path>'},
-  {name:'Moda',count:'3,140 productos',icon:'<path d="M9 4 4 7l2 5 3-1v9h6v-9l3 1 2-5-5-3a3 3 0 0 1-6 0z"></path>'},
-  {name:'Belleza',count:'920 productos',icon:'<path d="M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"></path><path d="M10 14a2 2 0 0 0 2 2"></path>'},
-  {name:'Deportes',count:'690 productos',icon:'<path d="M6 7v10M18 7v10M6 12h12"></path><rect x="3" y="7" width="3" height="10" rx="1"></rect><rect x="18" y="7" width="3" height="10" rx="1"></rect>'},
-  {name:'Bebés',count:'540 productos',icon:'<path d="M9 3h6"></path><path d="M10 6h4v3h-4z"></path><path d="M8 9h8a4 4 0 0 1 4 4v5a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-5a4 4 0 0 1 4-4z"></path>'},
-  {name:'Mascotas',count:'380 productos',icon:'<circle cx="8" cy="7" r="2"></circle><circle cx="16" cy="7" r="2"></circle><circle cx="5" cy="13" r="2"></circle><circle cx="19" cy="13" r="2"></circle><path d="M12 11c3 0 5 2.5 5 5a3 3 0 0 1-3 3 5 5 0 0 1-4 0 3 3 0 0 1-3-3c0-2.5 2-5 5-5z"></path>'},
-  {name:'Juguetes',count:'620 productos',icon:'<rect x="4" y="9" width="7" height="7" rx="1"></rect><rect x="13" y="4" width="7" height="7" rx="1"></rect><path d="M13 13h7v7h-7z"></path>'},
-  {name:'Ferretería',count:'910 productos',icon:'<path d="M14 6a4 4 0 0 0 5 5l-8 8a2.8 2.8 0 0 1-4-4z"></path><path d="m15 5 4 4"></path>'}
+  {name:'Supermercado',count:'33 productos',icon:'<path d="M4 5h2l2 10h10l2-7H7"></path><circle cx="9" cy="19" r="1.4"></circle><circle cx="17" cy="19" r="1.4"></circle>'},
+  {name:'Tecnología',count:'46 productos',icon:'<rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8M12 17v4"></path>'},
+  {name:'Electrohogar',count:'25 productos',icon:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"></path>'},
+  {name:'Hogar',count:'33 productos',icon:'<path d="m3 11 9-7 9 7"></path><path d="M5 10v10h14V10"></path><path d="M10 20v-6h4v6"></path>'},
+  {name:'Moda',count:'41 productos',icon:'<path d="M9 4 4 7l2 5 3-1v9h6v-9l3 1 2-5-5-3a3 3 0 0 1-6 0z"></path>'},
+  {name:'Belleza',count:'32 productos',icon:'<path d="M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"></path><path d="M10 14a2 2 0 0 0 2 2"></path>'},
+  {name:'Deportes',count:'32 productos',icon:'<path d="M6 7v10M18 7v10M6 12h12"></path><rect x="3" y="7" width="3" height="10" rx="1"></rect><rect x="18" y="7" width="3" height="10" rx="1"></rect>'},
+  {name:'Bebés',count:'20 productos',icon:'<path d="M9 3h6"></path><path d="M10 6h4v3h-4z"></path><path d="M8 9h8a4 4 0 0 1 4 4v5a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-5a4 4 0 0 1 4-4z"></path>'},
+  {name:'Mascotas',count:'22 productos',icon:'<circle cx="8" cy="7" r="2"></circle><circle cx="16" cy="7" r="2"></circle><circle cx="5" cy="13" r="2"></circle><circle cx="19" cy="13" r="2"></circle><path d="M12 11c3 0 5 2.5 5 5a3 3 0 0 1-3 3 5 5 0 0 1-4 0 3 3 0 0 1-3-3c0-2.5 2-5 5-5z"></path>'},
+  {name:'Juguetes',count:'20 productos',icon:'<rect x="4" y="9" width="7" height="7" rx="1"></rect><rect x="13" y="4" width="7" height="7" rx="1"></rect><path d="M13 13h7v7h-7z"></path>'},
+  {name:'Ferretería',count:'20 productos',icon:'<path d="M14 6a4 4 0 0 0 5 5l-8 8a2.8 2.8 0 0 1-4-4z"></path><path d="m15 5 4 4"></path>'},
+  {name:'Audio',count:'26 productos',icon:'<path d="M3 9v6h4l5 5V4L7 9H3z"></path><path d="M16 8a5 5 0 0 1 0 8"></path>'},
+  {name:'Cocina',count:'29 productos',icon:'<path d="M6 3v6a3 3 0 0 0 3 3h0a3 3 0 0 0 3-3V3"></path><path d="M9 12v9"></path><path d="M18 3v18"></path>'},
+  {name:'Cuidado',count:'23 productos',icon:'<path d="M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"></path><path d="M10 14a2 2 0 0 0 2 2"></path>'},
+  {name:'Limpieza',count:'22 productos',icon:'<path d="M4 4h16v4H4z"></path><path d="M6 8v12h12V8"></path><path d="M10 12h4"></path>'},
 ];
 const IMAGEN_PRODUCTO_RESPALDO='imagen-producto-predeterminada.svg';
 const IMAGEN_CATEGORIA_RESPALDO='imagen-categoria-predeterminada.svg';
