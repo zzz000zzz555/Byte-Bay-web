@@ -17,3 +17,5 @@ tmp/
 !migrations_stock_en_vivo.sql
 !migrations_admin_producto_extra.sql
 !migrations_admin_toggle_producto.sql
+!migrations_packs.sql
+!migrations_ofertas_packs.sql
