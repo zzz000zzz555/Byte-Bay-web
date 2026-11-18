@@ -294,6 +294,37 @@ const supabaseReady=()=>typeof window.supabase?.createClient==='function';
 const supabaseClient=supabaseReady()?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY):null;
 
 
+async function abrirPackModal(id){
+  const {data:pack}=await supabaseClient.from('catalogo_packs').select('*').eq('id',id).maybeSingle();
+  if(!pack) return;
+  const {data:items}=await supabaseClient.from('pack_items').select('id_producto,cantidad').eq('id_pack',id);
+  const itemDetails=await Promise.all((items||[]).map(async it=>{
+    const {data:prod}=await supabaseClient.from('productos').select('id,nombre,url_imagen,precio').eq('id',it.id_producto).maybeSingle();
+    return {nombre:prod?.nombre||'Producto', img:prod?.url_imagen, precio:prod?.precio, cantidad:it.cantidad};
+  }));
+  lastViewedProduct={id:pack.id, name:pack.nombre, brand:'Byte Bay', category:'Pack', price:Number(pack.precio_especial), old:Number(pack.precio_especial), stock:Number(pack.stock), rating:'5.0', description:pack.descripcion||'Pack combo de productos.', img: (itemDetails[0]?.img||'imagen-producto-predeterminada.svg'), gender:'Mixto', specs:{'Productos incluidos':itemDetails.length+' items','Stock de packs':pack.stock+' unidades'}, videoUrl:''};
+  // open modal manually
+  document.querySelector('#modalImage').src=imagenSegura(lastViewedProduct.img);
+  document.querySelector('#modalBrand').textContent='Pack • Byte Bay';
+  document.querySelector('#modalName').textContent=pack.nombre;
+  document.querySelector('#modalRating').innerHTML='★★★★★ <span>5.0</span>';
+  document.querySelector('#modalPrice').textContent=money(pack.precio_especial);
+  document.querySelector('#modalOld').style.display='none';
+  const descEl=document.querySelector('#modalDescription');
+  descEl.innerHTML=`<p><strong>¿Qué es?</strong> ${escapeHtml(pack.descripcion||'Pack combo de productos.')}</p><p><strong>Productos incluidos:</strong></p><ul>${itemDetails.map(it=>`<li>${escapeHtml(it.nombre)} x${it.cantidad} - S/ ${Number(it.precio||0).toFixed(2)}</li>`).join('')}</ul>`;
+  const specs=document.querySelector('#modalSpecs');
+  if(specs) specs.innerHTML=`<div class="modal-specs"><strong>Detalles del pack</strong><dl><dt>Precio especial</dt><dd>S/ ${Number(pack.precio_especial).toFixed(2)}</dd><dt>Stock de packs</dt><dd>${pack.stock} unidades</dd><dt>Productos</dt><dd>${itemDetails.length} items</dd></dl></div>`;
+  const avail=document.querySelector('#modalAvailability');
+  avail.className='availability '+(pack.stock<=0?'unavailable':pack.stock<=5?'low-stock':'');
+  avail.textContent=pack.stock<=0?'Agotado':pack.stock<=5?`Últimas ${pack.stock} unidades`:`Stock en vivo: ${pack.stock} packs`;
+  const qty=document.querySelector('#modalQty'); if(qty) qty.value='1';
+  document.querySelector('#modalAddToCart').disabled=pack.stock<=0;
+  document.querySelector('#modalAddToCart').textContent=pack.stock<=0?'Agotado':'Agregar pack al carrito';
+  document.querySelector('#modalAddToCart').onclick=()=>{ for(const it of itemDetails){ const prod=products.find(x=>x.id===it.id); if(prod) addToCart(prod.id, it.cantidad); } closeProductModal(); };
+  document.querySelector('#productModal').classList.add('open');
+  document.querySelector('#productModal').setAttribute('aria-hidden','false');
+}
+
 async function cargarPacksTienda(){
   const grid=document.querySelector('#packsGrid');
   if(!grid||!supabaseClient) return;
@@ -309,8 +340,16 @@ async function cargarPacksTienda(){
     }
     return {...p,img};
   }));
-  grid.innerHTML=packsWithImg.map(p=>`<article class="product-card"><div class="product-image"><img src="${escapeHtml(imagenSegura(p.img))}" alt="${escapeHtml(p.nombre)}" loading="lazy"></div><h3>${escapeHtml(p.nombre)}</h3><div class="price-row"><strong class="price">${money(Number(p.precio_especial)||0)}</strong><button class="add" data-pack="${p.id}">+</button></div><div class="availability">Pack disponible: ${p.stock} unidades</div></article>`).join('');
-  grid.querySelectorAll('[data-pack]').forEach(b=>b.onclick=async()=>{
+  grid.innerHTML=packsWithImg.map(p=>`<article class="product-card" data-pack="${p.id}"><div class="product-image"><img src="${escapeHtml(imagenSegura(p.img))}" alt="${escapeHtml(p.nombre)}" loading="lazy"></div><h3>${escapeHtml(p.nombre)}</h3><div class="price-row"><strong class="price">${money(Number(p.precio_especial)||0)}</strong><button class="add" data-pack="${p.id}">+</button></div><div class="availability">Pack disponible: ${p.stock} unidades</div></article>`).join('');
+  grid.querySelectorAll('.product-card').forEach(card=>{
+    card.addEventListener('click',e=>{
+      if(e.target.closest('.add')) return;
+      const id=Number(card.dataset.pack);
+      abrirPackModal(id);
+    });
+  });
+  grid.querySelectorAll('[data-pack]').forEach(b=>b.onclick=async(e)=>{
+    e.stopPropagation();
     const id=Number(b.dataset.pack);
     const {data:items}=await supabaseClient.from('pack_items').select('id_producto,cantidad').eq('id_pack',id);
     if(!items?.length){showToast('Pack sin productos.');return;}
