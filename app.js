@@ -335,8 +335,8 @@ async function cargarPacksTienda(){
     const {data:items}=await supabaseClient.from('pack_items').select('id_producto').eq('id_pack',p.id).limit(1);
     let img='imagen-producto-predeterminada.svg';
     if(items?.length){
-      const {data:prod}=await supabaseClient.from('productos').select('url_imagen').eq('id',items[0].id_producto).maybeSingle();
-      if(prod?.url_imagen) img=prod.url_imagen;
+      if(p.url_imagen) img=p.url_imagen;
+      else { const {data:prod}=await supabaseClient.from('productos').select('url_imagen').eq('id',items[0].id_producto).maybeSingle(); if(prod?.url_imagen) img=prod.url_imagen; }
     }
     return {...p,img};
   }));
