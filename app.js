@@ -346,15 +346,51 @@ async function cargarPacksTienda(){
     }
     return {...p,img};
   }));
-  grid.innerHTML=packsWithImg.map(p=>`<article class="product-card" data-pack="${p.id}"><div class="product-image"><img src="${escapeHtml(imagenSegura(p.img))}" alt="${escapeHtml(p.nombre)}" loading="lazy"></div><h3>${escapeHtml(p.nombre)}</h3><div class="price-row"><span class="old-price">${money(Number(p.suma_individual)||0)}</span><strong class="price">${money(Number(p.precio_especial)||0)}</strong></div><div class="availability">Ahorras ${money((Number(p.suma_individual)||0)-(Number(p.precio_especial)||0))} • Pack disponible: ${p.stock} unidades</div></article>`).join('');
-  grid.querySelectorAll('.product-card').forEach(card=>{
+  grid.innerHTML=packsWithImg.map(p=>{
+    const descuento=Math.round((1-Number(p.precio_especial)/Number(p.suma_individual))*100);
+    return `<article class="combo-card" data-pack="${p.id}">
+      <div class="combo-media">
+        <span class="combo-badge">PACK AHORRO</span>
+        <span class="combo-discount">-${descuento}%</span>
+        <img src="${escapeHtml(imagenSegura(p.img))}" alt="${escapeHtml(p.nombre)}" loading="lazy">
+      </div>
+      <div class="combo-body">
+        <h3 class="combo-title">${escapeHtml(p.nombre)}</h3>
+        <div class="combo-prices">
+          <span class="combo-old-price">${money(Number(p.suma_individual)||0)}</span>
+          <strong class="combo-price">${money(Number(p.precio_especial)||0)}</strong>
+        </div>
+        <div class="combo-save-row">
+          <span class="combo-save">Ahorras ${money((Number(p.suma_individual)||0)-(Number(p.precio_especial)||0))}</span>
+          <span class="combo-stock">● ${p.stock} disp.</span>
+        </div>
+        <button class="combo-cta" data-pack="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> Agregar al carrito</button>
+      </div>
+    </article>`;
+  }).join('');
+  grid.querySelectorAll('.combo-card').forEach(card=>{
     card.addEventListener('click',e=>{
-      if(e.target.closest('.add')) return;
+      if(e.target.closest('.combo-cta')) return;
       e.stopPropagation();
       const id=Number(card.dataset.pack);
       abrirPackModal(id);
     });
   });
+  grid.querySelectorAll('.combo-cta').forEach(b=>b.addEventListener('click',async(e)=>{
+    e.stopPropagation();
+    const id=Number(b.dataset.pack);
+    const {data:items}=await supabaseClient.from('pack_items').select('id_producto,cantidad').eq('id_pack',id);
+    if(!items?.length){showToast('Pack sin productos.');return;}
+    for(const it of items){
+      let prod=products.find(x=>x.id===it.id_producto);
+      if(!prod){
+        const {data:pp}=await supabaseClient.from('productos').select('id,nombre,url_imagen,precio,existencias').eq('id',it.id_producto).maybeSingle();
+        if(pp){ prod={id:pp.id,name:pp.nombre,img:pp.url_imagen,price:Number(pp.precio),stock:Number(pp.existencias)}; products.push(prod); }
+      }
+      if(prod) addToCart(prod.id, it.cantidad);
+    }
+    showToast('Pack agregado al carrito.');
+  }));
   // add to cart only from modal button
 }
 
