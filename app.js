@@ -1510,8 +1510,11 @@ async function openProductModal(id){
     if(!blocks.length) blocks.push(`<p>${escapeHtml(lastViewedProduct.description||'Consulta las características principales de este producto antes de añadirlo al carrito.')}</p>`);
     descEl.innerHTML=blocks.join('');
   }
-  const specs=lastViewedProduct.specs||{};
-  const specsHtml=Object.keys(specs).length?`<div class="modal-specs"><strong>Especificaciones técnicas</strong><dl>${Object.entries(specs).map(([k,v])=>`<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl>${lastViewedProduct.gender?`<p><strong>Género:</strong> ${escapeHtml(lastViewedProduct.gender)}</p>`:''}${lastViewedProduct.videoUrl?`<p><a href="${escapeHtml(lastViewedProduct.videoUrl)}" target="_blank" rel="noopener">Ver video de presentación</a></p>`:''}</div>`:'';
+  let specs=lastViewedProduct.specs||{};
+  if(!Object.keys(specs).length){
+    specs={'Marca':lastViewedProduct.brand,'Categoría':lastViewedProduct.category,'Género':lastViewedProduct.gender||'Mixto','Stock en vivo':lastViewedProduct.stock+' unidades'};
+  }
+  const specsHtml=Object.keys(specs).length?`<div class="modal-specs"><strong>Especificaciones técnicas</strong><dl>${Object.entries(specs).map(([k,v])=>`<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl>${lastViewedProduct.videoUrl?`<p><a href="${escapeHtml(lastViewedProduct.videoUrl)}" target="_blank" rel="noopener">Ver video de presentación</a></p>`:''}</div>`:'';
   const modalSpecs=document.querySelector('#modalSpecs'); if(modalSpecs) modalSpecs.innerHTML=specsHtml;
   const variantesEl=document.querySelector('#modalVariantes'); if(variantesEl){
     variantesEl.innerHTML='Cargando opciones...';
