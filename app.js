@@ -304,8 +304,8 @@ async function cargarPacksTienda(){
     const {data:items}=await supabaseClient.from('pack_items').select('id_producto').eq('id_pack',p.id).limit(1);
     let img='imagen-producto-predeterminada.svg';
     if(items?.length){
-      const prod=products.find(x=>x.id===items[0].id_producto);
-      if(prod) img=prod.img;
+      const {data:prod}=await supabaseClient.from('productos').select('url_imagen').eq('id',items[0].id_producto).maybeSingle();
+      if(prod?.url_imagen) img=prod.url_imagen;
     }
     return {...p,img};
   }));
@@ -315,7 +315,11 @@ async function cargarPacksTienda(){
     const {data:items}=await supabaseClient.from('pack_items').select('id_producto,cantidad').eq('id_pack',id);
     if(!items?.length){showToast('Pack sin productos.');return;}
     for(const it of items){
-      const prod=products.find(x=>x.id===it.id_producto);
+      let prod=products.find(x=>x.id===it.id_producto);
+      if(!prod){
+        const {data:pp}=await supabaseClient.from('productos').select('id,nombre,url_imagen,precio,existencias').eq('id',it.id_producto).maybeSingle();
+        if(pp){ prod={id:pp.id,name:pp.nombre,img:pp.url_imagen,price:Number(pp.precio),stock:Number(pp.existencias)}; products.push(prod); }
+      }
       if(prod) addToCart(prod.id, it.cantidad);
     }
     showToast('Pack agregado al carrito.');
