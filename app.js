@@ -299,7 +299,17 @@ async function cargarPacksTienda(){
   if(!grid||!supabaseClient) return;
   const {data,error}=await supabaseClient.from('catalogo_packs').select('*');
   if(error||!data?.length){grid.innerHTML='';document.querySelector('#packs')?.classList.add('hidden');return;}
-  grid.innerHTML=data.map(p=>`<article class="product-card"><div class="product-image"><img src="${escapeHtml(imagenSegura('imagen-producto-predeterminada.svg'))}" alt="${escapeHtml(p.nombre)}" loading="lazy"></div><h3>${escapeHtml(p.nombre)}</h3><div class="price-row"><strong class="price">${money(Number(p.precio_especial)||0)}</strong><button class="add" data-pack="${p.id}">+</button></div><div class="availability">Pack disponible: ${p.stock} unidades</div></article>`).join('');
+  // fetch first item image per pack
+  const packsWithImg=await Promise.all(data.map(async p=>{
+    const {data:items}=await supabaseClient.from('pack_items').select('id_producto').eq('id_pack',p.id).limit(1);
+    let img='imagen-producto-predeterminada.svg';
+    if(items?.length){
+      const prod=products.find(x=>x.id===items[0].id_producto);
+      if(prod) img=prod.img;
+    }
+    return {...p,img};
+  }));
+  grid.innerHTML=packsWithImg.map(p=>`<article class="product-card"><div class="product-image"><img src="${escapeHtml(imagenSegura(p.img))}" alt="${escapeHtml(p.nombre)}" loading="lazy"></div><h3>${escapeHtml(p.nombre)}</h3><div class="price-row"><strong class="price">${money(Number(p.precio_especial)||0)}</strong><button class="add" data-pack="${p.id}">+</button></div><div class="availability">Pack disponible: ${p.stock} unidades</div></article>`).join('');
   grid.querySelectorAll('[data-pack]').forEach(b=>b.onclick=async()=>{
     const id=Number(b.dataset.pack);
     const {data:items}=await supabaseClient.from('pack_items').select('id_producto,cantidad').eq('id_pack',id);
