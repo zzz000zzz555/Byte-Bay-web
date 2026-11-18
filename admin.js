@@ -208,6 +208,10 @@ $('#adminProductForm').onsubmit=async event=>{event.preventDefault();const valor
     const video=valor('adminProductVideo'); if(video) items.push({url:video,tipo:'video',angulo:'video',orden:5,es_principal:false});
     if(items.length) await supabaseClient.rpc('guardar_media_producto_personal',{p_id_producto:pid,p_items:items});
   }
+  if(pid){
+    const pack=document.querySelector('#adminProductPack')?.checked||false;
+    await supabaseClient.from('productos').update({es_pack:pack}).eq('id',pid);
+  }
   informar('Producto guardado.');event.target.reset();$('#adminProductId').value='';$('#adminProductHeading').textContent='Nuevo producto';mostrarVistaPrevia('#adminProductPreview','#adminProductPreviewEmpty');cargarCatalogo();};
 $('#adminProviderForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim();const {error}=await supabaseClient.rpc('guardar_proveedor_personal',{p_id:null,p_razon_social:valor('providerName'),p_documento:valor('providerDocument')||null,p_contacto_nombre:null,p_correo:valor('providerEmail')||null,p_telefono:valor('providerPhone')||null,p_direccion:null,p_notas:null});if(error)return informar(error.message);informar('Proveedor guardado.');event.target.reset();cargarOpciones();};
 $('#adminLotForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim(),estado=valor('lotStatus');const {error}=await supabaseClient.rpc('registrar_lote_personal',{p_id_producto:Number(valor('lotProduct')),p_id_proveedor:valor('lotProvider')?Number(valor('lotProvider')):null,p_codigo_lote:valor('lotCode'),p_cantidad:Number(valor('lotQuantity')),p_costo_unitario:valor('lotCost')?Number(valor('lotCost')):null,p_fecha_vencimiento:valor('lotExpiry')||null,p_estado:estado,p_motivo_danio:estado==='daniado'?valor('lotNote'):null,p_observacion:estado!=='daniado'?valor('lotNote'):null});if(error)return informar(error.message);informar('Lote registrado.');event.target.reset();cargarReportes();};
@@ -539,3 +543,22 @@ document.querySelector('#adminRoleForm')?.addEventListener('submit',async e=>{
   cargarRolesRBAC();
 });
 document.querySelector('#adminRefreshRoles')?.addEventListener('click',cargarRolesRBAC);
+
+async function cargarAnalisis(){
+  const d=document.querySelector('#analisisDescuentos');
+  const pk=document.querySelector('#analisisPacks');
+  const mg=document.querySelector('#analisisMargen');
+  if(!d||!pk||!mg) return;
+  d.textContent='Cargando...';
+  const {data:prods,error}=await supabaseClient.from('catalogo_productos').select('id,nombre,precio_venta,porcentaje_descuento,es_pack,existencias').order('porcentaje_descuento',{ascending:false}).limit(20);
+  if(error){d.textContent=error.message;return;}
+  const all=prods||[];
+  const desc=all.filter(p=>Number(p.porcentaje_descuento)>0).slice(0,20);
+  d.innerHTML=desc.length?desc.map(p=>`<div class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>-${p.porcentaje_descuento}% • S/ ${Number(p.precio_venta).toFixed(2)}</span></div></div>`).join(''):'Sin descuentos activos.';
+  const packs=all.filter(p=>p.es_pack).slice(0,10);
+  pk.innerHTML=packs.length?packs.map(p=>`<div class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_venta).toFixed(2)} • ${p.existencias} und.</span></div></div>`).join(''):'Sin productos marcados como pack.';
+  const margen=[...all].sort((a,b)=>Number(b.precio_venta)-Number(a.precio_venta)).slice(0,10);
+  mg.innerHTML=margen.map(p=>`<div class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>Precio: S/ ${Number(p.precio_venta).toFixed(2)} • Margen estimado: S/ ${(Number(p.precio_venta)*0.3).toFixed(2)}</span></div></div>`).join('');
+}
+document.querySelector('#adminRefreshAnalisis')?.addEventListener('click',cargarAnalisis);
+document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='analisis'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarAnalisis();};}});

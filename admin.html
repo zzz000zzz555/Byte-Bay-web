@@ -77,6 +77,7 @@
         <button data-admin-tab="auditoria" id="adminAuditTab">Auditoría</button>
         <button data-admin-tab="marca" id="adminBrandTab">Marca</button>
         <button data-admin-tab="personal" id="adminPeopleTab">Personal</button>
+        <button data-admin-tab="analisis" id="adminAnalisisTab">Análisis</button>
         <button data-admin-tab="roles" id="adminRolesTab">Roles y credenciales</button>
       </nav>
       <button id="adminChangePassword" class="admin-logout" type="button" style="margin-bottom:8px">Cambiar contraseña</button>
@@ -171,7 +172,8 @@
             <label><span>URL imagen frontal (principal)</span><input id="adminProductImage" type="url"></label>
             <div class="admin-form-row"><label><span>Foto lado derecho</span><input id="adminImgRight" type="url"></label><label><span>Foto lado izquierdo</span><input id="adminImgLeft" type="url"></label></div>
             <div class="admin-form-row"><label><span>Foto espalda / posterior</span><input id="adminImgBack" type="url"></label><label><span>Foto detalle / empaque</span><input id="adminImgDetail" type="url"></label></div>
-            <label><span>Video de presentación (URL)</span><input id="adminProductVideo" type="url"></label><div class="admin-product-preview"><img id="adminProductPreview" src="imagen-producto-predeterminada.svg" alt="Vista previa del producto" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"><span id="adminProductPreviewEmpty">Selecciona un producto o escribe la URL de su imagen</span></div><div class="admin-form-row"><label><span>Precio</span><input id="adminProductPrice" type="number" min="0" step="0.01" required></label><label><span>Existencias</span><input id="adminProductStock" type="number" min="0" required></label></div>
+            <label><span>Video de presentación (URL)</span><input id="adminProductVideo" type="url"></label><div class="admin-product-preview"><img id="adminProductPreview" src="imagen-producto-predeterminada.svg" alt="Vista previa del producto" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"><span id="adminProductPreviewEmpty">Selecciona un producto o escribe la URL de su imagen</span></div><div class="admin-form-row"><label><span>Precio</span><input id="adminProductPrice" type="number" min="0" step="0.01" required></label><label><span>Existencias</span><input id="adminProductStock" type="number" min="0" required></label>
+            <label><span>Pack</span><input id="adminProductPack" type="checkbox"></label></div>
             <label><span>Fecha de vencimiento</span><input id="adminProductExpiry" type="date"></label><button class="btn primary" type="submit">Guardar producto</button>
           </form>
           <div><div class="admin-filters"><input id="productSearch" type="search" placeholder="Buscar código, producto o marca"><select id="productCategoryFilter"><option value="">Todas las categorías</option></select></div><div id="adminCatalogList" class="admin-list admin-card"></div></div>
@@ -322,6 +324,13 @@
           <div class="admin-card"><div class="admin-filters"><input id="staffSearch" type="search" placeholder="Buscar nombre, correo o rol"><select id="staffStatusFilter"><option value="">Todos los estados</option><option value="activo">Activos</option><option value="anulado">Anulados</option></select></div><div id="adminStaffList" class="admin-list"></div></div>
         </div>
       </section>
+      <section class="hidden" data-admin-section="analisis">
+        <div class="admin-section-head"><div><h2>Análisis de productos</h2><p>Descuentos, packs y margen.</p></div><button class="btn secondary" id="adminRefreshAnalisis" type="button">Actualizar</button></div>
+        <div class="admin-card"><h3>Top 20 productos con descuento</h3><div id="analisisDescuentos" class="admin-list"></div></div>
+        <div class="admin-card"><h3>Productos pack (10)</h3><div id="analisisPacks" class="admin-list"></div></div>
+        <div class="admin-card"><h3>Top 10 por precio (margen estimado)</h3><div id="analisisMargen" class="admin-list"></div></div>
+      </section>
+
       <section class="hidden" data-admin-section="roles">
         <div class="admin-section-head"><div><h2>Roles y credenciales (RBAC)</h2><p>Gestiona módulos, roles y permisos granulares.</p></div><button class="btn secondary" id="adminRefreshRoles" type="button">Actualizar</button></div>
         <div class="admin-two-columns">
