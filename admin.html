@@ -337,7 +337,10 @@
               <label><span>Stock de packs</span><input id="packStock" type="number" min="0" required></label>
               <label><span>Inicio</span><input id="packStart" type="datetime-local"></label>
               <label><span>Fin (opcional)</span><input id="packEnd" type="datetime-local"></label>
-              <label><span>Productos (Ctrl+clic para varios)</span><select id="packProducts" multiple size="8" required></select></label>
+              <label><span>Buscar producto para agregar</span><input id="packProductSearch" type="search" placeholder="Escribe nombre o código"></label>
+              <div id="packProductResults" class="admin-list" style="max-height:160px;overflow:auto;"></div>
+              <div id="packSelectedProducts" class="admin-list"></div>
+              <div id="packSummary" class="admin-list"></div>
               <button class="btn primary" type="submit">Guardar pack</button>
             </form>
           </div>
@@ -513,7 +516,7 @@
     </form>
   </dialog>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-  <script src="admin.js?v=16"></script>
+  <script src="admin.js?v=17"></script>
   <script src="admin-enhancements.js?v=3"></script>
   <script src="admin-pro.js?v=2"></script>
   <script src="admin-dashboard.js?v=2"></script>

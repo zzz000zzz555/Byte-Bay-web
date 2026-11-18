@@ -565,6 +565,115 @@ document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab=
 
 async function cargarPacks(){
   const list=document.querySelector('#adminPacksList');
+  if(!list) return;
+  list.textContent='Cargando...';
+  const {data:packs,error}=await supabaseClient.from('catalogo_packs').select('*');
+  if(error){list.textContent=error.message;return;}
+  const ids=(packs||[]).map(p=>p.id);
+  let itemsByPack=new Map();
+  if(ids.length){
+    const {data:items}=await supabaseClient.from('pack_items').select('id_pack,id_producto,cantidad').in('id_pack',ids);
+    (items||[]).forEach(it=>{if(!itemsByPack.has(it.id_pack)) itemsByPack.set(it.id_pack,[]); itemsByPack.get(it.id_pack).push(it);});
+  }
+  list.innerHTML=(packs||[]).length?(packs||[]).map(p=>`<article class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_especial).toFixed(2)} • Stock: ${p.stock} • Items: ${(itemsByPack.get(p.id)||[]).length}</span></div></article>`).join(''):'Sin packs registrados.';
+}
+
+// Estado de productos seleccionados para el pack
+let packSelected = [];
+
+function renderPackSelected(){
+  const cont=document.querySelector('#packSelectedProducts');
+  const summary=document.querySelector('#packSummary');
+  if(!cont) return;
+  cont.innerHTML = packSelected.length ? packSelected.map((p,i)=>`
+    <div class="admin-list-item">
+      <div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio).toFixed(2)} x ${p.qty}</span></div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="number" min="1" value="${p.qty}" data-idx="${i}" class="pack-qty" style="width:60px;">
+        <button type="button" data-remove="${i}" class="icon-btn">&#10005;</button>
+      </div>
+    </div>`).join('') : '<p style="color:#94a3b8;font-size:12px;">No hay productos seleccionados.</p>';
+  cont.querySelectorAll('.pack-qty').forEach(inp=>inp.addEventListener('change',e=>{
+    const i=Number(e.target.dataset.idx);
+    packSelected[i].qty=Math.max(1,Number(e.target.value)||1);
+    renderPackSelected();
+  }));
+  cont.querySelectorAll('[data-remove]').forEach(btn=>btn.addEventListener('click',e=>{
+    const i=Number(e.target.dataset.remove);
+    packSelected.splice(i,1);
+    renderPackSelected();
+  }));
+  // summary
+  if(summary){
+    const suma=packSelected.reduce((a,p)=>a+Number(p.precio)*p.qty,0);
+    const sugerido=(suma*0.9).toFixed(2);
+    summary.innerHTML = packSelected.length ? `<div class="admin-list-item"><div><strong>Resumen</strong><span>Suma individual: S/ ${suma.toFixed(2)} • Precio sugerido (10% desc.): S/ ${sugerido}</span></div><button type="button" id="applySuggestedPrice" class="btn secondary">Usar precio sugerido</button></div>` : '';
+    const btn=document.querySelector('#applySuggestedPrice');
+    if(btn) btn.onclick=()=>{ document.querySelector('#packPrice').value=sugerido; };
+  }
+}
+
+async function buscarProductosPack(q){
+  const res=document.querySelector('#packProductResults');
+  if(!res) return;
+  if(!q){res.innerHTML='';return;}
+  const {data}=await supabaseClient.from('catalogo_productos').select('id,nombre,precio_venta').ilike('nombre','%'+q+'%').limit(8);
+  res.innerHTML=(data||[]).map(p=>`<div class="admin-list-item" style="cursor:pointer;" data-add="${p.id}" data-nombre="${escapar(p.nombre)}" data-precio="${p.precio_venta}"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_venta).toFixed(2)}</span></div><button type="button" class="icon-btn">+</button></div>`).join('');
+  res.querySelectorAll('[data-add]').forEach(el=>el.addEventListener('click',()=>{
+    const id=Number(el.dataset.add);
+    if(packSelected.find(p=>p.id===id)){ informar('Ya agregado.'); return; }
+    packSelected.push({id, nombre:el.dataset.nombre, precio:Number(el.dataset.precio), qty:1});
+    renderPackSelected();
+  }));
+}
+
+document.querySelector('#packProductSearch')?.addEventListener('input', e=>buscarProductosPack(e.target.value.trim()));
+
+document.querySelector('#adminPackForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const nombre=document.querySelector('#packName').value.trim();
+  const desc=document.querySelector('#packDesc').value.trim();
+  const precio=Number(document.querySelector('#packPrice').value);
+  const stock=Number(document.querySelector('#packStock').value);
+  const start=document.querySelector('#packStart').value;
+  const end=document.querySelector('#packEnd').value;
+  if(!packSelected.length){informar('Agrega al menos un producto.');return;}
+  const {data:pack,error}=await supabaseClient.from('packs').insert({nombre,descripcion:desc,precio_especial:precio,stock,inicia_en:start?new Date(start).toISOString():new Date().toISOString(),termina_en:end?new Date(end).toISOString():null,activo:true}).select('id').single();
+  if(error){informar(error.message);return;}
+  const items=packSelected.map(p=>({id_pack:pack.id,id_producto:p.id,cantidad:p.qty}));
+  const {error:e2}=await supabaseClient.from('pack_items').insert(items);
+  if(e2){informar(e2.message);return;}
+  informar('Pack guardado.');
+  e.target.reset();
+  packSelected=[];
+  renderPackSelected();
+  cargarPacks();
+});
+document.querySelector('#adminRefreshPacks')?.addEventListener('click',cargarPacks);
+document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='packs'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarPacks();};}});
+document.querySelector('#adminRefreshRoles')?.addEventListener('click',cargarRolesRBAC);
+
+async function cargarAnalisis(){
+  const d=document.querySelector('#analisisDescuentos');
+  const pk=document.querySelector('#analisisPacks');
+  const mg=document.querySelector('#analisisMargen');
+  if(!d||!pk||!mg) return;
+  d.textContent='Cargando...';
+  const {data:prods,error}=await supabaseClient.from('catalogo_productos').select('id,nombre,precio_venta,porcentaje_descuento,es_pack,existencias').order('porcentaje_descuento',{ascending:false}).limit(20);
+  if(error){d.textContent=error.message;return;}
+  const all=prods||[];
+  const desc=all.filter(p=>Number(p.porcentaje_descuento)>0).slice(0,20);
+  d.innerHTML=desc.length?desc.map(p=>`<div class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>-${p.porcentaje_descuento}% • S/ ${Number(p.precio_venta).toFixed(2)}</span></div></div>`).join(''):'Sin descuentos activos.';
+  const packs=all.filter(p=>p.es_pack).slice(0,10);
+  pk.innerHTML=packs.length?packs.map(p=>`<div class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_venta).toFixed(2)} • ${p.existencias} und.</span></div></div>`).join(''):'Sin productos marcados como pack.';
+  const margen=[...all].sort((a,b)=>Number(b.precio_venta)-Number(a.precio_venta)).slice(0,10);
+  mg.innerHTML=margen.map(p=>`<div class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>Precio: S/ ${Number(p.precio_venta).toFixed(2)} • Margen estimado: S/ ${(Number(p.precio_venta)*0.3).toFixed(2)}</span></div></div>`).join('');
+}
+document.querySelector('#adminRefreshAnalisis')?.addEventListener('click',cargarAnalisis);
+document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='analisis'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarAnalisis();};}});
+
+async function cargarPacks(){
+  const list=document.querySelector('#adminPacksList');
   const sel=document.querySelector('#packProducts');
   if(!list||!sel) return;
   // populate products
