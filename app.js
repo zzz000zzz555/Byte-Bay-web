@@ -321,6 +321,7 @@ async function loadCatalogFromSupabase(){
   }));
   actualizarOpcionesCategorias();
   renderProducts();
+  actualizarContadoresCategorias();
   renderizarPersonalizacion();
   iniciarCarruselHero();
 }
@@ -404,6 +405,18 @@ function actualizarOpcionesCategorias(){
     brandSelector.innerHTML='<option value="all">Todas las marcas</option>'+marcasDisponibles.map(marca=>`<option value="${escapeHtml(marca)}">${escapeHtml(marca)}</option>`).join('');
     brandSelector.value=activeBrand;
   }
+}
+function actualizarContadoresCategorias(){
+  const contenedor=document.querySelector('#categoryList');
+  if(!contenedor) return;
+  const conteos={};
+  products.forEach(p=>{conteos[p.category]=(conteos[p.category]||0)+1;});
+  const ofertas=products.filter(p=>Number(p.discount)>0).length;
+  contenedor.innerHTML=categories.map(c=>`<a class="category-card" href="#" data-category="${escapeHtml(c.name)}"><span class="cat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg></span><strong>${escapeHtml(c.name)}</strong><small>${conteos[c.name]||0} productos</small></a>`).join('')+`<a class="category-card" href="#" data-category="ofertas"><span class="cat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7"></path><rect x="2" y="7" width="20" height="5"></rect><path d="M12 22V7"></path><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg></span><strong>Ofertas</strong><small>${ofertas} productos</small></a>`;
+  // bind click
+  contenedor.querySelectorAll('.category-card').forEach(card=>{
+    card.onclick=e=>{e.preventDefault();const cat=card.dataset.category;if(cat==='ofertas'){soloOfertas=true;activeCategory='all';}else{soloOfertas=false;activeCategory=cat;}start=0;renderProducts();sincronizarFiltrosCatalogo();};
+  });
 }
 function sincronizarFiltrosCatalogo(){
   const categoria=document.querySelector('#catalogCategoryFilter'),precio=document.querySelector('#catalogPriceFilter'),modo=document.querySelector('#catalogOfferFilter');
