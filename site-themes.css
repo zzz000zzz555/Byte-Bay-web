@@ -1,0 +1,17 @@
+
+/* === TEMAS ESTACIONALES === */
+body.theme-default { --theme-bg: #ffffff; --theme-text: #0f172a; --theme-accent: #2563eb; --theme-card: #ffffff; --theme-border: #e2e8f0; --theme-price: #dc2626; }
+body.theme-black_friday { --theme-bg: #0a0a0a; --theme-text: #fafafa; --theme-accent: #fbbf24; --theme-card: #171717; --theme-border: #262626; --theme-price: #fbbf24; background: #0a0a0a; color: #fafafa; }
+body.theme-black_friday .header, body.theme-black_friday .product-card, body.theme-black_friday .product-modal-card { background: #171717; border-color: #262626; color: #fafafa; }
+body.theme-black_friday .search, body.theme-black_friday .product-image { background: #0a0a0a; }
+body.theme-navidad { --theme-bg: #fef2f2; --theme-text: #1c1917; --theme-accent: #dc2626; --theme-card: #ffffff; --theme-border: #fecaca; --theme-price: #dc2626; background: #fef2f2; }
+body.theme-navidad .header { background: #fef2f2; }
+body.theme-halloween { --theme-bg: #0c0a09; --theme-text: #fafaf9; --theme-accent: #f97316; --theme-card: #1c1917; --theme-border: #292524; --theme-price: #f97316; background: #0c0a09; color: #fafaf9; }
+body.theme-halloween .header, body.theme-halloween .product-card, body.theme-halloween .product-modal-card { background: #1c1917; border-color: #292524; color: #fafaf9; }
+body.theme-ano_nuevo { --theme-bg: #020617; --theme-text: #f8fafc; --theme-accent: #f59e0b; --theme-card: #0f172a; --theme-border: #1e293b; --theme-price: #f59e0b; background: #020617; color: #f8fafc; }
+body.theme-ano_nuevo .header, body.theme-ano_nuevo .product-card, body.theme-ano_nuevo .product-modal-card { background: #0f172a; border-color: #1e293b; color: #f8fafc; }
+body.theme-cyber_days { --theme-bg: #0f0f23; --theme-text: #e2e8f0; --theme-accent: #8b5cf6; --theme-card: #1a1a2e; --theme-border: #312e81; --theme-price: #ec4899; background: #0f0f23; color: #e2e8f0; }
+body.theme-cyber_days .header, body.theme-cyber_days .product-card, body.theme-cyber_days .product-modal-card { background: #1a1a2e; border-color: #312e81; color: #e2e8f0; }
+/* smooth transitions */
+body { transition: background-color 0.4s ease, color 0.4s ease; }
+.product-card, .header, .product-modal-card { transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease; }

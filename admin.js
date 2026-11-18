@@ -818,3 +818,21 @@ document.querySelector('#adminPackForm')?.addEventListener('submit',async e=>{
 });
 document.querySelector('#adminRefreshPacks')?.addEventListener('click',cargarPacks);
 document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='packs'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarPacks();};}});
+
+async function cargarTemas(){
+  const list=document.querySelector('#adminThemesList');
+  if(!list) return;
+  list.textContent='Cargando...';
+  const {data,error}=await supabaseClient.from('site_themes').select('*').order('nombre');
+  if(error){list.textContent=error.message;return;}
+  list.innerHTML=(data||[]).map(t=>`<article class="admin-list-item"><div style="display:flex;align-items:center;gap:10px;"><span style="width:24px;height:24px;border-radius:50%;background:${t.preview_color||'#2563eb'};display:inline-block;"></span><div><strong>${escapar(t.nombre)}</strong><span>${escapar(t.descripcion||'')}</span></div></div><div class="admin-actions"><button class="icon-btn" data-activate-theme="${t.id}" title="Activar">${t.activo?'✅':'○'}</button></div></article>`).join('')||'Sin temas.';
+  list.querySelectorAll('[data-activate-theme]').forEach(b=>b.addEventListener('click',async()=>{
+    const id=Number(b.dataset.activateTheme);
+    const {error}=await supabaseClient.from('site_themes').update({activo:true}).eq('id',id);
+    if(error){informar(error.message);return;}
+    informar('Tema activado. Se aplicará a todos los usuarios.');
+    cargarTemas();
+  }));
+}
+document.querySelector('#adminRefreshThemes')?.addEventListener('click',cargarTemas);
+document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='temas'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarTemas();};}});

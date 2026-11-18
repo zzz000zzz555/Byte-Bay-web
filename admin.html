@@ -77,6 +77,7 @@
         <button data-admin-tab="auditoria" id="adminAuditTab">Auditoría</button>
         <button data-admin-tab="marca" id="adminBrandTab">Marca</button>
         <button data-admin-tab="personal" id="adminPeopleTab">Personal</button>
+        <button data-admin-tab="temas" id="adminThemesTab">Temas</button>
         <button data-admin-tab="packs" id="adminPacksTab">Packs</button>
         <button data-admin-tab="analisis" id="adminAnalisisTab">Análisis</button>
         <button data-admin-tab="roles" id="adminRolesTab">Roles y credenciales</button>
@@ -325,6 +326,11 @@
           <div class="admin-card"><div class="admin-filters"><input id="staffSearch" type="search" placeholder="Buscar nombre, correo o rol"><select id="staffStatusFilter"><option value="">Todos los estados</option><option value="activo">Activos</option><option value="anulado">Anulados</option></select></div><div id="adminStaffList" class="admin-list"></div></div>
         </div>
       </section>
+      <section class="hidden" data-admin-section="temas">
+        <div class="admin-section-head"><div><h2>Temas estacionales</h2><p>Cambia el diseño de la tienda para todos los usuarios.</p></div><button class="btn secondary" id="adminRefreshThemes" type="button">Actualizar</button></div>
+        <div id="adminThemesList" class="admin-list"></div>
+      </section>
+
       <section class="hidden" data-admin-section="packs">
         <div class="admin-section-head"><div><h2>Packs y Combos</h2><p>Crea packs de productos con precio especial.</p></div><button class="btn secondary" id="adminRefreshPacks" type="button">Actualizar</button></div>
         <div class="admin-two-columns">
@@ -516,7 +522,7 @@
     </form>
   </dialog>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-  <script src="admin.js?v=18"></script>
+  <script src="admin.js?v=19"></script>
   <script src="admin-enhancements.js?v=3"></script>
   <script src="admin-pro.js?v=2"></script>
   <script src="admin-dashboard.js?v=2"></script>
