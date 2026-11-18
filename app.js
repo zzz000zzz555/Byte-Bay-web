@@ -293,6 +293,25 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5cTHcYI6byM03VSffW0OlQ_JlBB8D9u';
 const supabaseReady=()=>typeof window.supabase?.createClient==='function';
 const supabaseClient=supabaseReady()?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY):null;
 
+
+async function cargarPacksTienda(){
+  const grid=document.querySelector('#packsGrid');
+  if(!grid||!supabaseClient) return;
+  const {data,error}=await supabaseClient.from('catalogo_packs').select('*');
+  if(error||!data?.length){grid.innerHTML='';document.querySelector('#packs')?.classList.add('hidden');return;}
+  grid.innerHTML=data.map(p=>`<article class="product-card"><div class="product-image"><img src="${escapeHtml(imagenSegura('imagen-producto-predeterminada.svg'))}" alt="${escapeHtml(p.nombre)}" loading="lazy"></div><h3>${escapeHtml(p.nombre)}</h3><div class="price-row"><strong class="price">${money(Number(p.precio_especial)||0)}</strong><button class="add" data-pack="${p.id}">+</button></div><div class="availability">Pack disponible: ${p.stock} unidades</div></article>`).join('');
+  grid.querySelectorAll('[data-pack]').forEach(b=>b.onclick=async()=>{
+    const id=Number(b.dataset.pack);
+    const {data:items}=await supabaseClient.from('pack_items').select('id_producto,cantidad').eq('id_pack',id);
+    if(!items?.length){showToast('Pack sin productos.');return;}
+    for(const it of items){
+      const prod=products.find(x=>x.id===it.id_producto);
+      if(prod) addToCart(prod.id, it.cantidad);
+    }
+    showToast('Pack agregado al carrito.');
+  });
+}
+
 async function loadCatalogFromSupabase(){
   if(!supabaseClient) return;
   const {data,error}=await supabaseClient.from('catalogo_productos').select('*').order('id',{ascending:false});
@@ -321,6 +340,7 @@ async function loadCatalogFromSupabase(){
   }));
   actualizarOpcionesCategorias();
   renderProducts();
+  cargarPacksTienda();
   actualizarContadoresCategorias();
   renderizarPersonalizacion();
   iniciarCarruselHero();

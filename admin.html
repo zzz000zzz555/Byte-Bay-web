@@ -77,6 +77,7 @@
         <button data-admin-tab="auditoria" id="adminAuditTab">Auditoría</button>
         <button data-admin-tab="marca" id="adminBrandTab">Marca</button>
         <button data-admin-tab="personal" id="adminPeopleTab">Personal</button>
+        <button data-admin-tab="packs" id="adminPacksTab">Packs</button>
         <button data-admin-tab="analisis" id="adminAnalisisTab">Análisis</button>
         <button data-admin-tab="roles" id="adminRolesTab">Roles y credenciales</button>
       </nav>
@@ -324,6 +325,29 @@
           <div class="admin-card"><div class="admin-filters"><input id="staffSearch" type="search" placeholder="Buscar nombre, correo o rol"><select id="staffStatusFilter"><option value="">Todos los estados</option><option value="activo">Activos</option><option value="anulado">Anulados</option></select></div><div id="adminStaffList" class="admin-list"></div></div>
         </div>
       </section>
+      <section class="hidden" data-admin-section="packs">
+        <div class="admin-section-head"><div><h2>Packs y Combos</h2><p>Crea packs de productos con precio especial.</p></div><button class="btn secondary" id="adminRefreshPacks" type="button">Actualizar</button></div>
+        <div class="admin-two-columns">
+          <div class="admin-card">
+            <h3>Nuevo pack</h3>
+            <form id="adminPackForm" class="admin-form">
+              <label><span>Nombre</span><input id="packName" required></label>
+              <label><span>Descripción</span><input id="packDesc"></label>
+              <label><span>Precio especial (S/)</span><input id="packPrice" type="number" min="0" step="0.01" required></label>
+              <label><span>Stock de packs</span><input id="packStock" type="number" min="0" required></label>
+              <label><span>Inicio</span><input id="packStart" type="datetime-local"></label>
+              <label><span>Fin (opcional)</span><input id="packEnd" type="datetime-local"></label>
+              <label><span>Productos (Ctrl+clic para varios)</span><select id="packProducts" multiple size="8" required></select></label>
+              <button class="btn primary" type="submit">Guardar pack</button>
+            </form>
+          </div>
+          <div class="admin-card">
+            <h3>Packs registrados</h3>
+            <div id="adminPacksList" class="admin-list"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="hidden" data-admin-section="analisis">
         <div class="admin-section-head"><div><h2>Análisis de productos</h2><p>Descuentos, packs y margen.</p></div><button class="btn secondary" id="adminRefreshAnalisis" type="button">Actualizar</button></div>
         <div class="admin-card"><h3>Top 20 productos con descuento</h3><div id="analisisDescuentos" class="admin-list"></div></div>

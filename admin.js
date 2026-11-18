@@ -562,3 +562,45 @@ async function cargarAnalisis(){
 }
 document.querySelector('#adminRefreshAnalisis')?.addEventListener('click',cargarAnalisis);
 document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='analisis'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarAnalisis();};}});
+
+async function cargarPacks(){
+  const list=document.querySelector('#adminPacksList');
+  const sel=document.querySelector('#packProducts');
+  if(!list||!sel) return;
+  // populate products
+  const {data:prods}=await supabaseClient.from('catalogo_productos').select('id,nombre').order('nombre');
+  sel.innerHTML=(prods||[]).map(p=>`<option value="${p.id}">${escapar(p.codigo||'')} - ${escapar(p.nombre)}</option>`).join('');
+  // list packs
+  list.textContent='Cargando...';
+  const {data:packs,error}=await supabaseClient.from('catalogo_packs').select('*');
+  if(error){list.textContent=error.message;return;}
+  const ids=(packs||[]).map(p=>p.id);
+  // fetch items
+  let itemsByPack=new Map();
+  if(ids.length){
+    const {data:items}=await supabaseClient.from('pack_items').select('id_pack,id_producto,cantidad').in('id_pack',ids);
+    (items||[]).forEach(it=>{if(!itemsByPack.has(it.id_pack)) itemsByPack.set(it.id_pack,[]); itemsByPack.get(it.id_pack).push(it);});
+  }
+  list.innerHTML=(packs||[]).length?(packs||[]).map(p=>`<article class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_especial).toFixed(2)} • Stock: ${p.stock} • Items: ${(itemsByPack.get(p.id)||[]).length}</span></div></article>`).join(''):'Sin packs registrados.';
+}
+document.querySelector('#adminPackForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const nombre=document.querySelector('#packName').value.trim();
+  const desc=document.querySelector('#packDesc').value.trim();
+  const precio=Number(document.querySelector('#packPrice').value);
+  const stock=Number(document.querySelector('#packStock').value);
+  const start=document.querySelector('#packStart').value;
+  const end=document.querySelector('#packEnd').value;
+  const selected=[...document.querySelector('#packProducts').selectedOptions].map(o=>Number(o.value));
+  if(!selected.length){informar('Selecciona al menos un producto.');return;}
+  const {data:pack,error}=await supabaseClient.from('packs').insert({nombre,descripcion:desc,precio_especial:precio,stock,inicia_en:start?new Date(start).toISOString():new Date().toISOString(),termina_en:end?new Date(end).toISOString():null,activo:true}).select('id').single();
+  if(error){informar(error.message);return;}
+  const items=selected.map(id=>({id_pack:pack.id,id_producto:id,cantidad:1}));
+  const {error:e2}=await supabaseClient.from('pack_items').insert(items);
+  if(e2){informar(e2.message);return;}
+  informar('Pack guardado.');
+  e.target.reset();
+  cargarPacks();
+});
+document.querySelector('#adminRefreshPacks')?.addEventListener('click',cargarPacks);
+document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='packs'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarPacks();};}});
