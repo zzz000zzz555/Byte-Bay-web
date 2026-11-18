@@ -346,7 +346,7 @@ async function cargarPacksTienda(){
     }
     return {...p,img};
   }));
-  grid.innerHTML=packsWithImg.map(p=>`<article class="product-card" data-pack="${p.id}"><div class="product-image"><img src="${escapeHtml(imagenSegura(p.img))}" alt="${escapeHtml(p.nombre)}" loading="lazy"></div><h3>${escapeHtml(p.nombre)}</h3><div class="price-row"><span class="old-price">${money(Number(p.suma_individual)||0)}</span><strong class="price">${money(Number(p.precio_especial)||0)}</strong><button class="add" data-pack="${p.id}" onclick="event.stopPropagation();">+</button></div><div class="availability">Ahorras ${money((Number(p.suma_individual)||0)-(Number(p.precio_especial)||0))} • Pack disponible: ${p.stock} unidades</div></article>`).join('');
+  grid.innerHTML=packsWithImg.map(p=>`<article class="product-card" data-pack="${p.id}"><div class="product-image"><img src="${escapeHtml(imagenSegura(p.img))}" alt="${escapeHtml(p.nombre)}" loading="lazy"></div><h3>${escapeHtml(p.nombre)}</h3><div class="price-row"><span class="old-price">${money(Number(p.suma_individual)||0)}</span><strong class="price">${money(Number(p.precio_especial)||0)}</strong></div><div class="availability">Ahorras ${money((Number(p.suma_individual)||0)-(Number(p.precio_especial)||0))} • Pack disponible: ${p.stock} unidades</div></article>`).join('');
   grid.querySelectorAll('.product-card').forEach(card=>{
     card.addEventListener('click',e=>{
       if(e.target.closest('.add')) return;
@@ -355,21 +355,7 @@ async function cargarPacksTienda(){
       abrirPackModal(id);
     });
   });
-  grid.querySelectorAll('[data-pack]').forEach(b=>b.onclick=async(e)=>{
-    e.stopPropagation();
-    const id=Number(b.dataset.pack);
-    const {data:items}=await supabaseClient.from('pack_items').select('id_producto,cantidad').eq('id_pack',id);
-    if(!items?.length){showToast('Pack sin productos.');return;}
-    for(const it of items){
-      let prod=products.find(x=>x.id===it.id_producto);
-      if(!prod){
-        const {data:pp}=await supabaseClient.from('productos').select('id,nombre,url_imagen,precio,existencias').eq('id',it.id_producto).maybeSingle();
-        if(pp){ prod={id:pp.id,name:pp.nombre,img:pp.url_imagen,price:Number(pp.precio),stock:Number(pp.existencias)}; products.push(prod); }
-      }
-      if(prod) addToCart(prod.id, it.cantidad);
-    }
-    showToast('Pack agregado al carrito.');
-  });
+  // add to cart only from modal button
 }
 
 async function loadCatalogFromSupabase(){
