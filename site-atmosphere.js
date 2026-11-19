@@ -7,7 +7,7 @@
   // Canvas setup
   const canvas = document.createElement('canvas');
   canvas.id = 'atmosphereCanvas';
-  canvas.style.cssText = 'position:fixed;inset:0;z-index:1;pointer-events:none;opacity:1;transition:opacity .3s ease;';
+  canvas.style.cssText = 'position:fixed;inset:0;z-index:999;pointer-events:none;opacity:1;transition:opacity .3s ease;';
   document.body.appendChild(canvas);
   const ctx = canvas.getContext('2d');
   let particles = [];
@@ -279,8 +279,14 @@
     else { if(prefs.fx && !prefs.perf) startParticles(); if(prefs.music) playAudio(); }
   });
 
+  // observe theme changes
+  const themeObserver = new MutationObserver(() => {
+    stopParticles();
+    if(prefs.fx && !prefs.perf && !reducedMotion){ setTimeout(startParticles, 100); }
+  });
+  themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   // initial state
-  if(prefs.fx && !prefs.perf && !reducedMotion){ startParticles(); }
+  if(prefs.fx && !prefs.perf && !reducedMotion){ setTimeout(startParticles, 500); }
   if(prefs.music){ playAudio(); }
 
   // toggle widget collapse

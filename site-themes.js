@@ -12,6 +12,8 @@
       const t=data[0];
       document.body.classList.remove('theme-default','theme-black_friday','theme-navidad','theme-halloween','theme-ano_nuevo','theme-cyber_days');
       document.body.classList.add('theme-'+t.clave);
+      // disable dark mode conflict for festive themes
+      if(t.clave !== 'default'){ document.documentElement.classList.remove('dark-mode'); }
       // apply css vars
       const vars=t.css_vars||{};
       Object.entries(vars).forEach(([k,v])=>document.documentElement.style.setProperty(k,v));
