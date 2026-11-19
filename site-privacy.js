@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const NOTICE_VERSION = 'v2.1-2026';
+  const NOTICE_VERSION = 'v3.0-2026';
   const KEYS = {
     session: 'bbSession',
     guest: 'bbGuestId',

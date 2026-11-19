@@ -41,11 +41,13 @@ document.querySelector('#offersNotificationClose').addEventListener('click', () 
   document.querySelector('#offersNotificationToggle').setAttribute('aria-expanded', 'false');
 });
 
-document.querySelector('#openClaimsForm').addEventListener('click', event => {
-  event.preventDefault();
-  claimsModal.classList.add('open');
-  claimsModal.setAttribute('aria-hidden', 'false');
-  document.querySelector('#claimsForm [name="nombre"]').focus();
+document.querySelectorAll('#openClaimsForm, [data-open-claims]').forEach(trigger => {
+  trigger.addEventListener('click', event => {
+    event.preventDefault();
+    claimsModal.classList.add('open');
+    claimsModal.setAttribute('aria-hidden', 'false');
+    document.querySelector('#claimsForm [name="nombre"]').focus();
+  });
 });
 document.querySelector('#claimsClose').addEventListener('click', cerrarFormularioReclamo);
 claimsModal.addEventListener('click', event => {

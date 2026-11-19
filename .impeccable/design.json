@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19",
+  "title": "Design System: Byte Bay",
+  "extensions": {
+    "colorMeta": {
+      "market-ink": {
+        "role": "neutral",
+        "displayName": "Market Ink",
+        "canonical": "#173c38",
+        "tonalRamp": ["#102d2a", "#173c38", "#315d50", "#527b53", "#89a47d", "#b8cba7", "#dce8c8", "#f0f3e8"]
+      },
+      "market-ground": {
+        "role": "neutral",
+        "displayName": "Market Ground",
+        "canonical": "#f6f7f1",
+        "tonalRamp": ["#14251f", "#182b26", "#243a32", "#52645d", "#9aa99b", "#d8e1d6", "#edf1e8", "#f6f7f1"]
+      },
+      "market-surface": {
+        "role": "neutral",
+        "displayName": "Market Surface",
+        "canonical": "#fffefa",
+        "tonalRamp": ["#1d312b", "#243a32", "#344a40", "#6f8174", "#b8c6b7", "#e1e7de", "#f7f7f0", "#fffefa"]
+      },
+      "market-lime": {
+        "role": "secondary",
+        "displayName": "Market Lime",
+        "canonical": "#dce8c8",
+        "tonalRamp": ["#334d3c", "#607963", "#8da77d", "#b0c59b", "#c8dcb0", "#dce8c8", "#e6eddc", "#f2f4eb"]
+      },
+      "market-green": {
+        "role": "primary",
+        "displayName": "Market Green",
+        "canonical": "#315d50",
+        "tonalRamp": ["#173c38", "#28564a", "#315d50", "#527b53", "#78966f", "#a4bb94", "#dce8c8", "#edf2e8"]
+      },
+      "market-leaf": {
+        "role": "secondary",
+        "displayName": "Market Leaf",
+        "canonical": "#527b53",
+        "tonalRamp": ["#294a37", "#315d50", "#527b53", "#78966f", "#a4bb94", "#b8d5ae", "#dce8c8", "#edf2e8"]
+      },
+      "market-coral": {
+        "role": "tertiary",
+        "displayName": "Market Coral",
+        "canonical": "#c94f42",
+        "tonalRamp": ["#672b26", "#85372f", "#a23e33", "#c94f42", "#df786b", "#eaa49a", "#f3cbc3", "#fae7e3"]
+      },
+      "market-muted": {
+        "role": "neutral",
+        "displayName": "Market Muted",
+        "canonical": "#52645d",
+        "tonalRamp": ["#273b34", "#344b42", "#40584e", "#52645d", "#718178", "#9aa79d", "#c0cec2", "#e5eee4"]
+      },
+      "market-line": {
+        "role": "neutral",
+        "displayName": "Market Line",
+        "canonical": "#d8e1d6",
+        "tonalRamp": ["#3a5146", "#44655b", "#607963", "#9baa95", "#bacbb8", "#d8e1d6", "#e1e7de", "#edf0e8"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Store and section headings, using Manrope."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Catalog and primary section headings, using Manrope."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Product names and card headings, using Inter."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Descriptions, checkout, and legal text, using Inter."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Filters, controls, and product metadata."
+      },
+      "accent": {
+        "displayName": "Handwritten Accent",
+        "purpose": "Small product or category annotations only, using self-hosted Caveat."
+      }
+    },
+    "shadows": [
+      {
+        "name": "catalog-surface",
+        "value": "0 5px 16px rgb(23 60 56 / 4%)",
+        "purpose": "Separate product cards subtly from the page."
+      },
+      {
+        "name": "catalog-hover",
+        "value": "0 14px 28px rgb(23 60 56 / 10%)",
+        "purpose": "Temporary emphasis while hovering a product card."
+      },
+      {
+        "name": "floating-card",
+        "value": "0 12px 28px rgb(23 60 56 / 12%)",
+        "purpose": "Lift small floating information surfaces."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "150ms ease",
+        "purpose": "Brief transitions for button and filter states."
+      },
+      {
+        "name": "card-state",
+        "value": "180ms ease",
+        "purpose": "Subtle border, shadow, and position transitions on catalog cards."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Reduce transitions and disable automatic motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "900px"
+      },
+      {
+        "name": "mobile",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Market Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Clear primary action for purchase and checkout.",
+      "html": "<button class=\"ds-primary\" type=\"button\">Continuar compra</button>",
+      "css": ".ds-primary{min-height:44px;padding:10px 16px;border:0;border-radius:10px;color:#fffefa;background:#173c38;font:700 14px Inter, sans-serif;cursor:pointer;transition:background-color 150ms ease,transform 150ms ease}.ds-primary:hover{background:#28564a;transform:translateY(-1px)}.ds-primary:focus-visible{outline:3px solid #a34a3d;outline-offset:3px}"
+    },
+    {
+      "name": "Market Filter Chip",
+      "kind": "chip",
+      "refersTo": "filter-active",
+      "description": "Compact pill that indicates the selected catalog filter.",
+      "html": "<button class=\"ds-filter is-active\" type=\"button\" aria-pressed=\"true\">Todo</button>",
+      "css": ".ds-filter{min-height:36px;padding:8px 14px;border:1px solid transparent;border-radius:999px;color:#405c4c;background:transparent;font:600 13px Inter,sans-serif;cursor:pointer;transition:color 160ms ease,background-color 160ms ease,border-color 160ms ease}.ds-filter:hover{border-color:#d8e1d6;background:#f2f4eb}.ds-filter.is-active{color:#fffefa;background:#315d50}.ds-filter:focus-visible{outline:3px solid #a34a3d;outline-offset:2px}"
+    },
+    {
+      "name": "Market Search Field",
+      "kind": "input",
+      "description": "Rounded storefront search field with a visible focus state.",
+      "html": "<label class=\"ds-search-label\">Buscar productos<input class=\"ds-search\" type=\"search\" placeholder=\"Productos, marcas y más\"></label>",
+      "css": ".ds-search-label{display:grid;gap:6px;color:#52645d;font:600 12px Inter,sans-serif}.ds-search{min-height:44px;padding:10px 14px;border:1px solid #d8e1d6;border-radius:999px;color:#173c38;background:#fffefa;font:400 14px Inter,sans-serif;caret-color:#315d50}.ds-search::placeholder{color:#64746b;opacity:1}.ds-search:focus-visible{border-color:#527b53;outline:3px solid rgb(82 123 83 / 20%);outline-offset:2px}"
+    },
+    {
+      "name": "Catalog Product Card",
+      "kind": "card",
+      "description": "Product image, name, availability, price, and purchase action in one surface.",
+      "html": "<article class=\"ds-product\"><div class=\"ds-product-image\" aria-hidden=\"true\"></div><p class=\"ds-product-meta\">TECNOLOGÍA</p><h3>Producto disponible</h3><p class=\"ds-availability\">Disponible</p><strong class=\"ds-price\">S/ 159.90</strong><button class=\"ds-add\" type=\"button\">Agregar</button></article>",
+      "css": ".ds-product{display:grid;gap:8px;padding:12px;border:1px solid #dce4d9;border-radius:17px;color:#173c38;background:#fffefa;box-shadow:0 5px 16px rgb(23 60 56 / 4%);transition:transform 180ms ease,border-color 180ms ease,box-shadow 180ms ease}.ds-product:hover{transform:translateY(-3px);border-color:#b7cbb4;box-shadow:0 14px 28px rgb(23 60 56 / 10%)}.ds-product-image{min-height:145px;border:1px solid #edf0e8;border-radius:12px;background:#f5f6ef}.ds-product-meta{margin:0;color:#527b53;font:600 17px Caveat,cursive}.ds-product h3{margin:0;font:650 14px/1.45 Inter,sans-serif}.ds-availability{margin:0;color:#52645d;font:400 12px Inter,sans-serif}.ds-price{font:700 16px Inter,sans-serif;font-variant-numeric:tabular-nums}.ds-add{justify-self:start;min-height:36px;padding:0 12px;border:0;border-radius:10px;color:#173c38;background:#dce8c8;font:700 12px Inter,sans-serif;cursor:pointer}.ds-add:hover{background:#c8dcb0}.ds-add:focus-visible{outline:3px solid #a34a3d;outline-offset:3px}"
+    },
+    {
+      "name": "Transparency Document",
+      "kind": "card",
+      "description": "Readable legal content with a clear heading, update date, and restrained surface.",
+      "html": "<article class=\"ds-document\"><h2>Términos y condiciones</h2><p class=\"ds-updated\">Actualizado: 19 de noviembre de 2026</p><h3>Compra y precio</h3><p>El checkout muestra los importes aplicables antes de confirmar el pedido.</p></article>",
+      "css": ".ds-document{padding:24px;border:1px solid #d8e1d6;border-radius:16px;color:#173c38;background:#fffefa}.ds-document h2{margin:0 0 8px;font:750 24px/1.2 Manrope,Inter,sans-serif;letter-spacing:-.03em}.ds-document h3{margin:24px 0 8px;color:#315d50;font:650 15px Inter,sans-serif}.ds-document p{max-width:76ch;color:#344b42;font:400 14px/1.75 Inter,sans-serif}.ds-document .ds-updated{color:#52645d;font-size:12px}.ds-document a{color:#285d4f;text-decoration:underline;text-underline-offset:3px}.ds-document a:focus-visible{outline:3px solid #a34a3d;outline-offset:3px}"
+    },
+    {
+      "name": "Order Summary",
+      "kind": "custom",
+      "description": "Printable order summary with item values and verified totals, not a tax invoice.",
+      "html": "<section class=\"ds-order\"><h2>Resumen de pedido</h2><div><span>Subtotal</span><strong>S/ 159.90</strong></div><div><span>Envío</span><strong>S/ 0.00</strong></div><div class=\"ds-total\"><span>Total</span><strong>S/ 159.90</strong></div><p>No es un comprobante tributario.</p></section>",
+      "css": ".ds-order{max-width:560px;padding:24px;border:1px solid #d8e1d6;border-radius:16px;color:#173c38;background:#fffefa}.ds-order h2{margin:0 0 14px;font:750 22px Manrope,Inter,sans-serif}.ds-order div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid #e1e7de;font:400 14px Inter,sans-serif}.ds-order strong{font-variant-numeric:tabular-nums}.ds-order .ds-total{border-top:2px solid #315d50;border-bottom:0;font-weight:700}.ds-order p{color:#52645d;font:400 12px/1.5 Inter,sans-serif}.ds-order:focus-visible{outline:3px solid #a34a3d;outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "La estación de productos frescos",
+    "overview": "Byte Bay toma la claridad y cercanía de un mercado contemporáneo y la adapta a un catálogo real de tecnología, hogar y supermercado. Verde profundo, superficies cálidas, acentos de hoja y coral, y pequeños detalles manuscritos dan identidad sin competir con el producto. Las imágenes, nombres, precios, disponibilidad y acciones de compra conservan una jerarquía directa. La dirección cubre tienda pública, checkout, transparencia y pedidos; la administración mantiene sus estilos propios.",
+    "keyCharacteristics": [
+      "Paleta botánica y crema, con coral reservado para estados que necesitan atención.",
+      "Catálogo en tarjetas claras, redondeadas y con datos fáciles de comparar.",
+      "Tipografía sans-serif legible con acentos manuscritos puntuales.",
+      "Estados de pago, disponibilidad y reseñas basados en datos confirmados."
+    ],
+    "rules": [
+      {
+        "name": "The Verified Data Rule",
+        "body": "Precios, stock, reseñas y aprobación de pagos se muestran únicamente cuando existen en el estado confirmado de la aplicación o del proveedor.",
+        "section": "colors"
+      },
+      {
+        "name": "The Plain-Language Rule",
+        "body": "Instrucciones, errores y datos de pago usan tipografía sans-serif legible; la fuente manuscrita nunca sustituye información operativa.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do mantener visibles producto, precio, disponibilidad y acción principal.",
+      "Do conservar el contraste y el foco visible en temas claro y oscuro.",
+      "Do presentar el documento descargable como resumen de pedido, no como boleta tributaria.",
+      "Do mantener las políticas precisas y limitadas a condiciones confirmadas."
+    ],
+    "donts": [
+      "Don't inventar reseñas, stock, plazos de entrega, descuentos ni aprobación de pago.",
+      "Don't pedir ni mostrar contraseñas bancarias, CVV o códigos OTP de Yape.",
+      "Don't usar Caveat en contenido legal, errores o datos de transacción.",
+      "Don't extender este tema al panel de administración sin una revisión específica."
+    ]
+  }
+}

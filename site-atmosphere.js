@@ -1,8 +1,11 @@
 
 (function(){
   const PREFS_KEY = 'bytebay_user_fx_prefs';
-  const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{"fx":true,"music":false,"perf":false}');
+  const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{"fx":false,"perf":false}');
+  const hadMusicPreference = Object.prototype.hasOwnProperty.call(prefs, 'music');
+  delete prefs.music;
   function savePrefs(){ localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }
+  if(hadMusicPreference) savePrefs();
 
   // Canvas setup
   const canvas = document.createElement('canvas');
@@ -178,7 +181,7 @@
   }
 
   function startParticles(){
-    if(running) return;
+    if(reducedMotion || document.hidden || running) return;
     running = true;
     initParticles();
     rafId = requestAnimationFrame(drawParticles);
@@ -190,76 +193,27 @@
     ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
   }
 
-  // Audio (Web Audio API simple ambient drone)
-  let audioCtx = null;
-  let audioPlaying = false;
-  let audioGain = null;
-  function ensureAudio(){
-    if(audioCtx) return;
-    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-    audioGain = audioCtx.createGain();
-    audioGain.gain.value = 0.15;
-    audioGain.connect(audioCtx.destination);
-  }
-  function playAudio(){
-    if(audioPlaying) return;
-    ensureAudio();
-    if(audioCtx.state==='suspended') audioCtx.resume();
-    // simple ambient tone
-    const osc = audioCtx.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.value = 220;
-    const lfo = audioCtx.createOscillator();
-    lfo.frequency.value = 0.3;
-    const lfoGain = audioCtx.createGain();
-    lfoGain.gain.value = 5;
-    lfo.connect(lfoGain);
-    lfoGain.connect(osc.frequency);
-    osc.connect(audioGain);
-    osc.start();
-    lfo.start();
-    audioPlaying = true;
-    // store for stop
-    window.__atmosphereAudio = {osc, lfo};
-  }
-  function stopAudio(){
-    if(!audioPlaying) return;
-    if(window.__atmosphereAudio){
-      try{ window.__atmosphereAudio.osc.stop(); window.__atmosphereAudio.lfo.stop(); }catch(e){}
-    }
-    audioPlaying = false;
-  }
-  function setVolume(v){
-    if(audioGain) audioGain.gain.value = v;
-  }
-
   // Widget UI
   const widget = document.createElement('div');
   widget.id = 'atmosphereWidget';
-  widget.style.cssText = 'position:fixed;bottom:16px;left:16px;z-index:90;background:rgba(15,23,42,0.85);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:10px 14px;display:flex;flex-direction:column;gap:8px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,0.3);';
+  widget.setAttribute('aria-label', 'Preferencias visuales');
   widget.innerHTML = `
-    <div style="display:flex;align-items:center;gap:8px;color:#fff;font-size:12px;font-weight:600;">
-      <span style="font-size:16px;">❄️</span> Personalizar ambiente
-    </div>
-    <label style="display:flex;align-items:center;gap:8px;color:#cbd5e1;font-size:12px;cursor:pointer;">
+    <button class="atmosphere-toggle" type="button" aria-expanded="false" aria-controls="atmosphereOptions">
+      <span>Preferencias visuales</span><span class="atmosphere-chevron" aria-hidden="true"></span>
+    </button>
+    <div class="atmosphere-options" id="atmosphereOptions" hidden>
+    <label>
       <input type="checkbox" id="fxToggle" ${prefs.fx?'checked':''}> Efectos visuales
     </label>
-    <label style="display:flex;align-items:center;gap:8px;color:#cbd5e1;font-size:12px;cursor:pointer;">
-      <input type="checkbox" id="musicToggle" ${prefs.music?'checked':''}> Música ambiental
-    </label>
-    <div id="volRow" style="display:${prefs.music?'flex':'none'};align-items:center;gap:8px;">
-      <input type="range" id="volSlider" min="0" max="1" step="0.1" value="0.15" style="width:100%;">
-    </div>
-    <label style="display:flex;align-items:center;gap:8px;color:#cbd5e1;font-size:12px;cursor:pointer;">
+    <label>
       <input type="checkbox" id="perfToggle" ${prefs.perf?'checked':''}> Modo rendimiento (sin lag)
     </label>
+    </div>
   `;
   document.body.appendChild(widget);
 
   // Event handlers
   const fxToggle = document.querySelector('#fxToggle');
-  const musicToggle = document.querySelector('#musicToggle');
-  const volSlider = document.querySelector('#volSlider');
   const perfToggle = document.querySelector('#perfToggle');
 
   fxToggle.addEventListener('change', e => {
@@ -267,13 +221,6 @@
     savePrefs();
     if(prefs.fx && !prefs.perf){ startParticles(); } else { stopParticles(); }
   });
-  musicToggle.addEventListener('change', e => {
-    prefs.music = e.target.checked;
-    savePrefs();
-    document.querySelector('#volRow').style.display = prefs.music ? 'flex' : 'none';
-    if(prefs.music){ playAudio(); } else { stopAudio(); }
-  });
-  volSlider.addEventListener('input', e => { setVolume(parseFloat(e.target.value)); });
   perfToggle.addEventListener('change', e => {
     prefs.perf = e.target.checked;
     savePrefs();
@@ -282,8 +229,8 @@
 
   // pause on hidden
   document.addEventListener('visibilitychange', () => {
-    if(document.hidden){ if(running) stopParticles(); if(audioPlaying) stopAudio(); }
-    else { if(prefs.fx && !prefs.perf) startParticles(); if(prefs.music) playAudio(); }
+    if(document.hidden){ if(running) stopParticles(); }
+    else if(prefs.fx && !prefs.perf) startParticles();
   });
 
   // observe theme changes
@@ -294,14 +241,12 @@
   themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   // initial state
   if(prefs.fx && !prefs.perf && !reducedMotion){ setTimeout(startParticles, 500); }
-  if(prefs.music){ playAudio(); }
 
-  // toggle widget collapse
-  const header = widget.querySelector('div');
-  let collapsed = false;
-  header.style.cursor = 'pointer';
-  header.addEventListener('click', () => {
-    collapsed = !collapsed;
-    widget.querySelectorAll('label, #volRow').forEach(el => el.style.display = collapsed ? 'none' : '');
+  const widgetToggle = widget.querySelector('.atmosphere-toggle');
+  const widgetOptions = widget.querySelector('.atmosphere-options');
+  widgetToggle.addEventListener('click', () => {
+    const expanded = widgetToggle.getAttribute('aria-expanded') === 'true';
+    widgetToggle.setAttribute('aria-expanded', String(!expanded));
+    widgetOptions.hidden = expanded;
   });
 })();

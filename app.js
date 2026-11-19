@@ -165,11 +165,7 @@ const productTemplates={
 // El catálogo se carga exclusivamente desde Supabase.
 let products=[];
 const HERO_RESPALDO=[
-  {title:'Todo lo que necesitas, más cerca.',description:'Encuentra marcas, novedades y productos para tu día a día.',image:'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1100&q=85',badgeTop:'DESTACADO',badgeValue:'HOY',badgeBottom:'para ti',label:'Compra fácil',cardTitle:'Recíbelo hoy',cardText:'Explora el catálogo Byte Bay'},
-  {title:'Tecnología que se adapta a ti.',description:'Descubre equipos y accesorios para estudiar, trabajar y disfrutar.',image:'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=1100&q=85',badgeTop:'NUEVO',badgeValue:'VER',badgeBottom:'tecnología',label:'Selección Byte Bay',cardTitle:'Compra inteligente',cardText:'Mira productos disponibles'},
-  {title:'Renueva cada rincón de tu hogar.',description:'Ideas prácticas para crear un espacio más cómodo.',image:'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1100&q=85',badgeTop:'HOGAR',badgeValue:'TOP',badgeBottom:'selección',label:'Para tu hogar',cardTitle:'Encuentra inspiración',cardText:'Productos para cada ambiente'},
-  {title:'Lo mejor para tu compra diaria.',description:'Elige productos que hacen más simple tu rutina.',image:'https://images.unsplash.com/photo-1610348725531-843dff563e2c?auto=format&fit=crop&w=1100&q=85',badgeTop:'BYTE',badgeValue:'BAY',badgeBottom:'selección',label:'Compra segura',cardTitle:'Todo en un lugar',cardText:'Revisa el catálogo disponible'},
-  {title:'Encuentra tu próxima recomendación.',description:'Explora categorías y descubre favoritos de Byte Bay.',image:'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1100&q=85',badgeTop:'NUEVO',badgeValue:'5',badgeBottom:'destacados',label:'Para ti',cardTitle:'Explora sin prisa',cardText:'Tenemos opciones para ti'}
+  {title:'Explora el catálogo Byte Bay.',description:'Consulta productos, disponibilidad y precios antes de comprar.',image:'byte-bay-logo-transparent.png',badgeTop:'CATÁLOGO',badgeValue:'VER',badgeBottom:'productos',label:'BYTE BAY',cardTitle:'Explora el catálogo',cardText:'Consulta precios y disponibilidad'}
 ];
 let heroSlides=[];
 let heroSlideIndex=0;
@@ -177,12 +173,11 @@ let heroTimer=null;
 function crearSlidesHero(){
   const disponibles=products.filter(producto=>producto.stock>0);
   const ordenados=[...disponibles.filter(producto=>Number(producto.discount)>0),...disponibles.filter(producto=>Number(producto.discount)<=0)];
-  // La campaña principal siempre es la primera; los otros cuatro espacios se llenan con el catálogo.
-  const seleccion=ordenados.length?[HERO_RESPALDO[0],...ordenados.slice(0,4)]:HERO_RESPALDO;
+  const seleccion=ordenados.length?ordenados.slice(0,5):HERO_RESPALDO;
   return seleccion.map(producto=>{
     if(!producto.id) return producto;
     const esOferta=Number(producto.discount)>0;
-    return {id:producto.id,isOffer:esOferta,title:producto.name,description:`${producto.brand} · ${producto.category}. ${esOferta?'Precio especial por tiempo limitado.':'Disponible en el catálogo Byte Bay.'}`,image:imagenSegura(producto.img),badgeTop:esOferta?'AHORRA':'DESTACADO',badgeValue:esOferta?`-${producto.discount}%`:'VER',badgeBottom:esOferta?'de descuento':'producto',label:esOferta?'Oferta activa':'Producto destacado',cardTitle:money(producto.price),cardText:`${producto.stock} disponibles`};
+    return {id:producto.id,isOffer:esOferta,title:producto.name,description:`${producto.brand} · ${producto.category}. Precio y disponibilidad según la ficha vigente.`,image:imagenSegura(producto.img),badgeTop:esOferta?'OFERTA':'CATÁLOGO',badgeValue:esOferta?`-${producto.discount}%`:'VER',badgeBottom:esOferta?'descuento':'producto',label:esOferta?'Oferta activa':'Producto disponible',cardTitle:money(producto.price),cardText:`${producto.stock} disponibles`};
   });
 }
 function mostrarSlideHero(index){
@@ -206,7 +201,7 @@ function mostrarSlideHero(index){
     carrusel.classList.remove('hero-changing');
   },150);
 }
-function reiniciarCarruselHero(){clearInterval(heroTimer);heroTimer=setInterval(()=>mostrarSlideHero(heroSlideIndex+1),6000);}
+function reiniciarCarruselHero(){clearInterval(heroTimer);if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;heroTimer=setInterval(()=>mostrarSlideHero(heroSlideIndex+1),6000);}
 function iniciarCarruselHero(){
   heroSlides=crearSlidesHero();heroSlideIndex=0;mostrarSlideHero(0);reiniciarCarruselHero();
 }
@@ -257,6 +252,12 @@ const favorites=new Set(JSON.parse(localStorage.getItem('beruFavorites')||'[]'))
 // El modo local solo procesa señales en este dispositivo cuando el usuario lo autoriza.
 function puedePersonalizar(){return Boolean(window.BBPrivacy?.personalizacionActiva?.());}
 function registrarProductoVisto(id){window.BBPrivacy?.registrarVista?.(Number(id));}
+function ratingMarkup(value){
+  const rating=Number(value);
+  if(!Number.isFinite(rating)||rating<=0) return '<span class="rating-empty">Sin reseñas</span>';
+  const visible=Math.min(5,rating);
+  return `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m8 1.2 2 4.2 4.6.5-3.4 3.2.9 4.6L8 11.5l-4.1 2.2.8-4.6L1.3 5.9l4.6-.5L8 1.2Z"></path></svg><span>${visible.toFixed(1)} / 5</span>`;
+}
 function tarjetaProducto(producto,motivo=''){
   const agotado=Number(producto.stock)<=0;
   const stock=Number(producto.stock)||0;
@@ -265,8 +266,9 @@ function tarjetaProducto(producto,motivo=''){
   const categoria=escapeHtml(producto.category||'');
   const nombre=escapeHtml(producto.name||'');
   const marca=escapeHtml(producto.brand||'');
-  const calificacion=escapeHtml(producto.rating??'');
-  return `<article class="product-card ${agotado?'sold-out':''}" data-id="${id}" data-category="${categoria}">${descuento>0?`<span class="discount">-${descuento}%</span>`:''}<button class="wish ${favorites.has(id)?'active':''}" data-fav="${id}" aria-label="Guardar producto">${favorites.has(id)?'♥':'♡'}</button><div class="product-image"><img src="${escapeHtml(imagenSegura(producto.img))}" alt="${nombre}" loading="lazy" decoding="async" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}></div><span class="product-meta">${marca} · ${categoria}</span><h3>${nombre}</h3>${motivo?`<span class="product-reason">¿Por qué veo este producto? · ${escapeHtml(motivo)}</span>`:''}<div class="rating">★★★★★ <span>${calificacion}</span></div>${descuento>0&&Number(producto.old)>Number(producto.price)?`<span class="old-price">${money(Number(producto.old)||0)}</span>`:''}<div class="price-row"><strong class="price">${money(Number(producto.price)||0)}</strong><button class="add" data-id="${id}" aria-label="Agregar al carrito" ${agotado?'disabled':''}>${agotado?'Agotado':'+'}</button></div>${calcularPUM(producto)?`<div class="pum">${calcularPUM(producto)}</div>`:''}<div class="availability ${agotado?'unavailable':stock<=5?'low-stock':''}">${agotado?'Producto agotado':stock<=5?`Últimas ${stock} unidades`:'Disponible'}</div></article>`;
+  const calificacion=Number(producto.rating);
+  const etiquetaCalificacion=Number.isFinite(calificacion)&&calificacion>0?`Calificación ${Math.min(5,calificacion).toFixed(1)} de 5`:'Sin reseñas';
+  return `<article class="product-card ${agotado?'sold-out':''}" data-id="${id}" data-category="${categoria}">${descuento>0?`<span class="discount">-${descuento}%</span>`:''}<button class="wish ${favorites.has(id)?'active':''}" data-fav="${id}" aria-label="Guardar producto">${favorites.has(id)?'♥':'♡'}</button><div class="product-image"><img src="${escapeHtml(imagenSegura(producto.img))}" alt="${nombre}" loading="lazy" decoding="async" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}></div><span class="product-meta">${marca} · ${categoria}</span><h3>${nombre}</h3>${motivo?`<span class="product-reason">¿Por qué veo este producto? · ${escapeHtml(motivo)}</span>`:''}<div class="rating" aria-label="${etiquetaCalificacion}">${ratingMarkup(producto.rating)}</div>${descuento>0&&Number(producto.old)>Number(producto.price)?`<span class="old-price">${money(Number(producto.old)||0)}</span>`:''}<div class="price-row"><strong class="price">${money(Number(producto.price)||0)}</strong><button class="add" data-id="${id}" aria-label="Agregar al carrito" ${agotado?'disabled':''}>${agotado?'Agotado':'Agregar'}</button></div>${calcularPUM(producto)?`<div class="pum">${calcularPUM(producto)}</div>`:''}<div class="availability ${agotado?'unavailable':stock<=5?'low-stock':''}">${agotado?'Producto agotado':stock<=5?`Últimas ${stock} unidades`:'Disponible'}</div></article>`;
 }
 function renderizarPersonalizacion(){
   if(window.BBPrivacy?.renderizarRecomendaciones){window.BBPrivacy.renderizarRecomendaciones();return;}
@@ -308,12 +310,12 @@ async function abrirPackModal(id){
     gallery.style.display='flex';
     gallery.innerHTML=itemDetails.map(it=>`<button type="button" class="coolbox-thumb" title="${escapeHtml(it.nombre)}"><img src="${escapeHtml(imagenSegura(it.img||'imagen-producto-predeterminada.svg'))}" alt="${escapeHtml(it.nombre)}"></button>`).join('');
   }
-  lastViewedProduct={id:pack.id, name:pack.nombre, brand:'Byte Bay', category:'Pack', price:Number(pack.precio_especial), old:Number(pack.precio_especial), stock:Number(pack.stock), rating:'5.0', description:pack.descripcion||'Pack combo de productos.', img: (itemDetails[0]?.img||'imagen-producto-predeterminada.svg'), gender:'Mixto', specs:{'Productos incluidos':itemDetails.length+' items','Stock de packs':pack.stock+' unidades'}, videoUrl:''};
+  lastViewedProduct={id:pack.id, name:pack.nombre, brand:'Byte Bay', category:'Pack', price:Number(pack.precio_especial), old:Number(pack.precio_especial), stock:Number(pack.stock), rating:0, description:pack.descripcion||'Pack combo de productos.', img: (itemDetails[0]?.img||'imagen-producto-predeterminada.svg'), gender:'Mixto', specs:{'Productos incluidos':itemDetails.length+' items','Stock de packs':pack.stock+' unidades'}, videoUrl:''};
   // open modal manually
   document.querySelector('#modalImage').src=imagenSegura(lastViewedProduct.img);
   document.querySelector('#modalBrand').textContent='Pack • Byte Bay';
   document.querySelector('#modalName').textContent=pack.nombre;
-  document.querySelector('#modalRating').innerHTML='★★★★★ <span>5.0</span>';
+  document.querySelector('#modalRating').innerHTML=ratingMarkup(lastViewedProduct.rating);
   document.querySelector('#modalPrice').textContent=money(pack.precio_especial);
   document.querySelector('#modalOld').style.display='none';
   const descEl=document.querySelector('#modalDescription');
@@ -696,13 +698,13 @@ const footerInfo={
   'Sostenibilidad':{title:'Sostenibilidad',body:'<p>Byte Bay controla lotes, proveedores y fechas de vencimiento para reducir desperdicios.</p><ul><li>Productos a 30 días de vencer: descuento de 20%.</li><li>Productos a 21 días de vencer: descuento de 50%.</li><li>Productos a 7 días de vencer: se retiran del catálogo.</li><li>Productos dañados o devueltos: no se ofrecen para venta.</li></ul>'},
   'Cómo comprar':{title:'Cómo comprar',body:'<ol><li>Busca el producto por nombre, marca o categoría.</li><li>Agrega la cantidad deseada al carrito.</li><li>Presiona <strong>Continuar compra</strong> e inicia sesión con tu cuenta Byte Bay.</li><li>Completa nombres, documento, dirección, correo y teléfono.</li><li>Elige Culqi (tarjeta o Yape) o Mercado Pago y continúa al checkout seguro del proveedor.</li><li>Vuelve a Byte Bay: el pedido se confirma solo cuando el proveedor acredita el pago.</li><li>Guarda tu código de pedido <strong>BERU-XXXXXXXX</strong>.</li></ol><p>El stock se reserva por 15 minutos y los pagos pendientes se concilian automáticamente.</p>'},
   'Medios de pago':{title:'Medios de pago',body:'<p>Byte Bay ofrece <strong>Culqi</strong> (tarjeta y Yape, según disponibilidad del comercio) y <strong>Mercado Pago</strong> (medios que estén habilitados para tu cuenta).</p><ol><li>Elige el proveedor en el checkout.</li><li>Revisa que el monto coincida con el total del pedido.</li><li>Completa el pago únicamente en la página segura del proveedor elegido.</li><li>Byte Bay confirma el pedido cuando el proveedor acredita el pago.</li></ol><p>Byte Bay no solicita ni almacena datos de tarjeta, CVV, claves bancarias ni códigos de aprobación de Yape.</p>'},
-  'Envíos y devoluciones':{title:'Envíos y devoluciones',body:'<p>El envío es gratis a todo el Perú, sin monto mínimo de compra.</p><p>Antes de registrar el pedido, confirma que tu dirección incluya calle, número, distrito y ciudad. Conserva tu código de pedido.</p><p>Para consultar un envío, corregir una dirección o reportar un problema, escribe por redes sociales con: nombre del comprador, código <strong>BERU-XXXXXXXX</strong> y una explicación breve.</p><p>No envíes fotos de documentos completos ni contraseñas.</p>'},
-  'Centro de ayuda':{title:'Centro de ayuda',body:'<p>Elige el caso que necesitas resolver y envíanos estos datos por una red oficial:</p><ul><li><strong>Pedido pendiente:</strong> código BERU, nombre y comprobante del pago con tarjeta o Yape.</li><li><strong>Problema con producto:</strong> código BERU, nombre del producto y fotos claras.</li><li><strong>Cambio de dirección:</strong> código BERU y la dirección completa corregida.</li><li><strong>Producto agotado:</strong> nombre o código del producto para revisar alternativas.</li><li><strong>Acceso a cuenta:</strong> correo registrado. Nunca envíes tu contraseña.</li></ul><p>Las cuentas de redes oficiales están enlazadas abajo en el pie de página.</p>'},
-  'Preguntas frecuentes':{title:'Preguntas frecuentes',body:'<p><strong>¿Cómo registro un pedido?</strong></p><p>Agrega productos al carrito, inicia sesión con tu cuenta Byte Bay, completa los datos de entrega y elige Culqi o Mercado Pago. El pedido se confirma cuando el proveedor acredita el pago.</p><p><strong>¿Qué medios de pago aceptan?</strong></p><p>Culqi admite tarjetas y Yape si está habilitado para el comercio. Mercado Pago muestra los medios disponibles en su checkout. No ingreses datos de tarjeta ni códigos de aprobación fuera del proveedor.</p><p><strong>¿Cómo sigo mi pedido?</strong></p><p>Guarda el código BERU que recibes al registrar la compra y consúltanos por nuestras redes oficiales.</p><p><strong>¿Puedo cambiar la dirección?</strong></p><p>Escríbenos con tu código BERU y la dirección corregida antes de que el pedido salga a reparto.</p><p><strong>¿Cómo elimino mi cuenta?</strong></p><p>Solicítalo por nuestras redes oficiales con el correo registrado. No envíes tu contraseña.</p>'},
-  'Contáctanos':{title:'Contáctanos',body:'<p>Escríbenos por cualquiera de nuestras redes oficiales. Incluye tu consulta y, si se trata de una compra, tu código BERU.</p><p><a href="https://tiktok.com/@bytebayperu" target="_blank" rel="noopener noreferrer">TikTok</a> · <a href="https://www.instagram.com/bytebayperu?stkn=b2Zlc3c4M2lrcjJw" target="_blank" rel="noopener noreferrer">Instagram</a> · <a href="https://youtube.com/@bytebayperu?si=4nyrzBNYliTeMwbu" target="_blank" rel="noopener noreferrer">YouTube</a> · <a href="https://x.com/bytebayperu" target="_blank" rel="noopener noreferrer">X</a> · <a href="https://www.facebook.com/share/19SYEVhY7c/" target="_blank" rel="noopener noreferrer">Facebook</a>.</p>'},
-  'Libro de reclamaciones':{title:'Libro de reclamaciones',body:'<p>Para registrar un reclamo formal debes indicar: nombre completo, documento, correo, descripción del producto o servicio, número de pedido y el detalle de tu reclamo.</p><p>Esta sección quedará habilitada para envío real cuando configuremos el correo oficial del negocio y los datos legales requeridos.</p>'},
-  'Privacidad':{title:'Privacidad',body:'<p>Byte Bay usa tu nombre, correo, teléfono, dirección y datos de pedido solo para registrar compras, verificar pagos, gestionar entregas y responder solicitudes.</p><p>Las contraseñas se guardan cifradas. Nunca te pediremos contraseña, datos de tarjeta, CVV, claves bancarias ni códigos de seguridad por redes sociales.</p>'},
-  'Términos':{title:'Términos de uso',body:'<p>Un pedido se registra inicialmente como <strong>pendiente</strong> y se confirma cuando Culqi o Mercado Pago acredita el pago. El stock se reserva por 15 minutos; los intentos vencidos liberan la reserva.</p><p>El código de pedido <strong>BERU-XXXXXXXX</strong> identifica tu compra. Guárdalo hasta que el pedido sea entregado o resuelto.</p>'}
+  'Envíos y devoluciones':{title:'Envíos y devoluciones',body:'<p>El costo de envío vigente aparece en el resumen de checkout antes de pagar. El flujo actual calcula S/ 0.00; cualquier cambio se mostrará antes de confirmar.</p><p>No hay un plazo general de entrega publicado. Para consultar el plazo de tu dirección, corregir un dato o reportar un problema, escribe al correo comercial publicado por Byte Bay con tu código de pedido.</p><p>Las solicitudes de cambio, devolución o garantía se atienden según el estado del pedido, la información de la ficha y los derechos que reconoce la normativa peruana. No se ofrece un plazo general de 30 días por cambio de opinión.</p>'},
+  'Centro de ayuda':{title:'Centro de ayuda',body:'<p>Para una consulta de pedido, incluye tu código BERU y una explicación breve. Para cambios de dirección, escríbenos antes del despacho. No envíes contraseñas, CVV ni códigos de aprobación de Yape.</p><p>Correo: [Completar correo comercial] · Teléfono: [Completar teléfono comercial]</p>'},
+  'Preguntas frecuentes':{title:'Preguntas frecuentes',body:'<p><strong>¿Cuándo se confirma el pago?</strong></p><p>Cuando Culqi o Mercado Pago reporta el resultado y Byte Bay actualiza el estado del pedido.</p><p><strong>¿Dónde veo el costo final?</strong></p><p>En el resumen del checkout, antes de confirmar. El flujo actual calcula envío S/ 0.00.</p><p><strong>¿Cómo solicito un cambio o cancelación?</strong></p><p>Contacta a Byte Bay cuanto antes e incluye el código de pedido. La atención depende del estado real del pedido y de las condiciones publicadas.</p>'},
+  'Contáctanos':{title:'Contáctanos',body:'<p>Correo comercial: [Completar correo comercial]<br>Teléfono comercial: [Completar teléfono comercial]</p><p>También puedes usar las redes oficiales del pie de página. Comparte el código de pedido cuando corresponda; nunca envíes credenciales ni datos de pago.</p>'},
+  'Libro de reclamaciones':{title:'Libro de reclamaciones',body:'<p>Usa el formulario del Libro de reclamaciones disponible en esta tienda. Incluye los datos solicitados y describe lo ocurrido con claridad. Para una consulta, usa el correo comercial publicado por Byte Bay.</p>'},
+  'Privacidad':{title:'Privacidad',body:'<p>La política completa explica qué datos se usan, para qué, con qué proveedores y cómo solicitar acceso, rectificación, cancelación u oposición. <a href="#politica-privacidad">Leer política de privacidad</a>.</p>'},
+  'Términos':{title:'Términos y condiciones',body:'<p>Los términos describen catálogo, precio, pagos, envíos, cancelaciones y garantías. <a href="#terminos-condiciones">Leer términos y condiciones</a>.</p>'}
 };
 function openFooterInfo(info){
   let modal=document.querySelector('#footerInfoModal');
@@ -1634,7 +1636,7 @@ async function openProductModal(id){
   if(nextBtn) nextBtn.onclick=()=>setMain(galleryIndex+1);
   document.querySelector('#modalBrand').textContent=`${lastViewedProduct.brand} · ${lastViewedProduct.category}`;
   document.querySelector('#modalName').textContent=lastViewedProduct.name;
-  document.querySelector('#modalRating').innerHTML=`★★★★★ <span>${escapeHtml(lastViewedProduct.rating??'')}</span>`;
+  document.querySelector('#modalRating').innerHTML=ratingMarkup(lastViewedProduct.rating);
   document.querySelector('#modalPrice').textContent=money(lastViewedProduct.price);
   const pumEl=document.querySelector('#modalPum'); if(pumEl) pumEl.textContent=calcularPUM(lastViewedProduct);
   const modalOld=document.querySelector('#modalOld');
@@ -1851,14 +1853,6 @@ function configurarAsistenteIA(){
   formulario.onsubmit=evento=>{evento.preventDefault();preguntar(entrada.value);};
   document.querySelectorAll('[data-ai-question]').forEach(botonSugerencia=>botonSugerencia.onclick=()=>preguntar(botonSugerencia.dataset.aiQuestion));
 }
-
-let remaining=8*3600+42*60+18;
-setInterval(()=>{
-  remaining=remaining>0?remaining-1:9*3600;
-  document.querySelector('#hours').textContent=String(Math.floor(remaining/3600)).padStart(2,'0');
-  document.querySelector('#minutes').textContent=String(Math.floor(remaining%3600/60)).padStart(2,'0');
-  document.querySelector('#seconds').textContent=String(remaining%60).padStart(2,'0');
-},1000);
 
 if(notificationSubscription){
   document.querySelector('#notifyEmail').value=notificationSubscription.email;
