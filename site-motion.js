@@ -22,3 +22,10 @@
     document.querySelectorAll('.product-card,.category-card,.benefit,.promo,.checkout-card').forEach(function(el){ el.classList.add('reveal'); obs.observe(el); });
   }
 })();
+// Scroll reveal
+const revealObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
+// Re-observe on catalog update
+window.addEventListener('bb:catalogo-actualizado',()=>{ document.querySelectorAll('.product-card:not(.reveal)').forEach(el=>{ el.classList.add('reveal'); revealObserver.observe(el); }); });

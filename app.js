@@ -396,6 +396,8 @@ async function cargarPacksTienda(){
 
 async function loadCatalogFromSupabase(){
   if(!supabaseClient) return;
+  const grid=document.querySelector('#productGrid');
+  if(grid) grid.innerHTML=Array(8).fill('<div class="skeleton-card"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-title" style="width:60%"></div><div class="skeleton skeleton-price"></div></div>').join('');
   const {data,error}=await supabaseClient.from('catalogo_productos').select('*').order('id',{ascending:false});
   if(error){console.error('Supabase catalog:',error);showToast('No se pudo cargar el catálogo desde la base de datos.');return;}
   if(!data?.length){products=[];renderProducts();showToast('El catálogo todavía no tiene productos cargados.');return;}
@@ -462,6 +464,30 @@ async function sendNotificationEmail({email,wants}){
 }
 
 const money=n=>`S/ ${n.toLocaleString('es-PE',{minimumFractionDigits:2})}`;
+function animarAgregarCarrito(producto){
+  const tarjeta=document.querySelector(`.product-card[data-id="${producto.id}"]`);
+  const img=tarjeta?.querySelector('.product-image img');
+  const carrito=document.querySelector('#cartButton, .cart-button, [data-action="cart"]');
+  if(!img||!carrito) return;
+  const rect=img.getBoundingClientRect();
+  const cartRect=carrito.getBoundingClientRect();
+  const clon=img.cloneNode(true);
+  clon.className='fly-to-cart';
+  clon.style.left=rect.left+'px';
+  clon.style.top=rect.top+'px';
+  clon.style.width=rect.width+'px';
+  clon.style.height=rect.height+'px';
+  document.body.appendChild(clon);
+  requestAnimationFrame(()=>{
+    clon.style.left=(cartRect.left+cartRect.width/2-15)+'px';
+    clon.style.top=(cartRect.top+cartRect.height/2-15)+'px';
+    clon.style.width='30px';
+    clon.style.height='30px';
+    clon.style.opacity='0';
+  });
+  setTimeout(()=>clon.remove(),650);
+}
+
 function calcularPUM(producto){
   const nombre=String(producto.name||'');
   const m=nombre.match(/(\d+(?:[\.,]\d+)?)\s*(kg|g|l|ml|litro|litros)/i);
@@ -587,6 +613,7 @@ function addToCart(id,cantidad=1){
     return;
   }
   showToast();
+  animarAgregarCarrito(product);
 }
 
 function subtotal(){return cart.reduce((a,x)=>a+x.price*x.qty,0);}
