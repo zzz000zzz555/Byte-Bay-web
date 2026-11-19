@@ -26,13 +26,13 @@
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.innerWidth < 768;
-  const maxParticles = reducedMotion ? 10 : (isMobile ? 20 : 60);
+  const maxParticles = reducedMotion ? 10 : (isMobile ? 25 : 80);
 
   // Particle factory
   function createParticle(type){
     const w = window.innerWidth, h = window.innerHeight;
     if(type==='snow'){
-      return { x: Math.random()*w, y: Math.random()*-h, r: 1+Math.random()*3, vy: 0.5+Math.random()*1.5, vx: -0.5+Math.random()*1, opacity: 0.4+Math.random()*0.6, type };
+      return { x: Math.random()*w, y: Math.random()*-h, r: 2+Math.random()*4, vy: 1+Math.random()*2, vx: -0.8+Math.random()*1.6, opacity: 0.6+Math.random()*0.4, type };
     }
     if(type==='bat'){
       return { x: -50, y: 50+Math.random()*200, vx: 2+Math.random()*3, vy: Math.random()*0.5-0.25, r: 8+Math.random()*6, opacity: 0.7+Math.random()*0.3, type, life: 0 };
@@ -90,9 +90,16 @@
         p.y += p.vy; p.x += p.vx;
         if(p.y > h){ p.y = -10; p.x = Math.random()*w; }
         if(p.x > w) p.x = 0; if(p.x < 0) p.x = w;
+        // shadow for visibility on light backgrounds
+        const isNavidad = document.body.classList.contains('theme-navidad');
+        const flakeColor = isNavidad ? `rgba(147,197,253,${p.opacity})` : `rgba(255,255,255,${p.opacity})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r+1.5, 0, Math.PI*2);
+        ctx.fillStyle = isNavidad ? `rgba(30,41,59,0.4)` : `rgba(100,116,139,0.3)`;
+        ctx.fill();
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
+        ctx.fillStyle = flakeColor;
         ctx.fill();
       });
     }
