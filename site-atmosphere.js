@@ -49,6 +49,7 @@
   function applyFxFlag() {
     var active = prefs.fx && !prefs.perf;
     root.setAttribute('data-season-fx', reducedMotion ? 'reduced' : (active ? 'on' : 'off'));
+    root.setAttribute('data-fx-density', prefs.density);
   }
   applyFxFlag();
 
@@ -120,6 +121,8 @@
     stage.className = 'bb-season-stage';
     stage.setAttribute('aria-hidden', 'true');
     stage.innerHTML =
+      '<div class="bb-snow bb-snow--near"></div>' +
+      '<div class="bb-snow"></div>' +
       '<div class="bb-drift bb-drift--back"></div>' +
       '<div class="bb-drift"></div>' +
       '<div class="bb-vignette"></div>';
@@ -511,7 +514,7 @@
     if (prefs.perf) stopParticles(); else if (prefs.fx) startParticles();
   });
   densitySelect.addEventListener('change', function (e) {
-    prefs.density = e.target.value; persist(prefs); initParticles();
+    prefs.density = e.target.value; persist(prefs); applyFxFlag(); initParticles();
   });
 
   document.addEventListener('visibilitychange', function () {

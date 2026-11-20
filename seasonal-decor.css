@@ -47,7 +47,8 @@ html[data-season-fx="off"] .bb-shine,
 html[data-season-fx="off"] .bb-heart,
 html[data-season-fx="off"] .bb-flag,
 html[data-season-fx="off"] .bb-drift,
-html[data-season-fx="off"] .bb-fog { animation-play-state: paused !important; }
+html[data-season-fx="off"] .bb-fog,
+html[data-season-fx="off"] .bb-snow { animation-play-state: paused !important; }
 html[data-season-fx="off"] .bb-bat { opacity: 0; }
 
 /* El contenido de cabecera y hero siempre queda por encima de la decoración */
@@ -495,6 +496,36 @@ body.theme-vuelta_clases .bb-script { right: 8%; top: 14%; font-size: clamp(38px
 .bb-drift--back { --drift: rgb(255 255 255 / .55); height: 150px; bottom: -20px; opacity: .8; animation-duration: 34s; animation-direction: alternate-reverse; }
 @keyframes bb-drift-move { from { transform: translate3d(-3%, 0, 0); } to { transform: translate3d(3%, -6px, 0); } }
 
+/* ---------- Nieve CSS (respaldo visible aunque el canvas se atrase) ---------- */
+.bb-snow {
+  position: absolute;
+  inset: -12% -8%;
+  display: none;
+  pointer-events: none;
+  opacity: .85;
+  background-image:
+    radial-gradient(circle, rgb(255 255 255 / .95) 1.4px, transparent 2px),
+    radial-gradient(circle, rgb(219 234 254 / .9) 1px, transparent 1.8px),
+    radial-gradient(circle, rgb(255 255 255 / .8) 2px, transparent 2.8px);
+  background-size: 132px 118px, 87px 94px, 211px 176px;
+  background-position: 0 0, 31px 17px, 12px 63px;
+  animation: bb-snow-fall 17s linear infinite;
+  will-change: transform;
+}
+.bb-snow--near {
+  opacity: .55;
+  background-size: 96px 104px, 152px 138px, 74px 81px;
+  animation-duration: 11s;
+  animation-direction: reverse;
+}
+body.theme-navidad .bb-snow { display: block; }
+html[data-fx-density="low"] .bb-snow { opacity: .45; }
+html[data-fx-density="high"] .bb-snow { opacity: 1; }
+@keyframes bb-snow-fall {
+  from { transform: translate3d(-2%, -8%, 0); }
+  to   { transform: translate3d(3%, 12%, 0); }
+}
+
 .bb-fog {
   position: absolute;
   left: -20%;
@@ -554,7 +585,7 @@ html.dark-mode #atmosphereWidget .bb-density-label select {
 @media (prefers-reduced-motion: reduce) {
   .bb-sprig, .bb-bulb, .bb-bauble, .bb-seal, .bb-moon, .bb-bat,
   .bb-lantern, .bb-burst, .bb-shine, .bb-heart, .bb-flag,
-  .bb-drift, .bb-fog { animation: none !important; }
+  .bb-drift, .bb-fog, .bb-snow { animation: none !important; }
   .bb-bat { display: none; }
 }
 
@@ -570,7 +601,8 @@ html[data-season-fx="reduced"] .bb-shine,
 html[data-season-fx="reduced"] .bb-heart,
 html[data-season-fx="reduced"] .bb-flag,
 html[data-season-fx="reduced"] .bb-drift,
-html[data-season-fx="reduced"] .bb-fog { animation: none !important; }
+html[data-season-fx="reduced"] .bb-fog,
+html[data-season-fx="reduced"] .bb-snow { animation: none !important; }
 
 @media (max-width: 768px) {
   .bb-garland { height: 30px; }
