@@ -30,9 +30,10 @@
 <link rel="stylesheet" href="styles.css?v=23">
   <link rel="stylesheet" href="site-enhancements.css?v=11">
   <link rel="stylesheet" href="site-themes.css?v=1">
-  <link rel="stylesheet" href="site-settings.css?v=1">
+  <link rel="stylesheet" href="seasonal-decor.css?v=3">
+  <link rel="stylesheet" href="site-settings.css?v=2">
   <link rel="stylesheet" href="site-privacy.css?v=4">
-  <link rel="stylesheet" href="market-world.css?v=2">
+  <link rel="stylesheet" href="market-world.css?v=9">
   <script>try{var bbPrefs=JSON.parse(localStorage.getItem('byteBayPreferences')||'null');var bbTema=bbPrefs&&bbPrefs.theme?bbPrefs.theme:(localStorage.getItem('beruTema')==='noche'?'dark':localStorage.getItem('beruTema')==='claro'?'light':'auto');if(bbTema==='dark'||(bbTema==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark-mode')}catch(e){}</script>
   <!-- EmailJS permite enviar el correo desde la página sin exponer la contraseña de Gmail. -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -68,6 +69,11 @@
       <a href="#novedades" data-settings-close>Novedades</a>
       <a href="#notificaciones" data-settings-close>Alertas</a>
     </nav>
+    <button class="settings-assistant-shortcut" id="settingsAssistantOpen" type="button" aria-controls="aiAssistantPanel">
+      <span class="settings-assistant-spark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.2 7 7 2.2-7 2.2-2.2 7-2.2-7-7-2.2 7-2.2z"></path></svg></span>
+      <span>Asistente de compras</span>
+      <span class="settings-assistant-arrow" aria-hidden="true">→</span>
+    </button>
     <div class="settings-body">
       <section class="settings-group" aria-labelledby="settingsGeneralTitle">
         <h3 id="settingsGeneralTitle">Configuración general</h3>
@@ -204,17 +210,68 @@
   </aside>
 
   <main>
-    <section class="offers" id="ofertas"><div class="wrap"><div class="section-head"><div><span class="section-kicker coral">BYTE BAY</span><h2 id="catalogTitle">Catálogo de productos</h2><p id="productCountLabel">Productos disponibles para ti</p></div><div class="offer-controls"><button class="round" id="prevProducts" type="button" aria-label="Productos anteriores">←</button><button class="round" id="nextProducts" type="button" aria-label="Productos siguientes">→</button></div></div><div class="filter-bar"><button class="filter-chip active" data-filter="all">Todo</button><button class="filter-chip" data-filter="price-low">Menor precio</button><button class="filter-chip" data-filter="price-high">Mayor precio</button><button class="filter-chip" data-filter="rating">Mejor valorados</button><button class="filter-chip" data-filter="favorites">Favoritos</button></div><div class="catalog-filters" aria-label="Filtros de catálogo"><label>Mostrar<select id="catalogOfferFilter"><option value="catalogo">Catálogo completo</option><option value="ofertas">Solo ofertas activas</option></select></label><label>Filtrar por categoría<select id="catalogCategoryFilter"><option value="all">Todas las categorías</option></select></label>
-<label>Filtrar por marca<select id="catalogBrandFilter"><option value="all">Todas las marcas</option></select></label>
-<label>Género<select id="catalogGenderFilter"><option value="all">Todos</option><option value="Hombre">Hombre</option><option value="Mujer">Mujer</option><option value="Mixto">Mixto/Unisex</option></select></label>
-<label><input type="checkbox" id="catalogInStockOnly"> Solo en stock</label><label>Ordenar por precio<select id="catalogPriceFilter"><option value="">Relevancia</option><option value="price-low">Menor a mayor</option><option value="price-high">Mayor a menor</option></select></label><button id="clearCatalogFilters" class="btn secondary" type="button">Limpiar filtros</button></div><div class="product-grid" id="productGrid"></div></div></section>
-    <section class="hero hero-carousel wrap" id="heroCarousel" aria-label="Productos destacados del catálogo">
-      <div class="hero-copy"><span class="eyebrow" id="heroEyebrow">BYTE BAY</span><h1 id="heroTitle">Encuentra tu próximo producto.</h1><p id="heroDescription">Revisa productos, disponibilidad y precios antes de comprar.</p><div class="hero-actions"><a class="btn primary" id="heroPrimaryAction" href="#ofertas">Explorar catálogo</a><a class="btn secondary" href="#categorias">Explorar categorías</a></div><div class="hero-carousel-controls"><button class="hero-nav" id="heroPrevious" type="button" aria-label="Producto destacado anterior">←</button><div class="hero-dots" id="heroDots" aria-label="Seleccionar un producto destacado"></div><button class="hero-nav" id="heroNext" type="button" aria-label="Producto destacado siguiente">→</button></div></div>
-      <div class="hero-visual"><div class="sale-badge" id="heroBadge"><strong>CATÁLOGO</strong><b>VER</b><span>productos</span></div><img id="heroImage" src="byte-bay-logo-transparent.png" alt="Logo de Byte Bay" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"><div class="floating-card"><span id="heroCardLabel">BYTE BAY</span><strong id="heroCardTitle">Explora el catálogo</strong><small id="heroCardText">Consulta precios y disponibilidad</small></div></div>
+    <section class="hero hero-carousel wrap" id="heroCarousel" aria-label="Producto destacado">
+      <div class="hero-copy">
+        <h1 id="heroTitle">Encuentra tu próximo producto.</h1>
+        <p id="heroDescription">Revisa productos, disponibilidad y precios antes de comprar.</p>
+        <div class="hero-actions">
+          <a class="btn primary" id="heroPrimaryAction" href="#ofertas">Explorar catálogo</a>
+          <a class="btn secondary" href="#categorias" aria-label="Explorar categorías">Categorías</a>
+        </div>
+        <div class="hero-carousel-controls">
+          <button class="hero-nav" id="heroPrevious" type="button" aria-label="Producto destacado anterior">←</button>
+          <div class="hero-dots" id="heroDots" aria-label="Seleccionar un producto destacado"></div>
+          <button class="hero-nav" id="heroNext" type="button" aria-label="Producto destacado siguiente">→</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="sale-badge" id="heroBadge"><strong>CATÁLOGO</strong><b>VER</b><span>productos</span></div>
+        <img id="heroImage" src="byte-bay-logo-transparent.png" alt="Logo de Byte Bay" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'">
+        <div class="floating-card"><span id="heroCardLabel">BYTE BAY</span><strong id="heroCardTitle">Explora el catálogo</strong><small id="heroCardText">Consulta precios y disponibilidad</small></div>
+      </div>
+    </section>
+
+    <section class="category-section wrap" id="categorias">
+      <div class="section-head">
+        <div><h2>Compra por categoría</h2></div>
+        <a href="#ofertas">Ver catálogo <span>→</span></a>
+      </div>
+      <div class="categories" id="categoryList"></div>
+    </section>
+
+    <section class="offers" id="ofertas">
+      <div class="wrap">
+        <div class="section-head">
+          <div><h2 id="catalogTitle">Catálogo de productos</h2><p id="productCountLabel">Productos disponibles para ti</p></div>
+          <div class="offer-controls">
+            <button class="round" id="prevProducts" type="button" aria-label="Productos anteriores">←</button>
+            <button class="round" id="nextProducts" type="button" aria-label="Productos siguientes">→</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-chip active" data-filter="all">Todo</button>
+          <button class="filter-chip" data-filter="price-low">Menor precio</button>
+          <button class="filter-chip" data-filter="price-high">Mayor precio</button>
+          <button class="filter-chip" data-filter="rating">Mejor valorados</button>
+          <button class="filter-chip" data-filter="favorites">Favoritos</button>
+        </div>
+        <details class="catalog-filter-details">
+          <summary>Más filtros</summary>
+          <div class="catalog-filters" aria-label="Filtros de catálogo">
+            <label>Mostrar<select id="catalogOfferFilter"><option value="catalogo">Catálogo completo</option><option value="ofertas">Solo ofertas activas</option></select></label>
+            <label>Filtrar por categoría<select id="catalogCategoryFilter"><option value="all">Todas las categorías</option></select></label>
+            <label>Filtrar por marca<select id="catalogBrandFilter"><option value="all">Todas las marcas</option></select></label>
+            <label>Género<select id="catalogGenderFilter"><option value="all">Todos</option><option value="Hombre">Hombre</option><option value="Mujer">Mujer</option><option value="Mixto">Mixto/Unisex</option></select></label>
+            <label><input type="checkbox" id="catalogInStockOnly"> Solo en stock</label>
+            <label>Ordenar por precio<select id="catalogPriceFilter"><option value="">Relevancia</option><option value="price-low">Menor a mayor</option><option value="price-high">Mayor a menor</option></select></label>
+            <button id="clearCatalogFilters" class="btn secondary" type="button">Limpiar filtros</button>
+          </div>
+        </details>
+        <div class="product-grid" id="productGrid"></div>
+      </div>
     </section>
 
     <section class="offers" id="packs"><div class="wrap"><div class="section-head"><div><span class="section-kicker coral">PACKS Y COMBOS</span><h2 id="packsTitle">Packs y Combos</h2><p id="packsCountLabel">Combos especiales para ti</p></div></div><div class="product-grid" id="packsGrid"></div></div></section>
-<section class="category-section wrap" id="categorias"><div class="section-head"><div><span class="section-kicker">ENCUENTRA LO TUYO</span><h2>Compra por categoría</h2></div><a href="#">Ver todas <span>→</span></a></div><div class="categories" id="categoryList"></div></section>
 
     <section class="personalized-section wrap hidden" id="recentlyViewedSection"><div class="section-head"><div><span class="section-kicker">TU HISTORIAL</span><h2>Vistos recientemente</h2><p>Retoma los productos que revisaste.</p></div><button class="text-action" id="clearViewed" type="button">Limpiar historial</button></div><div class="product-grid personalized-grid" id="recentlyViewedGrid"></div></section>
     <section class="personalized-section wrap hidden" id="recommendationsSection"><div class="section-head"><div><span class="section-kicker coral">SELECCIÓN PARA TI</span><h2>También te puede interesar</h2><p>Productos similares según lo que estuviste viendo.</p></div></div><div class="product-grid personalized-grid" id="recommendationsGrid"></div></section>
@@ -608,14 +665,14 @@
       <button class="bb-consent-btn is-config" id="configurePersonalization" type="button">CONFIGURAR PREFERENCIAS</button>
     </div>
   </section>
-  <button id="aiAssistantToggle" class="ai-assistant-toggle" type="button" aria-label="Abrir Asistente Byte"><span>✦</span> Asistente Byte</button>
+  <button id="aiAssistantToggle" class="ai-assistant-toggle" type="button" aria-label="Abrir Asistente Byte"><span class="assistant-spark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.2 7 7 2.2-7 2.2-2.2 7-2.2-7-7-2.2 7-2.2z"></path></svg></span><span class="ai-assistant-label">Asistente Byte</span></button>
   <section id="aiAssistantPanel" class="ai-assistant-panel hidden" aria-label="Asistente Byte"><header><div><span class="section-kicker">IA DE BYTE BAY</span><h2>¿Qué estás buscando?</h2></div><button id="aiAssistantClose" type="button" aria-label="Cerrar asistente">×</button></header><div class="ai-chat" id="aiChat"><article class="ai-message assistant">Hola, soy Asistente Byte. Puedo ayudarte a encontrar productos, ofertas y opciones similares.</article></div><div class="ai-suggestions"><button type="button" data-ai-question="¿Qué ofertas de tecnología tienen stock?">Ofertas de tecnología</button><button type="button" data-ai-question="Recomiéndame productos para el hogar">Para el hogar</button></div><form id="aiAssistantForm"><input id="aiAssistantInput" maxlength="500" placeholder="Ej.: Recomiéndame una laptop económica" required><button class="btn primary" type="submit">Enviar</button></form><small>Respuestas generadas con IA según el catálogo disponible.</small></section>
-  <script src="app.js?v=90"></script>
+  <script src="app.js?v=93"></script>
   <script src="site-orders.js?v=7"></script>
   <script src="site-motion.js?v=1"></script>
   <script src="site-enhancements.js?v=3"></script>
-  <script src="site-themes.js?v=3"></script>
-  <script src="site-atmosphere.js?v=4"></script>
+  <script src="site-themes.js?v=4"></script>
+  <script src="site-atmosphere.js?v=7"></script>
   <script src="site-settings.js?v=3"></script>
   <script src="site-privacy.js?v=7"></script>
 <dialog id="sizeGuideDialog" class="size-guide-dialog"><div class="size-guide-card"><h3>Guía de tallas</h3><table><tr><th>Talla Perú</th><th>EUR</th><th>US</th><th>cm</th></tr><tr><td>38</td><td>40</td><td>7</td><td>24.5</td></tr><tr><td>39</td><td>41</td><td>7.5</td><td>25</td></tr><tr><td>40</td><td>42</td><td>8</td><td>25.5</td></tr><tr><td>41</td><td>43</td><td>8.5</td><td>26</td></tr><tr><td>42</td><td>44</td><td>9</td><td>26.5</td></tr></table><button class="btn primary" onclick="document.querySelector('#sizeGuideDialog').close()">Cerrar</button></div></dialog>

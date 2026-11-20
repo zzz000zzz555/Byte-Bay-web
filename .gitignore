@@ -19,6 +19,7 @@ tmp/
 !migrations_admin_toggle_producto.sql
 !migrations_packs.sql
 !migrations_packs_2.sql
+!migrations_themes.sql
 !migrations_promociones_ofertas.sql
 !migrations_promo_ofertas2.sql
 !migrations_ofertas_packs.sql

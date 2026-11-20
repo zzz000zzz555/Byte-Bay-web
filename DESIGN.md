@@ -128,15 +128,15 @@ El verde oscuro sostiene navegación, texto y acciones; el verde hoja y el lima 
 
 ## Layout
 
-El contenido usa un contenedor de hasta 1320px, con márgenes que se reducen en tabletas y móviles. El catálogo organiza los productos en una cuadrícula de tarjetas; cada tarjeta mantiene imagen, nombre, disponibilidad, precio y acción de compra juntos.
+El contenido usa un contenedor de hasta 1320px, con márgenes que se reducen en tabletas y móviles. La portada sigue el recorrido producto destacado → franja de categorías → catálogo. El producto destacado usa una composición dividida y datos reales; el catálogo conserva una cuadrícula de tarjetas con imagen, nombre, disponibilidad, precio y acción juntos. Los filtros menos frecuentes se agrupan en un desplegable, mientras los criterios principales permanecen visibles.
 
-La cabecera reúne marca, búsqueda, cuenta, pedidos y carrito. Bajo 600px se distribuye en una fila compacta y una búsqueda de ancho completo. Filtros y navegación secundaria pueden desplazarse horizontalmente para conservar el ancho útil.
+La cabecera reúne marca, búsqueda, cuenta, pedidos y carrito. Bajo 600px se distribuye en una fila compacta y una búsqueda de ancho completo. El destacado mantiene texto y producto lado a lado en móvil; categorías y filtros principales se desplazan horizontalmente para conservar el ancho útil. Las preferencias y el acceso al asistente viven en el panel de configuración para no cubrir productos ni acciones fijas en móvil.
 
 La sección de transparencia presenta navegación lateral y documentos en dos columnas sobre 900px; debajo, se transforma en navegación horizontal y contenido de una columna. Los anclajes reservan espacio para la cabecera fija.
 
 ## Elevation & Depth
 
-Las superficies de catálogo usan sombras suaves y bordes finos; la elevación aumenta solo en hover y controles flotantes. Las transiciones son breves, y `prefers-reduced-motion` reduce animación y desplazamiento.
+Las superficies de catálogo usan sombras suaves y bordes finos; la elevación aumenta solo al interactuar. El producto destacado cambia solo cuando la persona usa sus controles, sin rotación automática. Los efectos estacionales son opcionales, discretos y se configuran desde el panel de preferencias; `prefers-reduced-motion` impide su reproducción.
 
 ### Shadow Vocabulary
 - **Surface** (`0 5px 16px rgb(23 60 56 / 4%)`): separación discreta de tarjetas en reposo.
