@@ -49,8 +49,11 @@ html[data-season-fx="off"] .bb-flag,
 html[data-season-fx="off"] .bb-drift,
 html[data-season-fx="off"] .bb-fog,
 html[data-season-fx="off"] .bb-snow { animation-play-state: paused !important; }
-html[data-season-fx="off"] .bb-prop > svg,
-html[data-season-fx="off"] .bb-hanger > svg { animation-play-state: paused !important; }
+html[data-season-fx="off"] .bb-prop svg,
+html[data-season-fx="off"] .bb-hanger svg { animation-play-state: paused !important; }
+/* Entrada y titilado se desactivan del todo: la decoración queda visible, nunca a media animación. */
+html[data-season-fx="off"] .bb-prop__in,
+html[data-season-fx="off"] .bb-fairy { animation: none !important; }
 html[data-season-fx="off"] .bb-bat { opacity: 0; }
 
 /* El contenido de cabecera y hero siempre queda por encima de la decoración */
@@ -521,10 +524,17 @@ body.theme-vuelta_clases .bb-script { right: 8%; top: 14%; font-size: clamp(38px
   bottom: var(--y, 0%);
   width: var(--w, 80px);
   opacity: var(--op, 1);
-  transform: translateX(-50%);
+  transform: translateX(-50%) translate3d(
+    calc(var(--px, 0px) * var(--depth, 1)),
+    calc(var(--py, 0px) * var(--depth, 1)), 0);
   pointer-events: none;
 }
-.bb-prop > svg {
+.bb-prop__tilt, .bb-prop__in { display: block; }
+.bb-prop__in {
+  animation: bb-prop-enter .85s var(--bb-ease-out) both;
+  animation-delay: calc(var(--i, 0) * .07s);
+}
+.bb-prop svg {
   display: block;
   width: 100%;
   height: auto;
@@ -532,8 +542,44 @@ body.theme-vuelta_clases .bb-script { right: 8%; top: 14%; font-size: clamp(38px
   transform-origin: 50% 100%;
   will-change: transform;
 }
-.bb-prop--flip > svg { transform: scaleX(-1); }
-.bb-prop--tilt > svg { transform: rotate(-7deg); }
+.bb-prop--flip .bb-prop__tilt { transform: scaleX(-1); }
+.bb-prop--tilt .bb-prop__tilt { transform: rotate(-7deg); }
+@keyframes bb-prop-enter {
+  from { opacity: 0; transform: translateY(16px) scale(.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Árbol principal con sus luces: comparten capa y parallax */
+.bb-tree-cluster {
+  position: absolute;
+  left: 2%;
+  bottom: -8%;
+  width: 250px;
+  height: 375px;
+  transform: translateX(-50%) translate3d(
+    calc(var(--px, 0px) * .3),
+    calc(var(--py, 0px) * .3), 0);
+  pointer-events: none;
+}
+
+/* Luces titilantes sobre el árbol principal */
+.bb-fairy {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fef08a;
+  box-shadow: 0 0 6px 2px rgb(253 224 71 / .8), 0 0 14px 5px rgb(251 191 36 / .32);
+  animation: bb-fairy-twinkle 2.4s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * -.31s);
+  will-change: opacity, transform;
+}
+@keyframes bb-fairy-twinkle {
+  0%, 100% { opacity: .25; transform: scale(.7); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
 
 /* Elementos colgantes y flotantes usan "top" en vez de "bottom" */
 .bb-cookie, .bb-bell, .bb-cane, .bb-bloom, .bb-tag, .bb-pencil, .bb-clock, .bb-flag {
@@ -578,7 +624,7 @@ body.theme-vuelta_clases .bb-script { right: 8%; top: 14%; font-size: clamp(38px
   width: var(--w, 40px);
   transform: translateX(-50%);
 }
-.bb-hanger > svg { transform-origin: 50% 0; animation: bb-hanger-swing 4.8s var(--bb-ease-out) infinite alternate; animation-delay: calc(var(--i, 0) * -1.2s); }
+.bb-hanger svg { transform-origin: 50% 0; animation: bb-hanger-swing 4.8s var(--bb-ease-out) infinite alternate; animation-delay: calc(var(--i, 0) * -1.2s); }
 
 html[data-fx-density="low"] .bb-prop--opt { display: none; }
 
@@ -689,7 +735,7 @@ html.dark-mode #atmosphereWidget .bb-density-label select {
   .bb-sprig, .bb-bulb, .bb-bauble, .bb-seal, .bb-moon, .bb-bat,
   .bb-lantern, .bb-burst, .bb-shine, .bb-heart, .bb-flag,
   .bb-drift, .bb-fog, .bb-snow { animation: none !important; }
-  .bb-prop > svg, .bb-hanger > svg { animation: none !important; }
+  .bb-prop svg, .bb-hanger svg, .bb-prop__in, .bb-fairy { animation: none !important; }
   .bb-bat { display: none; }
 }
 
@@ -707,8 +753,10 @@ html[data-season-fx="reduced"] .bb-flag,
 html[data-season-fx="reduced"] .bb-drift,
 html[data-season-fx="reduced"] .bb-fog,
 html[data-season-fx="reduced"] .bb-snow { animation: none !important; }
-html[data-season-fx="reduced"] .bb-prop > svg,
-html[data-season-fx="reduced"] .bb-hanger > svg { animation: none !important; }
+html[data-season-fx="reduced"] .bb-prop svg,
+html[data-season-fx="reduced"] .bb-hanger svg,
+html[data-season-fx="reduced"] .bb-prop__in,
+html[data-season-fx="reduced"] .bb-fairy { animation: none !important; }
 
 @media (max-width: 768px) {
   .bb-garland { height: 30px; }
@@ -725,6 +773,7 @@ html[data-season-fx="reduced"] .bb-hanger > svg { animation: none !important; }
   .bb-drift { height: 120px; }
   .bb-fog { height: 160px; }
   .bb-prop { width: calc(var(--w, 80px) * .72); }
+  .bb-tree-cluster { width: 180px; height: 270px; }
   .bb-prop--opt, .bb-hanger.bb-prop--opt { display: none; }
   .bb-hanger { width: calc(var(--w, 40px) * .7); }
 }
@@ -733,6 +782,7 @@ html[data-season-fx="reduced"] .bb-hanger > svg { animation: none !important; }
   .bb-script { display: none; }
   .bb-bunting { display: none; }
   .bb-bat { display: none; }
-  .bb-cookie, .bb-cane { display: none; }
+  .bb-cookie, .bb-cane, .bb-fairy { display: none; }
   .bb-prop { width: calc(var(--w, 80px) * .62); }
+  .bb-tree-cluster { width: 155px; height: 232px; }
 }

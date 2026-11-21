@@ -14,7 +14,8 @@
     cauldron: '0 0 110 80', rose: '0 0 64 88', flower: '0 0 60 90',
     tag: '0 0 80 80', bag: '0 0 80 90', pencil: '0 0 100 30',
     book: '0 0 80 64', horn: '0 0 80 60', glass: '0 0 50 90',
-    clock: '0 0 80 80', empanada: '0 0 100 70', flag: '0 0 80 60'
+    clock: '0 0 80 80', empanada: '0 0 100 70', flag: '0 0 80 60',
+    wreath: '0 0 100 100', reindeer: '0 0 120 110', candle: '0 0 50 90', holly: '0 0 60 40'
   };
 
   var S = {};
@@ -270,27 +271,109 @@
       '<circle cx="8" cy="4" r="3" fill="#d97706"/>' +
     '</symbol>';
 
+  /* --------------------- Detalles navideños extra --------------------- */
+  S.wreath =
+    '<symbol id="bb-wreath" viewBox="0 0 100 100">' +
+      '<circle cx="50" cy="50" r="33" fill="none" stroke="#14532d" stroke-width="17"/>' +
+      '<circle cx="50" cy="50" r="33" fill="none" stroke="#16a34a" stroke-width="9" opacity=".75"/>' +
+      '<g fill="#15803d">' +
+        '<ellipse cx="22" cy="32" rx="12" ry="6.5" transform="rotate(-32 22 32)"/>' +
+        '<ellipse cx="50" cy="17" rx="12" ry="6.5" transform="rotate(-8 50 17)"/>' +
+        '<ellipse cx="78" cy="32" rx="12" ry="6.5" transform="rotate(32 78 32)"/>' +
+        '<ellipse cx="24" cy="70" rx="12" ry="6.5" transform="rotate(28 24 70)"/>' +
+        '<ellipse cx="76" cy="70" rx="12" ry="6.5" transform="rotate(-28 76 70)"/>' +
+      '</g>' +
+      '<g fill="#dc2626"><circle cx="30" cy="28" r="4.2"/><circle cx="68" cy="28" r="4.2"/>' +
+        '<circle cx="50" cy="80" r="4"/><circle cx="21" cy="54" r="3.6"/><circle cx="79" cy="54" r="3.6"/></g>' +
+      '<path d="M50 84c-11-8-21-4-19 4 2 7 12 7 19 1Z" fill="#b91c1c"/>' +
+      '<path d="M50 84c11-8 21-4 19 4-2 7-12 7-19 1Z" fill="#dc2626"/>' +
+      '<circle cx="50" cy="87" r="4.2" fill="#fde68a"/>' +
+    '</symbol>';
+
+  S.reindeer =
+    '<symbol id="bb-reindeer" viewBox="0 0 120 110">' +
+      '<g fill="none" stroke="#6b4423" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M34 40 22 14M34 40 44 12M86 40 76 12M86 40 98 14"/>' +
+        '<path d="m22 14-9-7m9 7 8-9m14 7 8-9m-20 8-8-9m30 10 9-7"/>' +
+      '</g>' +
+      '<path d="M28 78v24M46 80v22M74 80v22M92 78v24" stroke="#6b4423" stroke-width="6" stroke-linecap="round"/>' +
+      '<ellipse cx="60" cy="62" rx="37" ry="24" fill="#8b5a2b"/>' +
+      '<path d="M24 58a36 36 0 0 1 72 0Z" fill="#a16a35" opacity=".55"/>' +
+      '<ellipse cx="60" cy="35" rx="18" ry="15" fill="#9a6633"/>' +
+      '<path d="m50 45-6 10m26-10 6 10" stroke="#6b4423" stroke-width="6" stroke-linecap="round"/>' +
+      '<path d="M20 48 4 34M100 48l16-14" stroke="#6b4423" stroke-width="5" stroke-linecap="round"/>' +
+      '<circle cx="49" cy="33" r="2.5" fill="#1c1917"/><circle cx="71" cy="33" r="2.5" fill="#1c1917"/>' +
+      '<circle cx="60" cy="42" r="5.5" fill="#dc2626"/><circle cx="58" cy="40" r="1.8" fill="#fca5a5"/>' +
+      '<path d="m52 22-6-12 11 7Z" fill="#6b4423"/>' +
+    '</symbol>';
+
+  S.candle =
+    '<symbol id="bb-candle" viewBox="0 0 50 90">' +
+      '<ellipse cx="25" cy="84" rx="20" ry="5" fill="rgb(15 23 42 / .18)"/>' +
+      '<path d="M14 34h22v46H14Z" fill="#f8fafc"/>' +
+      '<path d="M14 34h22v10H14Z" fill="#dc2626"/>' +
+      '<path d="M20 46v34M30 46v34" stroke="#fca5a5" stroke-width="3" opacity=".7"/>' +
+      '<path d="M25 34c-6-8 0-14 0-20 6 6 10 12 0 20Z" fill="#fde047"/>' +
+      '<path d="M25 30c-3-4 0-8 0-11 3 3 5 7 0 11Z" fill="#fb923c"/>' +
+      '<ellipse cx="25" cy="82" rx="16" ry="5" fill="#d8b45f"/>' +
+    '</symbol>';
+
+  S.holly =
+    '<symbol id="bb-holly" viewBox="0 0 60 40">' +
+      '<path d="M28 26C14 34 4 26 8 16c8-8 18 0 20 10Z" fill="#166534"/>' +
+      '<path d="M32 26c14 8 24 0 20-10-8-8-18 0-20 10Z" fill="#15803d"/>' +
+      '<path d="m28 26-6 12m10-12 6 12" stroke="#166534" stroke-width="2"/>' +
+      '<circle cx="24" cy="22" r="4" fill="#dc2626"/><circle cx="36" cy="22" r="4" fill="#dc2626"/>' +
+      '<circle cx="30" cy="28" r="3.5" fill="#b91c1c"/>' +
+    '</symbol>';
+
   /* --------------------------- Composición --------------------------- */
   function defsMarkup() {
     return Object.keys(S).map(function (k) { return S[k]; }).join('');
   }
 
+  var DEPTH = {
+    tree: .3, snowman: .5, gift: .6, cane: .85, cookie: 1.15, bell: .9,
+    pumpkin: .55, grave: .35, cauldron: .5, ghost: 1.05, glass: .7,
+    horn: .95, bloom: .8, tag: 1, bag: .6, pencil: 1, book: .65,
+    clock: .9, empanada: .6, flag: 1, wreath: .8, reindeer: .45,
+    candle: .7, holly: 1
+  };
+
   function prop(kind, name, opts) {
     opts = opts || {};
     var style = '--x:' + (opts.x || '0%') + ';--y:' + (opts.y || '0%') +
-      ';--w:' + (opts.w || '80px') + ';--i:' + (opts.i || 0);
-    if (opts.rot) style += ';--rot:' + opts.rot + 'deg';
+      ';--w:' + (opts.w || '80px') + ';--i:' + (opts.i || 0) +
+      ';--depth:' + (DEPTH[kind] || .7);
     if (opts.op) style += ';--op:' + opts.op;
     var cls = 'bb-prop bb-' + kind + (opts.opt ? ' bb-prop--opt' : '') + (opts.extra ? ' ' + opts.extra : '');
     return '<span class="' + cls + '" style="' + style + '">' +
-      '<svg viewBox="' + V[name] + '" aria-hidden="true"><use href="#bb-' + name + '"/></svg></span>';
+      '<span class="bb-prop__tilt"><span class="bb-prop__in">' +
+        '<svg viewBox="' + V[name] + '" aria-hidden="true"><use href="#bb-' + name + '"/></svg>' +
+      '</span></span></span>';
+  }
+
+  function fairy(x, y, i) {
+    return '<span class="bb-fairy" style="--x:' + x + ';--y:' + y + ';--i:' + i + '"></span>';
+  }
+
+  /* Árbol principal + luces titilantes ancladas a sus ramas (misma capa de profundidad). */
+  function treeCluster() {
+    var pts = [
+      [50, 7], [31, 25], [69, 23], [18, 43], [43, 39], [80, 46],
+      [27, 61], [62, 58], [10, 72], [50, 74], [88, 68], [38, 86]
+    ];
+    var lights = pts.map(function (p, i) { return fairy(p[0] + '%', p[1] + '%', i); }).join('');
+    return '<span class="bb-tree-cluster">' +
+      prop('tree', 'tree', { x: '50%', y: '0%', w: '250px', i: 0 }) + lights +
+      '</span>';
   }
 
   function scene(theme) {
     var p = [];
     if (theme === 'navidad') {
       p.push('<div class="bb-ground bb-ground--snow"></div>');
-      p.push(prop('tree', 'tree', { x: '2%', y: '-8%', w: '250px', i: 0 }));
+      p.push(treeCluster());
       p.push(prop('tree', 'tree', { x: '17%', y: '-19%', w: '150px', i: 2, op: .55, opt: true }));
       p.push(prop('tree', 'tree', { x: '74%', y: '-20%', w: '185px', i: 1, op: .5 }));
       p.push(prop('snowman', 'snowman', { x: '84%', y: '-6%', w: '92px', i: 3 }));
@@ -302,6 +385,9 @@
       p.push(prop('cookie', 'cookie-man', { x: '46%', y: '8%', w: '40px', i: 2 }));
       p.push(prop('cookie', 'cookie-house', { x: '62%', y: '15%', w: '72px', i: 1, opt: true }));
       p.push(prop('cookie', 'cookie-star', { x: '80%', y: '9%', w: '34px', i: 4, opt: true }));
+      p.push(prop('reindeer', 'reindeer', { x: '57%', y: '-4%', w: '112px', i: 2, op: .82 }));
+      p.push(prop('candle', 'candle', { x: '43%', y: '-3%', w: '40px', i: 5 }));
+      p.push(prop('candle', 'candle', { x: '48%', y: '-2%', w: '32px', i: 6, opt: true }));
       p.push(prop('bell', 'bell', { x: '12%', y: '9%', w: '34px', i: 2, extra: 'bb-prop--hang' }));
       p.push(prop('bell', 'bell', { x: '56%', y: '5%', w: '28px', i: 4, extra: 'bb-prop--hang' }));
     } else if (theme === 'halloween') {
@@ -355,6 +441,9 @@
       }
       h += prop('bell', 'bell', { x: '3%', y: '0', w: '30px', i: 1, extra: 'bb-hanger' });
       h += prop('bell', 'bell', { x: '94%', y: '0', w: '30px', i: 3, extra: 'bb-hanger' });
+      h += prop('wreath', 'wreath', { x: '50%', y: '0', w: '48px', i: 0, extra: 'bb-hanger', opt: true });
+      h += prop('holly', 'holly', { x: '27%', y: '0', w: '30px', i: 2, extra: 'bb-hanger', opt: true });
+      h += prop('holly', 'holly', { x: '73%', y: '0', w: '30px', i: 4, extra: 'bb-hanger', opt: true });
     } else if (theme === 'halloween') {
       for (i = 0; i < 5; i++) {
         h += prop('pumpkin', 'pumpkin', { x: (8 + i * 21) + '%', y: '0', w: '38px', i: i, extra: 'bb-hanger', opt: i > 2 });
