@@ -49,6 +49,8 @@ html[data-season-fx="off"] .bb-flag,
 html[data-season-fx="off"] .bb-drift,
 html[data-season-fx="off"] .bb-fog,
 html[data-season-fx="off"] .bb-snow { animation-play-state: paused !important; }
+html[data-season-fx="off"] .bb-prop > svg,
+html[data-season-fx="off"] .bb-hanger > svg { animation-play-state: paused !important; }
 html[data-season-fx="off"] .bb-bat { opacity: 0; }
 
 /* El contenido de cabecera y hero siempre queda por encima de la decoración */
@@ -480,6 +482,107 @@ body.theme-vuelta_clases .bb-script { right: 8%; top: 14%; font-size: clamp(38px
 }
 
 /* ==========================================================================
+   ESCENA ESTACIONAL — ARTE SVG
+   ========================================================================== */
+.bb-scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  contain: layout style paint;
+}
+
+.bb-ground {
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  bottom: -68px;
+  height: 156px;
+  pointer-events: none;
+}
+.bb-ground--snow {
+  background:
+    radial-gradient(ellipse 46% 100% at 20% 100%, rgb(255 255 255 / .98) 0 58%, transparent 76%),
+    radial-gradient(ellipse 52% 86% at 62% 100%, rgb(248 250 252 / .95) 0 56%, transparent 74%),
+    radial-gradient(ellipse 40% 76% at 94% 100%, rgb(255 255 255 / .9) 0 54%, transparent 72%);
+  filter: drop-shadow(0 -8px 12px rgb(255 255 255 / .35));
+}
+.bb-ground--dark {
+  background:
+    radial-gradient(ellipse 46% 100% at 18% 100%, rgb(41 37 36 / .85) 0 56%, transparent 76%),
+    radial-gradient(ellipse 50% 84% at 70% 100%, rgb(28 25 23 / .9) 0 56%, transparent 74%);
+}
+.bb-ground--gold {
+  background: radial-gradient(ellipse 60% 100% at 50% 100%, rgb(253 230 138 / .35) 0 50%, transparent 74%);
+}
+
+.bb-prop {
+  position: absolute;
+  left: var(--x, 0%);
+  bottom: var(--y, 0%);
+  width: var(--w, 80px);
+  opacity: var(--op, 1);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.bb-prop > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.bb-prop--flip > svg { transform: scaleX(-1); }
+.bb-prop--tilt > svg { transform: rotate(-7deg); }
+
+/* Elementos colgantes y flotantes usan "top" en vez de "bottom" */
+.bb-cookie, .bb-bell, .bb-cane, .bb-bloom, .bb-tag, .bb-pencil, .bb-clock, .bb-flag {
+  top: var(--y, 10%);
+  bottom: auto;
+}
+.bb-tree > svg { animation: bb-tree-breathe 7s var(--bb-ease-out) infinite alternate; animation-delay: calc(var(--i, 0) * -1.4s); }
+.bb-cookie > svg { animation: bb-cookie-bob 6s var(--bb-ease-out) infinite alternate; animation-delay: calc(var(--i, 0) * -1.7s); }
+.bb-cane > svg, .bb-bell > svg { animation: bb-hanger-swing 4.4s var(--bb-ease-out) infinite alternate; animation-delay: calc(var(--i, 0) * -1.1s); transform-origin: 50% 0; }
+.bb-gift > svg { animation: bb-glow-bob 5s ease-in-out infinite alternate; animation-delay: calc(var(--i, 0) * -1.3s); }
+.bb-snowman > svg { animation: bb-glow-bob 6.5s ease-in-out infinite alternate; animation-delay: calc(var(--i, 0) * -1.9s); }
+.bb-pumpkin > svg { animation: bb-pumpkin-glow 3.2s ease-in-out infinite alternate; animation-delay: calc(var(--i, 0) * -.8s); }
+.bb-ghost > svg { animation: bb-ghost-float 5.5s var(--bb-ease-out) infinite alternate; animation-delay: calc(var(--i, 0) * -1.6s); }
+.bb-cauldron > svg { animation: bb-cauldron-bubble 4s ease-in-out infinite alternate; }
+.bb-bloom > svg { animation: bb-glow-bob 6s ease-in-out infinite alternate; animation-delay: calc(var(--i, 0) * -1.5s); }
+.bb-glass > svg { animation: bb-clink 3.8s var(--bb-ease-out) infinite alternate; animation-delay: calc(var(--i, 0) * -1.2s); }
+.bb-tag > svg { animation: bb-cookie-bob 5.6s var(--bb-ease-out) infinite alternate; animation-delay: calc(var(--i, 0) * -1.4s); }
+.bb-bag > svg, .bb-book > svg, .bb-grave > svg, .bb-horn > svg, .bb-pencil > svg,
+.bb-empanada > svg {
+  animation: bb-glow-bob 6s ease-in-out infinite alternate; animation-delay: calc(var(--i, 0) * -1.5s);
+}
+.bb-clock > svg, .bb-flag > svg {
+  animation: bb-hanger-swing 4.6s var(--bb-ease-out) infinite alternate; animation-delay: calc(var(--i, 0) * -1.2s);
+}
+
+@keyframes bb-tree-breathe { from { transform: translateY(0) rotate(-.6deg); } to { transform: translateY(-3px) rotate(.6deg); } }
+@keyframes bb-cookie-bob { from { transform: translateY(0) rotate(-6deg); } to { transform: translateY(-12px) rotate(7deg); } }
+@keyframes bb-hanger-swing { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+@keyframes bb-glow-bob { from { transform: translateY(0); opacity: .9; } to { transform: translateY(-5px); opacity: 1; } }
+@keyframes bb-pumpkin-glow { from { opacity: .86; } to { opacity: 1; filter: drop-shadow(0 0 14px rgb(249 115 22 / .45)); } }
+@keyframes bb-ghost-float { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-14px) rotate(4deg); } }
+@keyframes bb-cauldron-bubble { from { transform: translateY(0) scale(1); } to { transform: translateY(-3px) scale(1.02); } }
+@keyframes bb-clink { from { transform: rotate(-7deg); } to { transform: rotate(6deg); } }
+
+/* Adornos colgados de la guirnalda */
+.bb-garland__extras { position: absolute; inset: 0; }
+.bb-hanger {
+  position: absolute;
+  top: 0;
+  left: var(--x, 0%);
+  bottom: auto;
+  width: var(--w, 40px);
+  transform: translateX(-50%);
+}
+.bb-hanger > svg { transform-origin: 50% 0; animation: bb-hanger-swing 4.8s var(--bb-ease-out) infinite alternate; animation-delay: calc(var(--i, 0) * -1.2s); }
+
+html[data-fx-density="low"] .bb-prop--opt { display: none; }
+
+/* ==========================================================================
    CAPAS AMBIENTALES (abajo de la página)
    ========================================================================== */
 .bb-drift {
@@ -586,6 +689,7 @@ html.dark-mode #atmosphereWidget .bb-density-label select {
   .bb-sprig, .bb-bulb, .bb-bauble, .bb-seal, .bb-moon, .bb-bat,
   .bb-lantern, .bb-burst, .bb-shine, .bb-heart, .bb-flag,
   .bb-drift, .bb-fog, .bb-snow { animation: none !important; }
+  .bb-prop > svg, .bb-hanger > svg { animation: none !important; }
   .bb-bat { display: none; }
 }
 
@@ -603,6 +707,8 @@ html[data-season-fx="reduced"] .bb-flag,
 html[data-season-fx="reduced"] .bb-drift,
 html[data-season-fx="reduced"] .bb-fog,
 html[data-season-fx="reduced"] .bb-snow { animation: none !important; }
+html[data-season-fx="reduced"] .bb-prop > svg,
+html[data-season-fx="reduced"] .bb-hanger > svg { animation: none !important; }
 
 @media (max-width: 768px) {
   .bb-garland { height: 30px; }
@@ -618,10 +724,15 @@ html[data-season-fx="reduced"] .bb-snow { animation: none !important; }
   .bb-lantern { transform: scale(.75); left: 2%; bottom: 4%; }
   .bb-drift { height: 120px; }
   .bb-fog { height: 160px; }
+  .bb-prop { width: calc(var(--w, 80px) * .72); }
+  .bb-prop--opt, .bb-hanger.bb-prop--opt { display: none; }
+  .bb-hanger { width: calc(var(--w, 40px) * .7); }
 }
 
 @media (max-width: 480px) {
   .bb-script { display: none; }
   .bb-bunting { display: none; }
   .bb-bat { display: none; }
+  .bb-cookie, .bb-cane { display: none; }
+  .bb-prop { width: calc(var(--w, 80px) * .62); }
 }

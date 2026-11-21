@@ -108,6 +108,7 @@
           '<path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.8-8 11-8 11z"/>' +
         '</symbol>' +
         '<symbol id="bb-web" viewBox="0 0 150 150">' + webMarkup() + '</symbol>' +
+        (window.BBSeasonalArt ? window.BBSeasonalArt.defs() : '') +
       '</defs></svg>';
     document.body.appendChild(defs);
   }
@@ -142,7 +143,7 @@
     if (heroEl) heroEl.appendChild(heroDecor);
   }
 
-  function garlandMarkup() {
+  function garlandMarkup(theme) {
     var i, bulbs = '', sprigs = '';
     for (i = 0; i < 16; i++) bulbs += '<span class="bb-bulb" style="--i:' + i + '"></span>';
     for (i = 0; i < 20; i++) {
@@ -152,6 +153,7 @@
       '<span class="bb-garland__cord"></span>' +
       '<div class="bb-garland__sprigs">' + sprigs + '</div>' +
       '<div class="bb-garland__bulbs">' + bulbs + '</div>' +
+      (window.BBSeasonalArt ? window.BBSeasonalArt.garland(theme) : '') +
       '</div>';
   }
 
@@ -159,7 +161,7 @@
     return '<div class="bb-seal">' + text + '</div>';
   }
   function heroMarkup(theme) {
-    var html = '', i;
+    var html = window.BBSeasonalArt ? window.BBSeasonalArt.scene(theme) : '', i;
     if (theme === 'navidad') {
       html += '<div class="bb-frost"></div>' + seal('Feliz<br>Navidad');
       var colors = ['red', 'gold', 'green', 'gold', 'red'];
@@ -208,7 +210,7 @@
     if (!stage) return;
     var festive = theme !== 'default';
     stage.style.display = festive ? '' : 'none';
-    if (headerDecor) headerDecor.innerHTML = festive ? garlandMarkup() : '';
+    if (headerDecor) headerDecor.innerHTML = festive ? garlandMarkup(theme) : '';
     if (heroDecor) heroDecor.innerHTML = festive ? heroMarkup(theme) : '';
     stage.querySelector('.bb-vignette').style.setProperty('--vignette',
       theme === 'navidad' ? 'rgb(127 29 29 / .10)' :
