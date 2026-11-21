@@ -56,7 +56,9 @@
   /* ---------- Tema activo ---------- */
   var THEME_CLASSES = [
     'default', 'black_friday', 'navidad', 'halloween', 'ano_nuevo',
-    'cyber_days', 'san_valentin', 'dia_madre_padre', 'fiestas_patrias', 'vuelta_clases'
+    'cyber_days', 'san_valentin', 'dia_madre_padre', 'fiestas_patrias',
+    'vuelta_clases', 'san_patricio', 'dia_de_la_bandera', 'dia_del_trabajo',
+    'dia_del_nino', 'primavera', 'verano', 'otonio', 'dia_de_muertos'
   ];
   function activeTheme() {
     for (var i = 0; i < THEME_CLASSES.length; i++) {
@@ -114,7 +116,7 @@
   }
 
   /* ---------- Montaje de capas ---------- */
-  var stage, headerDecor, heroDecor;
+  var stage, headerDecor, heroDecor, sceneEl = null;
   function buildScaffold() {
     injectDefs();
 
@@ -199,6 +201,24 @@
       html += '<div class="bb-bunting">' + flags + '</div>' + seal('Fiestas<br>Patrias') + '<span class="bb-script">Viva el Perú</span>';
     } else if (theme === 'vuelta_clases') {
       html += '<div class="bb-paper"></div>' + seal('Vuelta<br>a clases') + '<span class="bb-script">Vuelta a clases</span>';
+    } else if (theme === 'san_patricio') {
+      html += seal('San<br>Patricio') + '<span class="bb-script">Suerte y fortuna</span>';
+    } else if (theme === 'dia_de_la_bandera') {
+      var bunting = '', b;
+      for (b = 0; b < 14; b++) bunting += '<span class="bb-flag" style="--i:' + b + '"></span>';
+      html += '<div class="bb-bunting">' + bunting + '</div>' + seal('Día de la<br>Bandera') + '<span class="bb-script">Viva el Perú</span>';
+    } else if (theme === 'dia_del_trabajo') {
+      html += seal('Día del<br>Trabajo') + '<span class="bb-script">Trabajo que inspira</span>';
+    } else if (theme === 'dia_del_nino') {
+      html += seal('Día del<br>Niño') + '<span class="bb-script">A jugar!</span>';
+    } else if (theme === 'primavera') {
+      html += seal('Primavera') + '<span class="bb-script">Brotan ideas</span>';
+    } else if (theme === 'verano') {
+      html += seal('Verano') + '<span class="bb-script">Días de sol</span>';
+    } else if (theme === 'otonio') {
+      html += seal('Otoño') + '<span class="bb-script">Colores de cambio</span>';
+    } else if (theme === 'dia_de_muertos') {
+      html += seal('Día de<br>Muertos') + '<span class="bb-script">Los recordamos</span>';
     } else {
       html += '<span class="bb-shine"></span>';
     }
@@ -212,11 +232,54 @@
     stage.style.display = festive ? '' : 'none';
     if (headerDecor) headerDecor.innerHTML = festive ? garlandMarkup(theme) : '';
     if (heroDecor) heroDecor.innerHTML = festive ? heroMarkup(theme) : '';
+    sceneEl = heroDecor ? heroDecor.querySelector('.bb-scene') : null;
+    resetParallax();
     stage.querySelector('.bb-vignette').style.setProperty('--vignette',
       theme === 'navidad' ? 'rgb(127 29 29 / .10)' :
       theme === 'halloween' || theme === 'black_friday' || theme === 'cyber_days' || theme === 'ano_nuevo'
         ? 'rgb(0 0 0 / .24)' : 'rgb(15 23 42 / .12)');
   }
+
+  /* ---------- Parallax sutil de la escena ---------- */
+  var px = 0, py = 0, tx = 0, ty = 0, parallaxOn = false, parallaxRaf = null;
+  function writeParallax() {
+    if (!sceneEl) return;
+    sceneEl.style.setProperty('--px', px.toFixed(2) + 'px');
+    sceneEl.style.setProperty('--py', py.toFixed(2) + 'px');
+  }
+  function resetParallax() {
+    px = py = tx = ty = 0;
+    if (parallaxRaf) cancelAnimationFrame(parallaxRaf);
+    parallaxRaf = null;
+    parallaxOn = false;
+    writeParallax();
+  }
+  function stepParallax() {
+    px += (tx - px) * .14;
+    py += (ty - py) * .14;
+    writeParallax();
+    if (Math.abs(tx - px) > .25 || Math.abs(ty - py) > .25) {
+      parallaxRaf = requestAnimationFrame(stepParallax);
+    } else {
+      parallaxRaf = null;
+      parallaxOn = false;
+    }
+  }
+  function queueParallax() {
+    if (parallaxOn) return;
+    parallaxOn = true;
+    parallaxRaf = requestAnimationFrame(stepParallax);
+  }
+  window.addEventListener('pointermove', function (e) {
+    if (!sceneEl || !prefs.fx || prefs.perf || reducedMotion || document.hidden) return;
+    tx = ((e.clientX / window.innerWidth) - .5) * -26;
+    ty = ((e.clientY / window.innerHeight) - .5) * -14;
+    queueParallax();
+  }, { passive: true });
+  window.addEventListener('pointerleave', function () { tx = ty = 0; queueParallax(); }, { passive: true });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) resetParallax();
+  });
 
   /* ---------- Canvas de partículas ---------- */
   var canvas = document.createElement('canvas');

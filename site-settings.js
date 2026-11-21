@@ -279,6 +279,27 @@ document.querySelectorAll('input[name="bbTheme"]').forEach(input => {
   });
 });
 
+/* ---------- Tema de temporada (panel del cliente) ---------- */
+const seasonSelect = document.querySelector('#settingsSeasonTheme');
+function sincronizarSelectTemporada() {
+  if (!seasonSelect || !window.BBThemes) return;
+  let guardado = 'auto';
+  try { guardado = localStorage.getItem('bb-season-theme') || 'auto'; } catch (e) {}
+  seasonSelect.value = guardado === 'auto' || window.BBThemes.themes.indexOf(guardado) > -1 ? guardado : 'auto';
+}
+seasonSelect?.addEventListener('change', event => {
+  if (!window.BBThemes) return;
+  if (event.target.value === 'auto') {
+    window.BBThemes.reset();
+    confirmar('Tema automático restaurado. Recargando…');
+    setTimeout(() => window.location.reload(), 600);
+    return;
+  }
+  const clave = window.BBThemes.select(event.target.value);
+  confirmar(`Tema ${window.BBThemes.labels[clave] || clave} aplicado.`);
+});
+sincronizarSelectTemporada();
+
 document.querySelector('#settingsCountry')?.addEventListener('change', event => {
   prefs.country = event.target.value;
   guardarPreferencias();

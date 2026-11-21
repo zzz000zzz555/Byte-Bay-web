@@ -16,7 +16,14 @@
     book: '0 0 80 64', horn: '0 0 80 60', glass: '0 0 50 90',
     clock: '0 0 80 80', empanada: '0 0 100 70', flag: '0 0 80 60',
     wreath: '0 0 100 100', reindeer: '0 0 140 110', candle: '0 0 50 90', holly: '0 0 60 40',
-    sleigh: '0 0 150 96', star: '0 0 40 40'
+    sleigh: '0 0 150 96', star: '0 0 40 40',
+    shamrock: '0 0 80 80', pot: '0 0 100 80', hat: '0 0 90 70', rainbow: '0 0 200 110',
+    shield: '0 0 80 90', laurel: '0 0 100 90', ribbon: '0 0 120 50',
+    hammer: '0 0 100 80', gear: '0 0 80 80', medal: '0 0 70 90',
+    balloon: '0 0 50 110', bear: '0 0 90 100', kite: '0 0 80 110',
+    butterfly: '0 0 80 70', leaf: '0 0 80 90', acorn: '0 0 50 70',
+    sun: '0 0 100 100', palm: '0 0 100 90', icecream: '0 0 70 100',
+    skull: '0 0 80 90', marigold: '0 0 70 80', chocolate: '0 0 70 60', arrow: '0 0 100 40'
   };
 
   var S = {};
@@ -368,6 +375,225 @@
       '<circle cx="20" cy="20" r="2.6" fill="#fde047"/>' +
     '</symbol>';
 
+  /* -------------------- Festividades adicionales -------------------- */
+  S.shamrock =
+    '<symbol id="bb-shamrock" viewBox="0 0 80 80">' +
+      '<path d="M40 76V42" stroke="#15803d" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M40 46C22 50 10 38 15 25c9-11 23-5 25 9Z" fill="#16a34a"/>' +
+      '<path d="M40 46c18 4 30-8 25-21-9-11-23-5-25 9Z" fill="#22c55e"/>' +
+      '<path d="M40 42C31 27 38 12 49 12c11 5 10 20-9 30Z" fill="#15803d"/>' +
+      '<circle cx="27" cy="31" r="2" fill="#bbf7d0"/><circle cx="53" cy="31" r="2" fill="#bbf7d0"/>' +
+    '</symbol>';
+
+  S.pot =
+    '<symbol id="bb-pot" viewBox="0 0 100 80">' +
+      '<ellipse cx="50" cy="74" rx="38" ry="5" fill="rgb(0 0 0 / .25)"/>' +
+      '<path d="M14 34h72c0 24-16 38-36 38S14 58 14 34Z" fill="#1c1917"/>' +
+      '<ellipse cx="50" cy="34" rx="36" ry="10" fill="#292524"/>' +
+      '<ellipse cx="50" cy="37" rx="30" ry="7" fill="#fbbf24"/>' +
+      '<g fill="#fde047"><circle cx="38" cy="34" r="3"/><circle cx="52" cy="36" r="3.4"/><circle cx="63" cy="33" r="2.6"/></g>' +
+      '<path d="M86 44c11 0 14 9 9 17" fill="none" stroke="#1c1917" stroke-width="5" stroke-linecap="round"/>' +
+    '</symbol>';
+
+  S.hat =
+    '<symbol id="bb-hat" viewBox="0 0 90 70">' +
+      '<ellipse cx="45" cy="63" rx="42" ry="6" fill="#14532d"/>' +
+      '<path d="M18 60V27q27-13 54 0v33Z" fill="#16a34a"/>' +
+      '<path d="M12 25h66v9H12Z" fill="#15803d"/>' +
+      '<rect x="34" y="29" width="22" height="17" rx="2" fill="#facc15"/>' +
+      '<rect x="40" y="32" width="10" height="11" rx="1" fill="#14532d"/>' +
+    '</symbol>';
+
+  S.rainbow =
+    '<symbol id="bb-rainbow" viewBox="0 0 200 110">' +
+      '<path d="M12 104a88 88 0 0 1 176 0" fill="none" stroke="#ef4444" stroke-width="10"/>' +
+      '<path d="M23 104a77 77 0 0 1 154 0" fill="none" stroke="#fb923c" stroke-width="10"/>' +
+      '<path d="M34 104a66 66 0 0 1 132 0" fill="none" stroke="#facc15" stroke-width="10"/>' +
+      '<path d="M45 104a55 55 0 0 1 110 0" fill="none" stroke="#4ade80" stroke-width="10"/>' +
+      '<path d="M56 104a44 44 0 0 1 88 0" fill="none" stroke="#60a5fa" stroke-width="10"/>' +
+    '</symbol>';
+
+  S.shield =
+    '<symbol id="bb-shield" viewBox="0 0 80 90">' +
+      '<path d="M40 4h36v44c0 18-16 30-36 38C20 78 4 66 4 48V4Z" fill="#dc2626" stroke="#d8b45f" stroke-width="3"/>' +
+      '<path d="M40 10v66" stroke="#fff" stroke-width="12" opacity=".92"/>' +
+      '<circle cx="40" cy="40" r="9" fill="#fde047"/>' +
+      '<path d="m40 28 1.8 4.4 4.7.4-3.6 3 1.2 4.6L40 38l-4.1 2.4 1.2-4.6-3.6-3 4.7-.4Z" fill="#b45309"/>' +
+    '</symbol>';
+
+  S.laurel =
+    '<symbol id="bb-laurel" viewBox="0 0 100 90">' +
+      '<path d="M50 86C20 70 12 40 24 12M50 86c30-16 38-46 26-74" fill="none" stroke="#166534" stroke-width="3"/>' +
+      '<g fill="#16a34a">' +
+        '<ellipse cx="26" cy="22" rx="10" ry="5" transform="rotate(-35 26 22)"/>' +
+        '<ellipse cx="20" cy="38" rx="10" ry="5" transform="rotate(-15 20 38)"/>' +
+        '<ellipse cx="22" cy="54" rx="10" ry="5" transform="rotate(15 22 54)"/>' +
+        '<ellipse cx="30" cy="68" rx="10" ry="5" transform="rotate(35 30 68)"/>' +
+        '<ellipse cx="74" cy="22" rx="10" ry="5" transform="rotate(35 74 22)"/>' +
+        '<ellipse cx="80" cy="38" rx="10" ry="5" transform="rotate(15 80 38)"/>' +
+        '<ellipse cx="78" cy="54" rx="10" ry="5" transform="rotate(-15 78 54)"/>' +
+        '<ellipse cx="70" cy="68" rx="10" ry="5" transform="rotate(-35 70 68)"/>' +
+      '</g>' +
+      '<circle cx="50" cy="80" r="5" fill="#d8b45f"/>' +
+    '</symbol>';
+
+  S.ribbon =
+    '<symbol id="bb-ribbon" viewBox="0 0 120 50">' +
+      '<path d="m4 25 26-14v28Zm112 0-26-14v28Z" fill="#b91c1c"/>' +
+      '<rect x="24" y="8" width="72" height="34" rx="3" fill="#dc2626"/>' +
+      '<rect x="24" y="8" width="72" height="11" fill="#fff"/>' +
+      '<rect x="24" y="31" width="72" height="11" fill="#fff"/>' +
+    '</symbol>';
+
+  S.hammer =
+    '<symbol id="bb-hammer" viewBox="0 0 100 80">' +
+      '<path d="M16 12h56v22H16Z" fill="#78716c" stroke="#57534e" stroke-width="2"/>' +
+      '<path d="M54 34h12v42H54Z" fill="#a16207" stroke="#78350f" stroke-width="2"/>' +
+      '<path d="M16 12h10v22H16Z" fill="#a8a29e"/>' +
+    '</symbol>';
+
+  S.gear =
+    '<symbol id="bb-gear" viewBox="0 0 80 80">' +
+      '<g fill="#94a3b8">' +
+        '<circle cx="40" cy="40" r="24"/>' +
+        '<rect x="35" y="4" width="10" height="14" rx="2"/><rect x="35" y="62" width="10" height="14" rx="2"/>' +
+        '<rect x="4" y="35" width="14" height="10" rx="2"/><rect x="62" y="35" width="14" height="10" rx="2"/>' +
+        '<rect x="14" y="14" width="14" height="10" rx="2" transform="rotate(45 21 19)"/>' +
+        '<rect x="52" y="56" width="14" height="10" rx="2" transform="rotate(45 59 61)"/>' +
+      '</g>' +
+      '<circle cx="40" cy="40" r="11" fill="#e2e8f0"/>' +
+      '<circle cx="40" cy="40" r="5" fill="#94a3b8"/>' +
+    '</symbol>';
+
+  S.medal =
+    '<symbol id="bb-medal" viewBox="0 0 70 90">' +
+      '<path d="M20 6l15 30 15-30" fill="none" stroke="#dc2626" stroke-width="5" stroke-linejoin="round"/>' +
+      '<circle cx="35" cy="60" r="22" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>' +
+      '<circle cx="35" cy="60" r="15" fill="#fde68a"/>' +
+      '<path d="m35 48 3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1Z" fill="#b45309"/>' +
+    '</symbol>';
+
+  S.balloon =
+    '<symbol id="bb-balloon" viewBox="0 0 50 110">' +
+      '<ellipse cx="25" cy="30" rx="19" ry="25" fill="#f43f5e"/>' +
+      '<path d="M25 6c-8 6-10 16-6 24" fill="none" stroke="#fda4af" stroke-width="3" opacity=".7"/>' +
+      '<path d="m25 54-5 8h10Z" fill="#be123c"/>' +
+      '<path d="M25 62c-3 16 6 22 0 44" fill="none" stroke="#78716c" stroke-width="2"/>' +
+    '</symbol>';
+
+  S.bear =
+    '<symbol id="bb-bear" viewBox="0 0 90 100">' +
+      '<circle cx="24" cy="24" r="13" fill="#a16207"/><circle cx="66" cy="24" r="13" fill="#a16207"/>' +
+      '<circle cx="24" cy="24" r="6" fill="#d97706"/><circle cx="66" cy="24" r="6" fill="#d97706"/>' +
+      '<circle cx="45" cy="52" r="30" fill="#b45309"/>' +
+      '<ellipse cx="45" cy="60" rx="14" ry="11" fill="#f5d0a9"/>' +
+      '<circle cx="35" cy="46" r="2.6" fill="#1c1917"/><circle cx="55" cy="46" r="2.6" fill="#1c1917"/>' +
+      '<ellipse cx="45" cy="57" rx="4" ry="3" fill="#1c1917"/>' +
+      '<path d="M45 60v4m-7 2q7 6 14 0" fill="none" stroke="#78350f" stroke-width="2" stroke-linecap="round"/>' +
+    '</symbol>';
+
+  S.kite =
+    '<symbol id="bb-kite" viewBox="0 0 80 110">' +
+      '<path d="M40 4 76 40 40 76 4 40Z" fill="#8b5cf6" stroke="#6d28d9" stroke-width="2"/>' +
+      '<path d="M40 4v72M4 40h72" stroke="#ddd6fe" stroke-width="2"/>' +
+      '<path d="M40 76c-8 14 6 18-2 30" fill="none" stroke="#f59e0b" stroke-width="2"/>' +
+      '<path d="m30 84 6 6m14 6 6 6m-24 4 6-6" stroke="#f472b6" stroke-width="2" stroke-linecap="round"/>' +
+    '</symbol>';
+
+  S.butterfly =
+    '<symbol id="bb-butterfly" viewBox="0 0 80 70">' +
+      '<ellipse cx="25" cy="24" rx="15" ry="19" transform="rotate(-25 25 24)" fill="#f472b6"/>' +
+      '<ellipse cx="55" cy="24" rx="15" ry="19" transform="rotate(25 55 24)" fill="#f9a8d4"/>' +
+      '<ellipse cx="28" cy="49" rx="10" ry="12" fill="#fb7185"/>' +
+      '<ellipse cx="52" cy="49" rx="10" ry="12" fill="#fda4af"/>' +
+      '<path d="M40 18v38" stroke="#7c2d12" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M40 18c-4-8-10-10-14-8m14 8c4-8 10-10 14-8" fill="none" stroke="#7c2d12" stroke-width="2"/>' +
+    '</symbol>';
+
+  S.leaf =
+    '<symbol id="bb-leaf" viewBox="0 0 80 90">' +
+      '<path d="M40 4 49 25 70 18 59 37 78 49 55 51 60 74 40 62 20 74 25 51 2 49 21 37 10 18 31 25Z" fill="#ea580c"/>' +
+      '<path d="M40 62V22" stroke="#9a3412" stroke-width="2"/>' +
+    '</symbol>';
+
+  S.acorn =
+    '<symbol id="bb-acorn" viewBox="0 0 50 70">' +
+      '<path d="M12 30h26v22c0 12-6 18-13 18S12 64 12 52Z" fill="#d97706"/>' +
+      '<path d="M6 30h38v9H6Z" fill="#92400e"/>' +
+      '<path d="M25 39v27" stroke="#b45309" stroke-width="2"/>' +
+      '<path d="M25 4v12" stroke="#92400e" stroke-width="3" stroke-linecap="round"/>' +
+    '</symbol>';
+
+  S.sun =
+    '<symbol id="bb-sun" viewBox="0 0 100 100">' +
+      '<g stroke="#f59e0b" stroke-width="5" stroke-linecap="round">' +
+        '<path d="M50 4v12M50 84v12M4 50h12M84 50h12M17 17l9 9M74 74l9 9M83 17l-9 9M26 74l-9 9"/>' +
+      '</g>' +
+      '<circle cx="50" cy="50" r="25" fill="#fde047"/>' +
+      '<circle cx="42" cy="45" r="2.5" fill="#92400e"/><circle cx="58" cy="45" r="2.5" fill="#92400e"/>' +
+      '<path d="M41 57q9 8 18 0" fill="none" stroke="#92400e" stroke-width="2.5" stroke-linecap="round"/>' +
+    '</symbol>';
+
+  S.palm =
+    '<symbol id="bb-palm" viewBox="0 0 100 90">' +
+      '<path d="M52 88C46 60 48 36 54 18" fill="none" stroke="#a16207" stroke-width="6" stroke-linecap="round"/>' +
+      '<g fill="#16a34a">' +
+        '<path d="M54 18C36 8 18 12 8 26c20-6 36-4 46-8Z"/>' +
+        '<path d="M54 18c18-10 36-6 46 8-20-6-36-4-46-8Z"/>' +
+        '<path d="M54 18C34 20 20 32 16 48c16-14 30-20 38-30Z"/>' +
+        '<path d="M54 18c20 2 34 14 38 30-16-14-30-20-38-30Z"/>' +
+        '<path d="M54 18c-6 18-4 36 2 50 2-18 2-34-2-50Z"/>' +
+      '</g>' +
+    '</symbol>';
+
+  S.icecream =
+    '<symbol id="bb-icecream" viewBox="0 0 70 100">' +
+      '<path d="M18 38h34l-9 56H27Z" fill="#e9a23b" stroke="#c2410c" stroke-width="2"/>' +
+      '<path d="M24 50h22M22 62h26M20 74h30" stroke="#c2410c" stroke-width="2" opacity=".6"/>' +
+      '<circle cx="26" cy="30" r="13" fill="#fda4af"/>' +
+      '<circle cx="44" cy="30" r="13" fill="#fbcfe8"/>' +
+      '<circle cx="35" cy="19" r="12" fill="#fff7ed"/>' +
+      '<circle cx="35" cy="8" r="3" fill="#dc2626"/>' +
+    '</symbol>';
+
+  S.skull =
+    '<symbol id="bb-skull" viewBox="0 0 80 90">' +
+      '<path d="M14 44a26 26 0 0 1 52 0v20H14Z" fill="#f5f5f4"/>' +
+      '<path d="M22 64h36v16H22Z" fill="#e7e5e4"/>' +
+      '<circle cx="29" cy="44" r="7" fill="#1c1917"/><circle cx="51" cy="44" r="7" fill="#1c1917"/>' +
+      '<circle cx="27" cy="42" r="2" fill="#fbbf24"/><circle cx="49" cy="42" r="2" fill="#fbbf24"/>' +
+      '<path d="m40 52-5 8h10Z" fill="#78716c"/>' +
+      '<path d="M28 64v16M36 64v16M44 64v16M52 64v16" stroke="#a8a29e" stroke-width="2"/>' +
+    '</symbol>';
+
+  S.marigold =
+    '<symbol id="bb-marigold" viewBox="0 0 70 80">' +
+      '<path d="M35 78V42" stroke="#15803d" stroke-width="3"/>' +
+      '<g fill="#f97316">' +
+        '<ellipse cx="35" cy="12" rx="9" ry="14"/><ellipse cx="35" cy="48" rx="9" ry="14"/>' +
+        '<ellipse cx="17" cy="30" rx="14" ry="9"/><ellipse cx="53" cy="30" rx="14" ry="9"/>' +
+        '<ellipse cx="22" cy="17" rx="9" ry="13" transform="rotate(-45 22 17)"/>' +
+        '<ellipse cx="48" cy="17" rx="9" ry="13" transform="rotate(45 48 17)"/>' +
+        '<ellipse cx="22" cy="43" rx="9" ry="13" transform="rotate(45 22 43)"/>' +
+        '<ellipse cx="48" cy="43" rx="9" ry="13" transform="rotate(-45 48 43)"/>' +
+      '</g>' +
+      '<circle cx="35" cy="30" r="10" fill="#fbbf24"/>' +
+    '</symbol>';
+
+  S.chocolate =
+    '<symbol id="bb-chocolate" viewBox="0 0 70 60">' +
+      '<rect x="6" y="10" width="58" height="40" rx="4" fill="#78350f" stroke="#451a03" stroke-width="2"/>' +
+      '<g stroke="#92400e" stroke-width="2"><path d="M25 10v40M45 10v40M6 24h58M6 38h58"/></g>' +
+      '<path d="M10 14h12v8H10Z" fill="#a16207" opacity=".5"/>' +
+    '</symbol>';
+
+  S.arrow =
+    '<symbol id="bb-arrow" viewBox="0 0 100 40">' +
+      '<path d="M6 20h84" stroke="#b91c1c" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="m94 20-14-9v18Z" fill="#dc2626"/>' +
+      '<path d="M6 20c-4-9-14-6-6 2 3 3 6 3 8 0" fill="#f472b6"/>' +
+    '</symbol>';
+
   /* --------------------------- Composición --------------------------- */
   function defsMarkup() {
     return Object.keys(S).map(function (k) { return S[k]; }).join('');
@@ -378,7 +604,14 @@
     pumpkin: .55, grave: .35, cauldron: .5, ghost: 1.05, glass: .7,
     horn: .95, bloom: .8, tag: 1, bag: .6, pencil: 1, book: .65,
     clock: .9, empanada: .6, flag: 1, wreath: .8, reindeer: .45,
-    candle: .7, holly: 1, sleigh: .4, star: .12
+    candle: .7, holly: 1, sleigh: .4, star: .12,
+    shamrock: .8, pot: .55, hat: .85, rainbow: .12,
+    shield: .6, laurel: .5, ribbon: .95,
+    hammer: .7, gear: .6, medal: .7,
+    balloon: 1.1, bear: .6, kite: 1.05,
+    butterfly: 1.15, leaf: 1, acorn: .9,
+    sun: .15, palm: .5, icecream: .7,
+    skull: .6, marigold: .8, chocolate: .9, arrow: 1
   };
 
   function prop(kind, name, opts) {
@@ -471,6 +704,10 @@
       p.push(prop('bloom', flower, { x: '82%', y: '-12%', w: '74px', i: 1, extra: 'bb-prop--flip' }));
       p.push(prop('gift', 'gift', { x: '68%', y: '-4%', w: '58px', i: 3, opt: true }));
       p.push(prop('bloom', flower, { x: '46%', y: '11%', w: '38px', i: 4, opt: true }));
+      if (theme === 'san_valentin') {
+        p.push(prop('arrow', 'arrow', { x: '28%', y: '20%', w: '88px', i: 1, extra: 'bb-prop--tilt' }));
+        p.push(prop('chocolate', 'chocolate', { x: '58%', y: '-4%', w: '56px', i: 2 }));
+      }
     } else if (theme === 'fiestas_patrias') {
       p.push(prop('empanada', 'empanada', { x: '10%', y: '-5%', w: '96px', i: 0 }));
       p.push(prop('flag', 'flag', { x: '88%', y: '12%', w: '56px', i: 2, extra: 'bb-prop--hang' }));
@@ -481,6 +718,55 @@
       p.push(prop('book', 'book', { x: '18%', y: '-6%', w: '82px', i: 1 }));
       p.push(prop('pencil', 'pencil', { x: '80%', y: '14%', w: '84px', i: 2, extra: 'bb-prop--flip', opt: true }));
       p.push(prop('book', 'book', { x: '70%', y: '-7%', w: '66px', i: 3, extra: 'bb-prop--tilt', opt: true }));
+    } else if (theme === 'san_patricio') {
+      p.push(prop('rainbow', 'rainbow', { x: '50%', y: '-2%', w: '300px', i: 0, op: .55, far: true }));
+      p.push(prop('pot', 'pot', { x: '18%', y: '-5%', w: '110px', i: 1 }));
+      p.push(prop('hat', 'hat', { x: '80%', y: '-5%', w: '88px', i: 2 }));
+      p.push(prop('shamrock', 'shamrock', { x: '34%', y: '12%', w: '54px', i: 3 }));
+      p.push(prop('shamrock', 'shamrock', { x: '64%', y: '16%', w: '44px', i: 4, extra: 'bb-prop--tilt', opt: true }));
+      p.push(prop('shamrock', 'shamrock', { x: '8%', y: '20%', w: '38px', i: 5, opt: true }));
+    } else if (theme === 'dia_de_la_bandera') {
+      p.push(prop('laurel', 'laurel', { x: '8%', y: '-6%', w: '110px', i: 0, far: true }));
+      p.push(prop('laurel', 'laurel', { x: '92%', y: '-6%', w: '110px', i: 1, far: true, extra: 'bb-prop--flip' }));
+      p.push(prop('shield', 'shield', { x: '50%', y: '-4%', w: '96px', i: 2 }));
+      p.push(prop('ribbon', 'ribbon', { x: '50%', y: '12%', w: '150px', i: 3 }));
+      p.push(prop('flag', 'flag', { x: '24%', y: '14%', w: '54px', i: 4, extra: 'bb-prop--hang' }));
+      p.push(prop('flag', 'flag', { x: '76%', y: '14%', w: '54px', i: 5, extra: 'bb-prop--hang' }));
+    } else if (theme === 'dia_del_trabajo') {
+      p.push(prop('gear', 'gear', { x: '10%', y: '-8%', w: '96px', i: 0, op: .6, far: true }));
+      p.push(prop('gear', 'gear', { x: '88%', y: '-12%', w: '70px', i: 2, op: .45, far: true }));
+      p.push(prop('hammer', 'hammer', { x: '32%', y: '-4%', w: '90px', i: 1, extra: 'bb-prop--tilt' }));
+      p.push(prop('hammer', 'hammer', { x: '64%', y: '-4%', w: '90px', i: 3, extra: 'bb-prop--flip bb-prop--tilt', opt: true }));
+      p.push(prop('medal', 'medal', { x: '50%', y: '4%', w: '72px', i: 4, extra: 'bb-prop--hang' }));
+    } else if (theme === 'dia_del_nino') {
+      p.push(prop('balloon', 'balloon', { x: '12%', y: '3%', w: '56px', i: 0, extra: 'bb-prop--float' }));
+      p.push(prop('balloon', 'balloon', { x: '24%', y: '10%', w: '46px', i: 2, extra: 'bb-prop--float' }));
+      p.push(prop('balloon', 'balloon', { x: '86%', y: '4%', w: '52px', i: 3, extra: 'bb-prop--float' }));
+      p.push(prop('bear', 'bear', { x: '50%', y: '-6%', w: '96px', i: 1 }));
+      p.push(prop('kite', 'kite', { x: '72%', y: '14%', w: '58px', i: 4, extra: 'bb-prop--tilt', opt: true }));
+    } else if (theme === 'primavera') {
+      p.push(prop('flower', 'flower', { x: '10%', y: '-8%', w: '86px', i: 0 }));
+      p.push(prop('flower', 'flower', { x: '84%', y: '-10%', w: '74px', i: 2, extra: 'bb-prop--flip' }));
+      p.push(prop('flower', 'flower', { x: '28%', y: '-14%', w: '58px', i: 3, op: .7, far: true, opt: true }));
+      p.push(prop('butterfly', 'butterfly', { x: '46%', y: '16%', w: '62px', i: 1, extra: 'bb-prop--float' }));
+      p.push(prop('butterfly', 'butterfly', { x: '66%', y: '24%', w: '44px', i: 4, extra: 'bb-prop--float', opt: true }));
+    } else if (theme === 'verano') {
+      p.push(prop('sun', 'sun', { x: '78%', y: '8%', w: '120px', i: 0, extra: 'bb-prop--sun' }));
+      p.push(prop('palm', 'palm', { x: '10%', y: '-8%', w: '130px', i: 1, far: true }));
+      p.push(prop('palm', 'palm', { x: '92%', y: '-10%', w: '96px', i: 2, far: true, extra: 'bb-prop--flip', opt: true }));
+      p.push(prop('icecream', 'icecream', { x: '42%', y: '-5%', w: '70px', i: 3 }));
+    } else if (theme === 'otonio') {
+      p.push(prop('leaf', 'leaf', { x: '10%', y: '10%', w: '62px', i: 0, extra: 'bb-prop--float' }));
+      p.push(prop('leaf', 'leaf', { x: '30%', y: '-6%', w: '78px', i: 2, extra: 'bb-prop--tilt' }));
+      p.push(prop('leaf', 'leaf', { x: '78%', y: '14%', w: '58px', i: 3, extra: 'bb-prop--float' }));
+      p.push(prop('acorn', 'acorn', { x: '60%', y: '-4%', w: '48px', i: 4 }));
+      p.push(prop('acorn', 'acorn', { x: '88%', y: '-3%', w: '38px', i: 1, opt: true }));
+    } else if (theme === 'dia_de_muertos') {
+      p.push(prop('marigold', 'marigold', { x: '8%', y: '-6%', w: '80px', i: 0 }));
+      p.push(prop('marigold', 'marigold', { x: '90%', y: '-8%', w: '72px', i: 2, extra: 'bb-prop--flip' }));
+      p.push(prop('skull', 'skull', { x: '50%', y: '-4%', w: '94px', i: 1 }));
+      p.push(prop('candle', 'candle', { x: '34%', y: '-3%', w: '44px', i: 3, opt: true }));
+      p.push(prop('candle', 'candle', { x: '66%', y: '-3%', w: '44px', i: 4, opt: true }));
     } else if (theme === 'black_friday' || theme === 'cyber_days') {
       p.push(prop('tag', 'tag', { x: '7%', y: '13%', w: '60px', i: 0, extra: 'bb-prop--tilt' }));
       p.push(prop('tag', 'tag', { x: '86%', y: '17%', w: '52px', i: 2, extra: 'bb-prop--flip' }));
@@ -505,9 +791,29 @@
       for (i = 0; i < 5; i++) {
         h += prop('pumpkin', 'pumpkin', { x: (8 + i * 21) + '%', y: '0', w: '38px', i: i, extra: 'bb-hanger', opt: i > 2 });
       }
-    } else if (theme === 'fiestas_patrias') {
+    } else if (theme === 'fiestas_patrias' || theme === 'dia_de_la_bandera') {
       for (i = 0; i < 5; i++) {
-        h += prop('bell', 'bell', { x: (8 + i * 21) + '%', y: '0', w: '28px', i: i, extra: 'bb-hanger' });
+        h += prop('flag', 'flag', { x: (8 + i * 21) + '%', y: '0', w: '30px', i: i, extra: 'bb-hanger' });
+      }
+    } else if (theme === 'san_patricio') {
+      for (i = 0; i < 5; i++) {
+        h += prop('shamrock', 'shamrock', { x: (8 + i * 21) + '%', y: '0', w: '32px', i: i, extra: 'bb-hanger', opt: i > 2 });
+      }
+    } else if (theme === 'dia_del_nino') {
+      for (i = 0; i < 4; i++) {
+        h += prop('balloon', 'balloon', { x: (14 + i * 24) + '%', y: '0', w: '30px', i: i, extra: 'bb-hanger' });
+      }
+    } else if (theme === 'primavera' || theme === 'dia_madre_padre') {
+      for (i = 0; i < 5; i++) {
+        h += prop('flower', 'flower', { x: (8 + i * 21) + '%', y: '0', w: '30px', i: i, extra: 'bb-hanger' });
+      }
+    } else if (theme === 'otonio') {
+      for (i = 0; i < 5; i++) {
+        h += prop('leaf', 'leaf', { x: (8 + i * 21) + '%', y: '0', w: '30px', i: i, extra: 'bb-hanger', opt: i > 2 });
+      }
+    } else if (theme === 'dia_de_muertos') {
+      for (i = 0; i < 5; i++) {
+        h += prop('marigold', 'marigold', { x: (8 + i * 21) + '%', y: '0', w: '30px', i: i, extra: 'bb-hanger' });
       }
     }
     return '<div class="bb-garland__extras">' + h + '</div>';

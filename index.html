@@ -29,8 +29,8 @@
 </script>
 <link rel="stylesheet" href="styles.css?v=23">
   <link rel="stylesheet" href="site-enhancements.css?v=11">
-  <link rel="stylesheet" href="site-themes.css?v=1">
-  <link rel="stylesheet" href="seasonal-decor.css?v=10">
+  <link rel="stylesheet" href="site-themes.css?v=2">
+  <link rel="stylesheet" href="seasonal-decor.css?v=11">
   <link rel="stylesheet" href="site-settings.css?v=2">
   <link rel="stylesheet" href="site-privacy.css?v=4">
   <link rel="stylesheet" href="market-world.css?v=9">
@@ -103,7 +103,30 @@
           <label><input type="radio" name="bbTheme" value="dark"><span class="theme-card"><b aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"></path></svg></b><strong>Oscuro</strong><small>Ideal de noche</small></span></label>
           <label><input type="radio" name="bbTheme" value="auto"><span class="theme-card"><b aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"></path></svg></b><strong>Automático</strong><small>Según tu sistema</small></span></label>
         </fieldset>
-        <p class="settings-hint">El tema se aplica en toda la tienda y se recuerda en este dispositivo.</p>
+        <label class="settings-field"><span>Tema de temporada</span>
+          <select id="settingsSeasonTheme">
+            <option value="auto">Automático (según administrador)</option>
+            <option value="default">Sin tema (clásico)</option>
+            <option value="navidad">🎄 Navidad</option>
+            <option value="halloween">🎃 Halloween</option>
+            <option value="ano_nuevo">🥂 Año Nuevo</option>
+            <option value="black_friday">🖤 Black Friday</option>
+            <option value="cyber_days">💜 Cyber Days</option>
+            <option value="san_valentin">💘 San Valentín</option>
+            <option value="dia_madre_padre">💐 Día de la Madre y el Padre</option>
+            <option value="fiestas_patrias">🇵🇪 Fiestas Patrias</option>
+            <option value="vuelta_clases">✏️ Vuelta a clases</option>
+            <option value="san_patricio">🍀 San Patricio</option>
+            <option value="dia_de_la_bandera">🇵🇪 Día de la Bandera</option>
+            <option value="dia_del_trabajo">🔧 Día del Trabajo</option>
+            <option value="dia_del_nino">🎈 Día del Niño</option>
+            <option value="primavera">🌸 Primavera</option>
+            <option value="verano">☀️ Verano</option>
+            <option value="otonio">🍂 Otoño</option>
+            <option value="dia_de_muertos">💀 Día de Muertos</option>
+          </select>
+        </label>
+        <p class="settings-hint">El tema se aplica en toda la tienda y se recuerda en este dispositivo. Elige «Automático» para volver al tema del administrador.</p>
       </section>
 
       <section class="settings-group" aria-labelledby="settingsNotificationsTitle">
@@ -671,10 +694,10 @@
   <script src="site-orders.js?v=7"></script>
   <script src="site-motion.js?v=1"></script>
   <script src="site-enhancements.js?v=3"></script>
-  <script src="site-themes.js?v=4"></script>
-  <script src="seasonal-art.js?v=7"></script>
-  <script src="site-atmosphere.js?v=10"></script>
-  <script src="site-settings.js?v=3"></script>
+  <script src="site-themes.js?v=6"></script>
+  <script src="seasonal-art.js?v=8"></script>
+  <script src="site-atmosphere.js?v=11"></script>
+  <script src="site-settings.js?v=4"></script>
   <script src="site-privacy.js?v=7"></script>
 <dialog id="sizeGuideDialog" class="size-guide-dialog"><div class="size-guide-card"><h3>Guía de tallas</h3><table><tr><th>Talla Perú</th><th>EUR</th><th>US</th><th>cm</th></tr><tr><td>38</td><td>40</td><td>7</td><td>24.5</td></tr><tr><td>39</td><td>41</td><td>7.5</td><td>25</td></tr><tr><td>40</td><td>42</td><td>8</td><td>25.5</td></tr><tr><td>41</td><td>43</td><td>8.5</td><td>26</td></tr><tr><td>42</td><td>44</td><td>9</td><td>26.5</td></tr></table><button class="btn primary" onclick="document.querySelector('#sizeGuideDialog').close()">Cerrar</button></div></dialog>
 </body>
