@@ -15,7 +15,8 @@
     tag: '0 0 80 80', bag: '0 0 80 90', pencil: '0 0 100 30',
     book: '0 0 80 64', horn: '0 0 80 60', glass: '0 0 50 90',
     clock: '0 0 80 80', empanada: '0 0 100 70', flag: '0 0 80 60',
-    wreath: '0 0 100 100', reindeer: '0 0 120 110', candle: '0 0 50 90', holly: '0 0 60 40'
+    wreath: '0 0 100 100', reindeer: '0 0 120 110', candle: '0 0 50 90', holly: '0 0 60 40',
+    sleigh: '0 0 150 96', star: '0 0 40 40'
   };
 
   var S = {};
@@ -327,6 +328,28 @@
       '<circle cx="30" cy="28" r="3.5" fill="#b91c1c"/>' +
     '</symbol>';
 
+  S.sleigh =
+    '<symbol id="bb-sleigh" viewBox="0 0 150 96">' +
+      '<ellipse cx="76" cy="90" rx="66" ry="6" fill="rgb(15 23 42 / .18)"/>' +
+      '<path d="M18 22h100l-8 46H34Z" fill="#9f1239" stroke="#7f1d1d" stroke-width="2"/>' +
+      '<path d="M18 22h100l-2 10H20Z" fill="#be123c"/>' +
+      '<path d="M34 68h76l-4 8H30Z" fill="#7f1d1d"/>' +
+      '<path d="M24 26c-14 6-18 22-8 34 4 5 10 4 12-2-6-10-6-20-4-32Z" fill="#b91c1c" stroke="#7f1d1d" stroke-width="2"/>' +
+      '<path d="M26 76c-16 0-22 8-18 14h112c2-8-8-14-24-14" fill="none" stroke="#b45309" stroke-width="5" stroke-linecap="round"/>' +
+      '<path d="M104 76c14 0 22 6 20 14" fill="none" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M42 34h56M40 44h60" stroke="#fda4af" stroke-width="2.4" opacity=".7"/>' +
+      '<rect x="48" y="48" width="30" height="18" rx="3" fill="#15803d"/>' +
+      '<path d="M63 48v18M48 57h30" stroke="#fde68a" stroke-width="4"/>' +
+      '<rect x="86" y="46" width="22" height="22" rx="3" fill="#f59e0b"/>' +
+      '<path d="M97 46v22M86 57h22" stroke="#fff7ed" stroke-width="3"/>' +
+    '</symbol>';
+
+  S.star =
+    '<symbol id="bb-star" viewBox="0 0 40 40">' +
+      '<path d="M20 1c1 12 6 17 19 19-13 2-18 7-19 19-1-12-6-17-19-19 13-2 18-7 19-19Z" fill="#fff7d6"/>' +
+      '<circle cx="20" cy="20" r="2.6" fill="#fde047"/>' +
+    '</symbol>';
+
   /* --------------------------- Composición --------------------------- */
   function defsMarkup() {
     return Object.keys(S).map(function (k) { return S[k]; }).join('');
@@ -337,7 +360,7 @@
     pumpkin: .55, grave: .35, cauldron: .5, ghost: 1.05, glass: .7,
     horn: .95, bloom: .8, tag: 1, bag: .6, pencil: 1, book: .65,
     clock: .9, empanada: .6, flag: 1, wreath: .8, reindeer: .45,
-    candle: .7, holly: 1
+    candle: .7, holly: 1, sleigh: .4, star: .12
   };
 
   function prop(kind, name, opts) {
@@ -346,7 +369,8 @@
       ';--w:' + (opts.w || '80px') + ';--i:' + (opts.i || 0) +
       ';--depth:' + (DEPTH[kind] || .7);
     if (opts.op) style += ';--op:' + opts.op;
-    var cls = 'bb-prop bb-' + kind + (opts.opt ? ' bb-prop--opt' : '') + (opts.extra ? ' ' + opts.extra : '');
+    var cls = 'bb-prop bb-' + kind + (opts.far ? ' bb-prop--far' : '') +
+      (opts.opt ? ' bb-prop--opt' : '') + (opts.extra ? ' ' + opts.extra : '');
     return '<span class="' + cls + '" style="' + style + '">' +
       '<span class="bb-prop__tilt"><span class="bb-prop__in">' +
         '<svg viewBox="' + V[name] + '" aria-hidden="true"><use href="#bb-' + name + '"/></svg>' +
@@ -355,6 +379,17 @@
 
   function fairy(x, y, i) {
     return '<span class="bb-fairy" style="--x:' + x + ';--y:' + y + ';--i:' + i + '"></span>';
+  }
+
+  /* Cielo estrellado: puntos fijos y deterministas, solo brillo y escala. */
+  function stars(n) {
+    var xs = [6, 14, 22, 29, 37, 45, 53, 61, 69, 77, 84, 91, 96, 33, 73];
+    var ys = [12, 26, 8, 34, 18, 6, 30, 14, 24, 9, 36, 20, 15, 43, 42];
+    var h = '<div class="bb-stars">';
+    for (var i = 0; i < n; i++) {
+      h += '<span class="bb-star" style="--x:' + xs[i % xs.length] + '%;--y:' + ys[i % ys.length] + '%;--i:' + i + '"></span>';
+    }
+    return h + '</div>';
   }
 
   /* Árbol principal + luces titilantes ancladas a sus ramas (misma capa de profundidad). */
@@ -373,9 +408,10 @@
     var p = [];
     if (theme === 'navidad') {
       p.push('<div class="bb-ground bb-ground--snow"></div>');
+      p.push(stars(15));
       p.push(treeCluster());
-      p.push(prop('tree', 'tree', { x: '17%', y: '-19%', w: '150px', i: 2, op: .55, opt: true }));
-      p.push(prop('tree', 'tree', { x: '74%', y: '-20%', w: '185px', i: 1, op: .5 }));
+      p.push(prop('tree', 'tree', { x: '17%', y: '-19%', w: '150px', i: 2, op: .5, far: true, opt: true }));
+      p.push(prop('tree', 'tree', { x: '74%', y: '-20%', w: '185px', i: 1, op: .48, far: true }));
       p.push(prop('snowman', 'snowman', { x: '84%', y: '-6%', w: '92px', i: 3 }));
       p.push(prop('gift', 'gift', { x: '31%', y: '-6%', w: '66px', i: 4 }));
       p.push(prop('gift', 'gift', { x: '39%', y: '-3%', w: '48px', i: 5, extra: 'bb-prop--tilt' }));
@@ -385,22 +421,25 @@
       p.push(prop('cookie', 'cookie-man', { x: '46%', y: '8%', w: '40px', i: 2 }));
       p.push(prop('cookie', 'cookie-house', { x: '62%', y: '15%', w: '72px', i: 1, opt: true }));
       p.push(prop('cookie', 'cookie-star', { x: '80%', y: '9%', w: '34px', i: 4, opt: true }));
-      p.push(prop('reindeer', 'reindeer', { x: '57%', y: '-4%', w: '112px', i: 2, op: .82 }));
+      p.push(prop('sleigh', 'sleigh', { x: '69%', y: '-3%', w: '124px', i: 1, op: .92 }));
+      p.push(prop('reindeer', 'reindeer', { x: '56%', y: '-4%', w: '112px', i: 2, op: .9 }));
       p.push(prop('candle', 'candle', { x: '43%', y: '-3%', w: '40px', i: 5 }));
       p.push(prop('candle', 'candle', { x: '48%', y: '-2%', w: '32px', i: 6, opt: true }));
       p.push(prop('bell', 'bell', { x: '12%', y: '9%', w: '34px', i: 2, extra: 'bb-prop--hang' }));
       p.push(prop('bell', 'bell', { x: '56%', y: '5%', w: '28px', i: 4, extra: 'bb-prop--hang' }));
+      p.push('<div class="bb-snow-crest"></div>');
     } else if (theme === 'halloween') {
       p.push('<div class="bb-ground bb-ground--dark"></div>');
       p.push(prop('grave', 'grave', { x: '4%', y: '-7%', w: '76px', i: 0 }));
-      p.push(prop('grave', 'grave', { x: '13%', y: '-12%', w: '58px', i: 2, op: .7, opt: true }));
+      p.push(prop('grave', 'grave', { x: '13%', y: '-12%', w: '58px', i: 2, op: .62, far: true, opt: true }));
       p.push(prop('pumpkin', 'pumpkin', { x: '27%', y: '-6%', w: '96px', i: 1 }));
       p.push(prop('pumpkin', 'pumpkin', { x: '39%', y: '-3%', w: '58px', i: 3, extra: 'bb-prop--tilt', opt: true }));
       p.push(prop('cauldron', 'cauldron', { x: '69%', y: '-9%', w: '130px', i: 2 }));
       p.push(prop('ghost', 'ghost', { x: '84%', y: '22%', w: '66px', i: 0 }));
-      p.push(prop('ghost', 'ghost', { x: '55%', y: '12%', w: '42px', i: 3, op: .5, extra: 'bb-prop--float', opt: true }));
+      p.push(prop('ghost', 'ghost', { x: '55%', y: '12%', w: '42px', i: 3, op: .45, far: true, extra: 'bb-prop--float', opt: true }));
     } else if (theme === 'ano_nuevo') {
       p.push('<div class="bb-ground bb-ground--gold"></div>');
+      p.push(stars(12));
       p.push(prop('glass', 'glass', { x: '9%', y: '-7%', w: '52px', i: 0, extra: 'bb-prop--clink' }));
       p.push(prop('glass', 'glass', { x: '18%', y: '-7%', w: '48px', i: 2, extra: 'bb-prop--clink' }));
       p.push(prop('clock', 'clock', { x: '50%', y: '5%', w: '60px', i: 0, extra: 'bb-prop--hang' }));

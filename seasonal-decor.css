@@ -53,7 +53,9 @@ html[data-season-fx="off"] .bb-prop svg,
 html[data-season-fx="off"] .bb-hanger svg { animation-play-state: paused !important; }
 /* Entrada y titilado se desactivan del todo: la decoración queda visible, nunca a media animación. */
 html[data-season-fx="off"] .bb-prop__in,
-html[data-season-fx="off"] .bb-fairy { animation: none !important; }
+html[data-season-fx="off"] .bb-fairy,
+html[data-season-fx="off"] .bb-star,
+html[data-season-fx="off"] .bb-scene { animation: none !important; }
 html[data-season-fx="off"] .bb-bat { opacity: 0; }
 
 /* El contenido de cabecera y hero siempre queda por encima de la decoración */
@@ -492,6 +494,49 @@ body.theme-vuelta_clases .bb-script { right: 8%; top: 14%; font-size: clamp(38px
   inset: 0;
   pointer-events: none;
   contain: layout style paint;
+  animation: bb-scene-in .75s var(--bb-ease-out) both;
+}
+@keyframes bb-scene-in {
+  from { opacity: 0; transform: translateY(12px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Cielo estrellado */
+.bb-stars { position: absolute; inset: 0; pointer-events: none; }
+.bb-star {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fffbeb;
+  box-shadow: 0 0 8px 2px rgb(255 251 235 / .5);
+  opacity: .35;
+  animation: bb-star-twinkle 3.4s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * -.27s);
+  will-change: opacity, transform;
+}
+.bb-star:nth-child(3n) { width: 6px; height: 6px; background: #fde68a; }
+.bb-star:nth-child(5n) { width: 3px; height: 3px; }
+@keyframes bb-star-twinkle {
+  0%, 100% { opacity: .18; transform: scale(.65); }
+  50% { opacity: .9; transform: scale(1.2); }
+}
+
+/* Capa de nieve en primer plano: funde la base de los adornos con el suelo */
+.bb-snow-crest {
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  bottom: -74px;
+  height: 118px;
+  background:
+    radial-gradient(ellipse 36% 90% at 12% 100%, #fff 0 55%, transparent 78%),
+    radial-gradient(ellipse 42% 82% at 48% 100%, #f8fafc 0 52%, transparent 76%),
+    radial-gradient(ellipse 38% 86% at 86% 100%, #fff 0 54%, transparent 78%);
+  filter: blur(1.5px);
+  opacity: .9;
 }
 
 .bb-ground {
@@ -508,6 +553,17 @@ body.theme-vuelta_clases .bb-script { right: 8%; top: 14%; font-size: clamp(38px
     radial-gradient(ellipse 52% 86% at 62% 100%, rgb(248 250 252 / .95) 0 56%, transparent 74%),
     radial-gradient(ellipse 40% 76% at 94% 100%, rgb(255 255 255 / .9) 0 54%, transparent 72%);
   filter: drop-shadow(0 -8px 12px rgb(255 255 255 / .35));
+}
+.bb-ground--snow::after {
+  content: "";
+  position: absolute;
+  left: 2%;
+  bottom: 8px;
+  width: 380px;
+  height: 66px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgb(253 224 71 / .24) 0 24%, transparent 72%);
+  filter: blur(8px);
 }
 .bb-ground--dark {
   background:
@@ -529,6 +585,9 @@ body.theme-vuelta_clases .bb-script { right: 8%; top: 14%; font-size: clamp(38px
     calc(var(--py, 0px) * var(--depth, 1)), 0);
   pointer-events: none;
 }
+/* Profundidad: los elementos del fondo se desenfocan ligeramente */
+.bb-prop--far { filter: blur(1.1px) saturate(.8); }
+
 .bb-prop__tilt, .bb-prop__in { display: block; }
 .bb-prop__in {
   animation: bb-prop-enter .85s var(--bb-ease-out) both;
@@ -560,6 +619,17 @@ body.theme-vuelta_clases .bb-script { right: 8%; top: 14%; font-size: clamp(38px
     calc(var(--px, 0px) * .3),
     calc(var(--py, 0px) * .3), 0);
   pointer-events: none;
+}
+.bb-tree-cluster::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 340px;
+  height: 340px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgb(253 224 71 / .17) 0 18%, rgb(251 191 36 / .07) 42%, transparent 70%);
+  filter: blur(6px);
 }
 
 /* Luces titilantes sobre el árbol principal */
@@ -735,7 +805,8 @@ html.dark-mode #atmosphereWidget .bb-density-label select {
   .bb-sprig, .bb-bulb, .bb-bauble, .bb-seal, .bb-moon, .bb-bat,
   .bb-lantern, .bb-burst, .bb-shine, .bb-heart, .bb-flag,
   .bb-drift, .bb-fog, .bb-snow { animation: none !important; }
-  .bb-prop svg, .bb-hanger svg, .bb-prop__in, .bb-fairy { animation: none !important; }
+  .bb-prop svg, .bb-hanger svg, .bb-prop__in, .bb-fairy,
+  .bb-star, .bb-scene { animation: none !important; }
   .bb-bat { display: none; }
 }
 
@@ -756,7 +827,9 @@ html[data-season-fx="reduced"] .bb-snow { animation: none !important; }
 html[data-season-fx="reduced"] .bb-prop svg,
 html[data-season-fx="reduced"] .bb-hanger svg,
 html[data-season-fx="reduced"] .bb-prop__in,
-html[data-season-fx="reduced"] .bb-fairy { animation: none !important; }
+html[data-season-fx="reduced"] .bb-fairy,
+html[data-season-fx="reduced"] .bb-star,
+html[data-season-fx="reduced"] .bb-scene { animation: none !important; }
 
 @media (max-width: 768px) {
   .bb-garland { height: 30px; }
@@ -782,7 +855,8 @@ html[data-season-fx="reduced"] .bb-fairy { animation: none !important; }
   .bb-script { display: none; }
   .bb-bunting { display: none; }
   .bb-bat { display: none; }
-  .bb-cookie, .bb-cane, .bb-fairy { display: none; }
+  .bb-cookie, .bb-cane, .bb-fairy, .bb-star { display: none; }
   .bb-prop { width: calc(var(--w, 80px) * .62); }
   .bb-tree-cluster { width: 155px; height: 232px; }
+  .bb-snow-crest { height: 84px; bottom: -52px; }
 }
