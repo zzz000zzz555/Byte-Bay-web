@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-PE">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://zzz000zzz555.github.io/Byte-Bay-web/">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://*.culqi.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.culqi.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.emailjs.com https://api.culqi.com https://*.culqi.com; frame-src https://*.culqi.com">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="description" content="Compra en Byte Bay: productos para tecnología, hogar y supermercado, con precios y disponibilidad visibles antes de pagar.">
@@ -11,7 +13,9 @@
   <meta property="og:site_name" content="Byte Bay">
   <meta property="og:title" content="Byte Bay | Compra y vende fácil">
   <meta property="og:description" content="Productos para tecnología, hogar y supermercado, con precios y disponibilidad visibles antes de pagar.">
-  <meta property="og:image" content="byte-bay-logo.png">
+  <meta property="og:image" content="https://zzz000zzz555.github.io/Byte-Bay-web/byte-bay-logo.png">
+  <meta property="og:image:alt" content="Byte Bay — tienda online">
+  <meta property="og:url" content="https://zzz000zzz555.github.io/Byte-Bay-web/">
   <meta property="og:locale" content="es_PE">
   <meta name="twitter:card" content="summary_large_image">
   <title>Byte Bay | Compra y vende fácil</title>
@@ -19,6 +23,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Store","name":"Byte Bay","url":"https://zzz000zzz555.github.io/Byte-Bay-web/","image":"https://zzz000zzz555.github.io/Byte-Bay-web/byte-bay-logo.png","description":"Tienda online de tecnología, hogar y supermercado con envío gratis a todo el Perú.","priceRange":"$$","currenciesAccepted":"PEN","paymentAccepted":"Culqi, Mercado Pago"}
+  </script>
 <script>
   (function() {
     var mode = localStorage.getItem('bb-mode') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -41,6 +48,7 @@
   <script src="https://checkout.culqi.com/js/v4"></script>
 </head>
 <body class="market-world">
+  <a class="skip-link" href="#mainContent">Saltar al contenido principal</a>
   <header class="header">
     <div class="wrap header-main">
       <button class="mobile-menu settings-toggle" id="settingsToggle" type="button" aria-label="Abrir configuración y preferencias" aria-expanded="false" aria-controls="settingsDrawer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
@@ -232,7 +240,7 @@
     <div id="offersNotificationList" aria-live="polite">Cargando avisos…</div>
   </aside>
 
-  <main>
+  <main id="mainContent">
     <section class="hero hero-carousel wrap" id="heroCarousel" aria-label="Producto destacado">
       <div class="hero-copy">
         <h1 id="heroTitle">Encuentra tu próximo producto.</h1>
@@ -249,7 +257,7 @@
       </div>
       <div class="hero-visual">
         <div class="sale-badge" id="heroBadge"><strong>CATÁLOGO</strong><b>VER</b><span>productos</span></div>
-        <img id="heroImage" src="byte-bay-logo-transparent.png" alt="Logo de Byte Bay" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'">
+        <img id="heroImage" src="byte-bay-logo-transparent.png" alt="Producto destacado de Byte Bay" width="520" height="520" fetchpriority="high" decoding="async" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'">
         <div class="floating-card"><span id="heroCardLabel">BYTE BAY</span><strong id="heroCardTitle">Explora el catálogo</strong><small id="heroCardText">Consulta precios y disponibilidad</small></div>
       </div>
     </section>
@@ -328,7 +336,7 @@
       </div>
     </section>
 
-    <div class="checkout-modal" id="checkoutModal" aria-hidden="true">
+    <div class="checkout-modal" id="checkoutModal" role="dialog" aria-modal="true" aria-label="Finalizar compra" aria-hidden="true">
       <div class="checkout-modal-card">
         <button class="checkout-close" id="checkoutClose" type="button" aria-label="Cerrar pago">×</button>
         <div class="payment-progress" id="paymentProgress">
@@ -397,7 +405,7 @@
             <div class="total-row"><span>Total a pagar</span><strong id="checkoutTotal">S/ 0.00</strong></div>
           </div>
           <form class="coupon-row" id="couponForm">
-            <input id="couponInput" type="text" placeholder="Ingresa tu cupón">
+            <input id="couponInput" type="text" placeholder="Ingresa tu cupón" aria-label="Código de cupón de descuento">
             <button class="btn secondary" type="submit">Aplicar</button>
           </form>
           <div class="checkout-actions">
@@ -490,8 +498,8 @@
 
   <footer id="ayuda"><div class="wrap footer-grid"><div><a class="brand footer-brand" href="#"><span class="brand-logo"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></span></a><p>Una tienda peruana para encontrar productos de tecnología, hogar, supermercado y más.</p></div><div><h5>Acerca de Byte Bay</h5><a href="#">Quiénes somos</a><a href="#">Trabaja con nosotros</a><a href="#">Sostenibilidad</a></div><div><h5>Compra con confianza</h5><a href="#">Cómo comprar</a><a href="#">Medios de pago</a><a href="#">Envíos y devoluciones</a></div><div><h5>Redes oficiales</h5><a href="https://tiktok.com/@bytebayperu" target="_blank" rel="noopener noreferrer">TikTok · @bytebayperu</a><a href="https://www.instagram.com/bytebayperu?stkn=b2Zlc3c4M2lrcjJw" target="_blank" rel="noopener noreferrer">Instagram · @bytebayperu</a><a href="https://youtube.com/@bytebayperu?si=4nyrzBNYliTeMwbu" target="_blank" rel="noopener noreferrer">YouTube · @bytebayperu</a><a href="https://x.com/bytebayperu" target="_blank" rel="noopener noreferrer">X · @bytebayperu</a><a href="https://www.facebook.com/share/19SYEVhY7c/" target="_blank" rel="noopener noreferrer">Facebook · Byte Bay Perú</a></div><div><h5>¿Necesitas ayuda?</h5><a href="#">Centro de ayuda</a><a href="#" data-settings-info="Contáctanos">Contacto y soporte</a><a href="#" id="openClaimsForm">Libro de reclamaciones</a></div></div><div class="wrap footer-bottom"><span>© 2026 Byte Bay. Todos los derechos reservados.</span><div><a href="#politica-privacidad">Privacidad</a><a href="#terminos-condiciones">Términos</a><a href="#seguridad">Seguridad</a><span>Culqi · Mercado Pago</span></div></div></footer>
 
-  <aside class="cart-drawer" id="cartDrawer" aria-hidden="true"><div class="cart-header"><div><small>TU COMPRA</small><h2>Carrito <span id="cartTitleCount">(0)</span></h2></div><button id="cartClose" aria-label="Cerrar carrito">×</button></div><div class="cart-items" id="cartItems"><div class="empty-cart"><span>▱</span><h3>Tu carrito está vacío</h3><p>Agrega productos para ver tu resumen de compra.</p></div></div><div class="cart-summary"><div><span>Subtotal</span><strong id="cartSubtotal">S/ 0.00</strong></div><div><span>Envío</span><strong class="free-shipping">Gratis</strong></div><p id="cartDeliveryNote">El costo y el total vigentes se muestran antes de pagar.</p><button class="btn primary checkout" id="openCheckout">Continuar compra</button></div></aside><div class="overlay" id="overlay"></div>
-  <div class="product-modal" id="productModal" aria-hidden="true">
+  <aside class="cart-drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-label="Tu carrito de compras" aria-hidden="true"><div class="cart-header"><div><small>TU COMPRA</small><h2>Carrito <span id="cartTitleCount">(0)</span></h2></div><button id="cartClose" aria-label="Cerrar carrito">×</button></div><div class="cart-items" id="cartItems"><div class="empty-cart"><span>▱</span><h3>Tu carrito está vacío</h3><p>Agrega productos para ver tu resumen de compra.</p></div></div><div class="cart-summary"><div><span>Subtotal</span><strong id="cartSubtotal">S/ 0.00</strong></div><div><span>Envío</span><strong class="free-shipping">Gratis</strong></div><p id="cartDeliveryNote">El costo y el total vigentes se muestran antes de pagar.</p><button class="btn primary checkout" id="openCheckout">Continuar compra</button></div></aside><div class="overlay" id="overlay"></div>
+  <div class="product-modal" id="productModal" role="dialog" aria-modal="true" aria-label="Detalle del producto" aria-hidden="true">
     <div class="product-modal-card">
       <button class="product-modal-close" id="closeProductModal" aria-label="Cerrar detalle">×</button>
       <div class="product-modal-grid">
@@ -500,7 +508,7 @@
   <div class="product-main-stage">
     <span class="angle-badge-pill" id="modalAngleLabel">Ángulo actual: Vista Frontal</span>
     <button class="gallery-nav gallery-prev" id="galleryPrev" type="button" aria-label="Anterior">&#8249;</button>
-    <img id="modalImage" src="" alt="">
+    <img id="modalImage" src="imagen-producto-predeterminada.svg" alt="">
     <button class="gallery-nav gallery-next" id="galleryNext" type="button" aria-label="Siguiente">&#8250;</button>
     <div class="gallery-actions">
       <button class="gallery-action-btn" type="button" aria-label="Favorito">&#9825;</button>
@@ -544,7 +552,7 @@
       </div>
     </div>
   </div>
-  <div class="account-modal" id="accountModal" aria-hidden="true">
+  <div class="account-modal" id="accountModal" role="dialog" aria-modal="true" aria-label="Mi cuenta Byte Bay" aria-hidden="true">
     <div class="account-card">
       <button class="account-close" id="accountClose" aria-label="Cerrar">×</button>
       <span class="section-kicker">MI CUENTA BYTE BAY</span>
@@ -572,7 +580,7 @@
           <h2 id="ordersTitle">&#128230; Mis Pedidos y Seguimiento en Vivo</h2>
           <p class="orders-subtitle">Consulta el estado de tus compras Byte Bay en tiempo real.</p>
         </div>
-        <input type="search" id="ordersSearch" placeholder="Buscar por numero o producto" class="orders-search">
+        <input type="search" id="ordersSearch" placeholder="Buscar por numero o producto" aria-label="Buscar pedidos por número o producto" class="orders-search">
       </div>
       <div class="orders-tabs">
         <button class="orders-tab active" data-status="all">Todos los pedidos</button>
@@ -675,7 +683,7 @@
     </div>
   </div>
 
-  <div class="toast" id="toast">Producto agregado al carrito</div>
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">Producto agregado al carrito</div>
   <section class="bb-consent-banner hidden" id="personalizationConsent" role="dialog" aria-labelledby="consentTitle" aria-describedby="consentDescription">
     <div class="bb-consent-copy">
       <span class="bb-consent-kicker">TU PRIVACIDAD · AVISO v3.0-2026</span>
@@ -689,7 +697,7 @@
     </div>
   </section>
   <button id="aiAssistantToggle" class="ai-assistant-toggle" type="button" aria-label="Abrir Asistente Byte"><span class="assistant-spark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.2 7 7 2.2-7 2.2-2.2 7-2.2-7-7-2.2 7-2.2z"></path></svg></span><span class="ai-assistant-label">Asistente Byte</span></button>
-  <section id="aiAssistantPanel" class="ai-assistant-panel hidden" aria-label="Asistente Byte"><header><div><span class="section-kicker">IA DE BYTE BAY</span><h2>¿Qué estás buscando?</h2></div><button id="aiAssistantClose" type="button" aria-label="Cerrar asistente">×</button></header><div class="ai-chat" id="aiChat"><article class="ai-message assistant">Hola, soy Asistente Byte. Puedo ayudarte a encontrar productos, ofertas y opciones similares.</article></div><div class="ai-suggestions"><button type="button" data-ai-question="¿Qué ofertas de tecnología tienen stock?">Ofertas de tecnología</button><button type="button" data-ai-question="Recomiéndame productos para el hogar">Para el hogar</button></div><form id="aiAssistantForm"><input id="aiAssistantInput" maxlength="500" placeholder="Ej.: Recomiéndame una laptop económica" required><button class="btn primary" type="submit">Enviar</button></form><small>Respuestas generadas con IA según el catálogo disponible.</small></section>
+  <section id="aiAssistantPanel" class="ai-assistant-panel hidden" aria-label="Asistente Byte"><header><div><span class="section-kicker">IA DE BYTE BAY</span><h2>¿Qué estás buscando?</h2></div><button id="aiAssistantClose" type="button" aria-label="Cerrar asistente">×</button></header><div class="ai-chat" id="aiChat"><article class="ai-message assistant">Hola, soy Asistente Byte. Puedo ayudarte a encontrar productos, ofertas y opciones similares.</article></div><div class="ai-suggestions"><button type="button" data-ai-question="¿Qué ofertas de tecnología tienen stock?">Ofertas de tecnología</button><button type="button" data-ai-question="Recomiéndame productos para el hogar">Para el hogar</button></div><form id="aiAssistantForm"><input id="aiAssistantInput" maxlength="500" placeholder="Ej.: Recomiéndame una laptop económica" aria-label="Pregunta para el asistente Byte" required><button class="btn primary" type="submit">Enviar</button></form><small>Respuestas generadas con IA según el catálogo disponible.</small></section>
   <script src="app.js?v=93"></script>
   <script src="site-orders.js?v=7"></script>
   <script src="site-motion.js?v=1"></script>
@@ -699,6 +707,7 @@
   <script src="site-atmosphere.js?v=11"></script>
   <script src="site-settings.js?v=4"></script>
   <script src="site-privacy.js?v=7"></script>
+  <script src="site-a11y.js?v=1"></script>
 <dialog id="sizeGuideDialog" class="size-guide-dialog"><div class="size-guide-card"><h3>Guía de tallas</h3><table><tr><th>Talla Perú</th><th>EUR</th><th>US</th><th>cm</th></tr><tr><td>38</td><td>40</td><td>7</td><td>24.5</td></tr><tr><td>39</td><td>41</td><td>7.5</td><td>25</td></tr><tr><td>40</td><td>42</td><td>8</td><td>25.5</td></tr><tr><td>41</td><td>43</td><td>8.5</td><td>26</td></tr><tr><td>42</td><td>44</td><td>9</td><td>26.5</td></tr></table><button class="btn primary" onclick="document.querySelector('#sizeGuideDialog').close()">Cerrar</button></div></dialog>
 </body>
 </html>

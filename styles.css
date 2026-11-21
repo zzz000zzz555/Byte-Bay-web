@@ -345,7 +345,13 @@ a:hover{color:var(--accent)}
 .btn.primary:hover,.primary:hover{background:var(--accent-strong)}
 .btn.secondary,.secondary{border:1px solid var(--border-subtle);background:var(--bg-surface);color:var(--text-primary)}
 .btn.secondary:hover,.secondary:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
-.btn:focus-visible,.filter-chip:focus-visible,.round:focus-visible,.hero-nav:focus-visible{outline:3px solid var(--accent-soft);outline-offset:2px}
+.btn:focus-visible,.filter-chip:focus-visible,.round:focus-visible,.hero-nav:focus-visible{outline:3px solid #1D4ED8;outline-offset:3px}
+/* Accesibilidad: enlace para saltar al contenido (WCAG 2.4.1) */
+.skip-link{position:fixed;top:-100px;left:16px;z-index:10000;padding:12px 18px;border-radius:0 0 10px 10px;background:#0d2b31;color:#fff;font-weight:800;box-shadow:0 8px 24px #0005;transition:top .15s}
+.skip-link:focus{top:0}
+/* Contraste de controles del carrusel (WCAG 1.4.3) */
+.hero-nav{color:#173c38;background:#fffefa;border-color:#173c38}
+.hero-dot{background:#315d50}
 
 /* ---------- Categorías: tarjetas neutras con icono SVG ---------- */
 .categories{

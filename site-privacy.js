@@ -209,9 +209,10 @@
   }
 
   function tokenIsFresh(session, marginSeconds) {
-    if (!session || !session.expires_at) return true;
+    // Fail-closed: sin sesión, sin expiración o con fecha inválida se renueva.
+    if (!session || !session.access_token || !session.expires_at) return false;
     const expires = new Date(session.expires_at).getTime();
-    if (Number.isNaN(expires)) return true;
+    if (Number.isNaN(expires)) return false;
     return expires - Date.now() > (marginSeconds || 30) * 1000;
   }
 

@@ -107,7 +107,16 @@ $('#adminRecoveryForm').onsubmit=async event=>{
   await validarSesion();
 };
 $('#adminLogout').onclick=async()=>{await supabaseClient.auth.signOut();rolPersonal='';mostrarAcceso('Sesión cerrada correctamente.');};
-document.querySelectorAll('[data-admin-tab]').forEach(boton=>boton.onclick=()=>{if(boton.dataset.adminTab==='personal'&&rolPersonal!=='jefe')return;if(boton.dataset.adminTab==='roles'&&rolPersonal!=='jefe')return;mostrarSeccion(boton.dataset.adminTab);if(boton.dataset.adminTab==='roles')cargarRolesRBAC();});
+document.querySelectorAll('[data-admin-tab]').forEach(boton=>boton.onclick=()=>{
+  const seccion=boton.dataset.adminTab;
+  if(seccion==='personal'&&rolPersonal!=='jefe')return;
+  if(seccion==='roles'&&rolPersonal!=='jefe')return;
+  mostrarSeccion(seccion);
+  if(seccion==='roles')cargarRolesRBAC();
+  if(seccion==='packs')cargarPacks();
+  if(seccion==='analisis')cargarAnalisis();
+  if(seccion==='temas')cargarTemas();
+});
 
 async function cargarOpciones(){
   const [productos,proveedores,catalogo]=await Promise.all([supabaseClient.rpc('listar_productos_inventario_personal'),supabaseClient.rpc('listar_proveedores_personal'),supabaseClient.from('catalogo_productos').select('id,nombre,url_imagen')]);
@@ -192,7 +201,11 @@ async function eliminarPersonal(id){const p=personalRegistrado.find(x=>x.id_usua
 async function cambiarContrasenaPersonal(id){const p=personalRegistrado.find(x=>x.id_usuario===id);if(!p)return;document.querySelector('#staffPasswordUserId').value=id;document.querySelector('#staffPasswordTitle').textContent=`Cambiar contraseña: ${p.nombres} ${p.apellidos}`;document.querySelector('#staffPasswordDescription').textContent='La contraseña debe tener al menos 10 caracteres, con mayúscula, minúscula, número y símbolo.';document.querySelector('#staffPasswordNew').value='';document.querySelector('#staffPasswordConfirm').value='';document.querySelector('#staffPasswordStatus').textContent='';const d=document.querySelector('#staffPasswordDialog');if(d)d.showModal();}
 document.querySelector('#staffPasswordForm')?.addEventListener('submit',async e=>{e.preventDefault();const id=document.querySelector('#staffPasswordUserId').value;const nueva=document.querySelector('#staffPasswordNew').value;const confirmar=document.querySelector('#staffPasswordConfirm').value;const status=document.querySelector('#staffPasswordStatus');const p=personalRegistrado.find(x=>x.id_usuario===id);if(nueva.length<10){status.textContent='La contraseña debe tener al menos 10 caracteres.';return;}if(!contrasenaEmpleadoFuerte(nueva)){status.textContent='Debe incluir mayúscula, minúscula, número y símbolo.';return;}if(nueva!==confirmar){status.textContent='Las contraseñas no coinciden.';return;}status.textContent='Guardando…';try{await llamarGestionPersonal('cambiar_contrasena',{id_usuario:id,contrasena:nueva});status.textContent=`Contraseña actualizada para ${p?.nombres||''} ${p?.apellidos||''}.`;setTimeout(()=>{document.querySelector('#staffPasswordDialog')?.close();},1200);}catch(error){status.textContent=error.message;}});
 
-$('#adminProductForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim();const {error}=await supabaseClient.rpc('guardar_producto_personal',{p_id:valor('adminProductId')?Number(valor('adminProductId')):null,p_codigo:valor('adminProductCode'),p_nombre:valor('adminProductName'),p_categoria:valor('adminProductCategory'),p_marca:valor('adminProductBrand')||null,p_precio:Number(valor('adminProductPrice')),p_existencias:Number(valor('adminProductStock')),p_url_imagen:valor('adminProductImage')||null,p_descripcion:null,p_fecha_vencimiento:valor('adminProductExpiry')||null});if(error)return informar(error.message);
+$('#adminProductForm').onsubmit=async event=>{event.preventDefault();const valor=id=>$('#'+id).value.trim();
+  const precio=Number(valor('adminProductPrice'));
+  const existencias=Number(valor('adminProductStock'));
+  if(!valor('adminProductCode')||!valor('adminProductName')||!valor('adminProductCategory')||!(precio>0)||!Number.isInteger(existencias)||existencias<0){return informar('Código, nombre, categoría, precio (> 0) y stock (entero ≥ 0) son obligatorios.');}
+  const {error}=await supabaseClient.rpc('guardar_producto_personal',{p_id:valor('adminProductId')?Number(valor('adminProductId')):null,p_codigo:valor('adminProductCode'),p_nombre:valor('adminProductName'),p_categoria:valor('adminProductCategory'),p_marca:valor('adminProductBrand')||null,p_precio:precio,p_existencias:existencias,p_url_imagen:valor('adminProductImage')||null,p_descripcion:null,p_fecha_vencimiento:valor('adminProductExpiry')||null});if(error)return informar(error.message);
   // obtener id del producto (nuevo o existente)
   let pid=valor('adminProductId')?Number(valor('adminProductId')):null;
   if(!pid){const {data:prod}=await supabaseClient.from('productos').select('id').eq('codigo',valor('adminProductCode')).maybeSingle();pid=prod?.id;}
@@ -206,7 +219,10 @@ $('#adminProductForm').onsubmit=async event=>{event.preventDefault();const valor
     const back=valor('adminImgBack'); if(back) items.push({url:back,tipo:'imagen',angulo:'posterior',orden:3,es_principal:false});
     const detail=valor('adminImgDetail'); if(detail) items.push({url:detail,tipo:'imagen',angulo:'detalle',orden:4,es_principal:false});
     const video=valor('adminProductVideo'); if(video) items.push({url:video,tipo:'video',angulo:'video',orden:5,es_principal:false});
-    if(items.length) await supabaseClient.rpc('guardar_media_producto_personal',{p_id_producto:pid,p_items:items});
+    if(items.length){
+      const media=await supabaseClient.rpc('guardar_media_producto_personal',{p_id_producto:pid,p_items:items});
+      if(media.error) informar('Producto guardado, pero las imágenes no se pudieron guardar: '+media.error.message);
+    }
   }
   if(pid){
     const pack=document.querySelector('#adminProductPack')?.checked||false;
@@ -262,7 +278,7 @@ async function cargarPedidosAdmin(){
     <td><strong>${escapar(p.numero)}</strong><br><small>${new Date(p.creado_en).toLocaleString('es-PE')}</small></td>
     <td>${escapar(p.correo_cliente)}</td>
     <td>S/ ${Number(p.total).toFixed(2)}</td>
-    <td><select class="admin-status-select" data-id="${p.id}" onchange="cambiarEstadoRapido(this)">
+    <td><select class="admin-status-select" data-id="${p.id}" data-numero="${escapar(p.numero)}" aria-label="Estado del pedido ${escapar(p.numero)}">
       <option value="pendiente" ${p.estado==='pendiente'?'selected':''}>Pendiente</option>
       <option value="confirmado" ${p.estado==='confirmado'?'selected':''}>Confirmado</option>
       <option value="preparando" ${p.estado==='preparando'?'selected':''}>Preparando</option>
@@ -270,13 +286,18 @@ async function cargarPedidosAdmin(){
       <option value="entregado" ${p.estado==='entregado'?'selected':''}>Entregado</option>
       <option value="cancelado" ${p.estado==='cancelado'?'selected':''}>Cancelado</option>
     </select></td>
-    <td>${p.estado_pago}</td>
+    <td>${escapar(p.estado_pago)}</td>
     <td>${p.tracking_number?`${escapar(p.carrier||'')} ${escapar(p.tracking_number)}`:'—'}</td>
     <td class="actions">
-      <button class="btn secondary" onclick="abrirEditorPedido('${p.id}','${escapar(p.numero)}','${p.estado}','${escapar(p.tracking_number||'')}','${escapar(p.carrier||'')}','${escapar(p.tracking_url||'')}')">Editar</button>
-      <button class="btn secondary" onclick="verLogsPedido('${p.id}','${escapar(p.numero)}')">Historial</button>
+      <button class="btn secondary" type="button" data-edit-order="${p.id}" data-numero="${escapar(p.numero)}" data-estado="${escapar(p.estado)}" data-tracking="${escapar(p.tracking_number||'')}" data-carrier="${escapar(p.carrier||'')}" data-url="${escapar(p.tracking_url||'')}">Editar</button>
+      <button class="btn secondary" type="button" data-logs-order="${p.id}" data-numero="${escapar(p.numero)}">Historial</button>
     </td>
   </tr>`).join('');
+  lista.querySelectorAll('.admin-status-select').forEach(sel=>sel.addEventListener('change',()=>cambiarEstadoRapido(sel)));
+  lista.querySelectorAll('[data-edit-order]').forEach(b=>b.addEventListener('click',()=>abrirEditorPedido(
+    b.dataset.editOrder,b.dataset.numero,b.dataset.estado,b.dataset.tracking,b.dataset.carrier,b.dataset.url
+  )));
+  lista.querySelectorAll('[data-logs-order]').forEach(b=>b.addEventListener('click',()=>verLogsPedido(b.dataset.logsOrder,b.dataset.numero)));
 }
 async function abrirEditorPedido(id,numero,estadoActual,tracking,carrier,url){
   document.querySelector('#orderStatusId').value=id;
@@ -313,7 +334,7 @@ async function verLogsPedido(id,numero){
   const logs=data.logs||[];
   if(!logs.length){document.querySelector('#orderLogsBody').textContent='Sin historial de cambios.';}
   else{
-    document.querySelector('#orderLogsBody').innerHTML=logs.map(l=>`<div style="padding:8px 0;border-bottom:1px solid #eee"><strong>${l.estado_anterior} â†’ ${l.estado_nuevo}</strong><br><small>${new Date(l.creado_en).toLocaleString('es-PE')}</small>${l.motivo?`<br><em>${l.motivo}</em>`:''}${l.tracking_number?`<br>Tracking: ${l.carrier||''} ${l.tracking_number}`:''}</div>`).join('');
+    document.querySelector('#orderLogsBody').innerHTML=logs.map(l=>`<div style="padding:8px 0;border-bottom:1px solid #eee"><strong>${escapar(l.estado_anterior||'')} → ${escapar(l.estado_nuevo||'')}</strong><br><small>${new Date(l.creado_en).toLocaleString('es-PE')}</small>${l.motivo?`<br><em>${escapar(l.motivo)}</em>`:''}${l.tracking_number?`<br>Tracking: ${escapar(l.carrier||'')} ${escapar(l.tracking_number)}`:''}</div>`).join('');
   }
   document.querySelector('#orderLogsTitle').textContent='Historial: '+numero;
   const d=document.querySelector('#orderLogsDialog'); if(d) d.showModal();
@@ -544,81 +565,6 @@ document.querySelector('#adminRoleForm')?.addEventListener('submit',async e=>{
 });
 document.querySelector('#adminRefreshRoles')?.addEventListener('click',cargarRolesRBAC);
 
-async function cargarAnalisis(){
-  const d=document.querySelector('#analisisDescuentos');
-  const pk=document.querySelector('#analisisPacks');
-  const mg=document.querySelector('#analisisMargen');
-  if(!d||!pk||!mg) return;
-  d.textContent='Cargando...';
-  const {data:prods,error}=await supabaseClient.from('catalogo_productos').select('id,nombre,precio_venta,porcentaje_descuento,es_pack,existencias').order('porcentaje_descuento',{ascending:false}).limit(20);
-  if(error){d.textContent=error.message;return;}
-  const all=prods||[];
-  const desc=all.filter(p=>Number(p.porcentaje_descuento)>0).slice(0,20);
-  d.innerHTML=desc.length?desc.map(p=>`<div class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>-${p.porcentaje_descuento}% • S/ ${Number(p.precio_venta).toFixed(2)}</span></div></div>`).join(''):'Sin descuentos activos.';
-  const packs=all.filter(p=>p.es_pack).slice(0,10);
-  pk.innerHTML=packs.length?packs.map(p=>`<div class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_venta).toFixed(2)} • ${p.existencias} und.</span></div></div>`).join(''):'Sin productos marcados como pack.';
-  const margen=[...all].sort((a,b)=>Number(b.precio_venta)-Number(a.precio_venta)).slice(0,10);
-  mg.innerHTML=margen.map(p=>`<div class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>Precio: S/ ${Number(p.precio_venta).toFixed(2)} • Margen estimado: S/ ${(Number(p.precio_venta)*0.3).toFixed(2)}</span></div></div>`).join('');
-}
-document.querySelector('#adminRefreshAnalisis')?.addEventListener('click',cargarAnalisis);
-document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='analisis'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarAnalisis();};}});
-
-async function cargarPacks(){
-  const list=document.querySelector('#adminPacksList');
-  if(!list) return;
-  list.textContent='Cargando...';
-  const {data:packs,error}=await supabaseClient.from('catalogo_packs').select('*');
-  if(error){list.textContent=error.message;return;}
-  const ids=(packs||[]).map(p=>p.id);
-  let itemsByPack=new Map();
-  if(ids.length){
-    const {data:items}=await supabaseClient.from('pack_items').select('id_pack,id_producto,cantidad').in('id_pack',ids);
-    (items||[]).forEach(it=>{if(!itemsByPack.has(it.id_pack)) itemsByPack.set(it.id_pack,[]); itemsByPack.get(it.id_pack).push(it);});
-  }
-  list.innerHTML=(packs||[]).length?(packs||[]).map(p=>`<article class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>S/ ${Number(p.precio_especial).toFixed(2)} • Stock: ${p.stock} • Items: ${(itemsByPack.get(p.id)||[]).length} • ${p.activo?'Activo':'Inactivo'}</span></div><div class="admin-actions"><button class="icon-btn" data-edit-pack="${p.id}" title="Editar">&#9998;</button><button class="icon-btn" data-toggle-pack="${p.id}" data-active="${p.activo}" title="${p.activo?'Desactivar':'Activar'}">${p.activo?'&#128065;':'&#128683;'}</button><button class="icon-btn" data-delete-pack="${p.id}" title="Eliminar">&#128465;</button></div></article>`).join(''):'Sin packs registrados.';
-  // bind edit
-  list.querySelectorAll('[data-edit-pack]').forEach(b=>b.addEventListener('click',async()=>{
-    const id=Number(b.dataset.editPack);
-    const pack=(packs||[]).find(x=>x.id===id);
-    if(!pack) return;
-    document.querySelector('#packName').value=pack.nombre||'';
-    document.querySelector('#packDesc').value=pack.descripcion||'';
-    document.querySelector('#packPrice').value=pack.precio_especial;
-    document.querySelector('#packStock').value=pack.stock;
-    document.querySelector('#packStart').value=pack.inicia_en?new Date(pack.inicia_en).toISOString().slice(0,16):'';
-    document.querySelector('#packEnd').value=pack.termina_en?new Date(pack.termina_en).toISOString().slice(0,16):'';
-    // load items
-    const {data:items}=await supabaseClient.from('pack_items').select('id_producto,cantidad').eq('id_pack',id);
-    packSelected=[];
-    for(const it of (items||[])){
-      const {data:prod}=await supabaseClient.from('productos').select('id,nombre,precio').eq('id',it.id_producto).maybeSingle();
-      if(prod) packSelected.push({id:prod.id,nombre:prod.nombre,precio:Number(prod.precio),qty:it.cantidad});
-    }
-    renderPackSelected();
-    // store editing id
-    document.querySelector('#adminPackForm').dataset.editingId=id;
-  }));
-  // toggle
-  list.querySelectorAll('[data-toggle-pack]').forEach(b=>b.addEventListener('click',async()=>{
-    const id=Number(b.dataset.togglePack);
-    const activo=b.dataset.active!=='true';
-    const {error}=await supabaseClient.from('packs').update({activo}).eq('id',id);
-    if(error){informar(error.message);return;}
-    informar(activo?'Pack activado.':'Pack desactivado.');
-    cargarPacks();
-  }));
-  // delete
-  list.querySelectorAll('[data-delete-pack]').forEach(b=>b.addEventListener('click',async()=>{
-    const id=Number(b.dataset.deletePack);
-    if(!confirm('¿Eliminar este pack?')) return;
-    await supabaseClient.from('pack_items').delete().eq('id_pack',id);
-    const {error}=await supabaseClient.from('packs').delete().eq('id',id);
-    if(error){informar(error.message);return;}
-    informar('Pack eliminado.');
-    cargarPacks();
-  }));
-}
-
 // Estado de productos seleccionados para el pack
 let packSelected = [];
 
@@ -702,10 +648,6 @@ document.querySelector('#adminPackForm')?.addEventListener('submit',async e=>{
   renderPackSelected();
   cargarPacks();
 });
-document.querySelector('#adminRefreshPacks')?.addEventListener('click',cargarPacks);
-document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='packs'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarPacks();};}});
-document.querySelector('#adminRefreshRoles')?.addEventListener('click',cargarRolesRBAC);
-
 async function cargarAnalisis(){
   const d=document.querySelector('#analisisDescuentos');
   const pk=document.querySelector('#analisisPacks');
@@ -723,7 +665,6 @@ async function cargarAnalisis(){
   mg.innerHTML=margen.map(p=>`<div class="admin-list-item"><div><strong>${escapar(p.nombre)}</strong><span>Precio: S/ ${Number(p.precio_venta).toFixed(2)} • Margen estimado: S/ ${(Number(p.precio_venta)*0.3).toFixed(2)}</span></div></div>`).join('');
 }
 document.querySelector('#adminRefreshAnalisis')?.addEventListener('click',cargarAnalisis);
-document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='analisis'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarAnalisis();};}});
 
 async function cargarPacks(){
   const list=document.querySelector('#adminPacksList');
@@ -808,17 +749,13 @@ document.querySelector('#adminPackForm')?.addEventListener('submit',async e=>{
     if(error){informar(error.message);return;}
     packId=pack.id;
   }
-  if(error){informar(error.message);return;}
-  const items=selected.map(id=>({id_pack:pack.id,id_producto:id,cantidad:1}));
+  const items=selected.map(id=>({id_pack:packId,id_producto:id,cantidad:1}));
   const {error:e2}=await supabaseClient.from('pack_items').insert(items);
   if(e2){informar(e2.message);return;}
   informar('Pack guardado.');
   e.target.reset();
   cargarPacks();
 });
-document.querySelector('#adminRefreshPacks')?.addEventListener('click',cargarPacks);
-document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='packs'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarPacks();};}});
-
 async function cargarTemas(){
   const list=document.querySelector('#adminThemesList');
   if(!list) return;
@@ -835,4 +772,3 @@ async function cargarTemas(){
   }));
 }
 document.querySelector('#adminRefreshThemes')?.addEventListener('click',cargarTemas);
-document.querySelectorAll('[data-admin-tab]').forEach(b=>{if(b.dataset.adminTab==='temas'){const old=b.onclick;b.onclick=()=>{if(old) old(); cargarTemas();};}});

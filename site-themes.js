@@ -59,17 +59,22 @@
     } catch (e) { return null; }
   }
 
-  function applyTheme(key, t) {
+  function applyTheme(key, t, persistir) {
     THEMES.forEach(k => document.body.classList.remove('theme-' + k));
     document.body.classList.add('theme-' + key);
     if (key !== 'default') document.documentElement.classList.remove('dark-mode');
     document.documentElement.setAttribute('data-theme', key);
-    try { localStorage.setItem('bb-theme', key); } catch (e) {}
+    // Solo la elección persistente (tema del administrador) se guarda en bb-theme.
+    // La vista previa ?theme= debe ser temporal para no colonizar la preferencia del usuario.
+    if (persistir !== false) { try { localStorage.setItem('bb-theme', key); } catch (e) {} }
 
     const vars = (t && t.css_vars) || {};
+    const CLAVES_PERMITIDAS = ['--brand', '--bg', '--text', '--accent', '--navy', '--lime', '--accent-soft'];
     Object.entries(vars).forEach(([k, v]) => {
-      if (typeof k === 'string' && k.indexOf('--') === 0 && typeof v === 'string') {
-        document.documentElement.style.setProperty(k, v);
+      const valor = typeof v === 'string' ? v.trim() : '';
+      const esColor = /^#[0-9a-f]{3,8}$/i.test(valor);
+      if (CLAVES_PERMITIDAS.indexOf(k) > -1 && esColor) {
+        document.documentElement.style.setProperty(k, valor);
       }
     });
     window.dispatchEvent(new CustomEvent('bb:theme-changed', { detail: { clave: key, theme: t || {} } }));
@@ -90,7 +95,7 @@
       var k = normalize(key);
       if (THEMES.indexOf(k) < 0) k = 'default';
       try { localStorage.setItem(SEASON_KEY, k); } catch (e) {}
-      applyTheme(k, null);
+      applyTheme(k, null, false);
       return k;
     },
     reset: function () {
@@ -107,18 +112,18 @@
     const local = localSeason();
     const override = paramOverride || local;
     if (!sb) {
-      if (override) applyTheme(override, null);
+      if (override) applyTheme(override, null, !paramOverride);
       return;
     }
     try {
       const { data, error } = await sb.from('site_themes').select('*').eq('activo', true).limit(1);
       const t = data && data.length ? data[0] : null;
       if (error && !override) return;
-      if (override) applyTheme(override, paramOverride ? t : null);
+      if (override) applyTheme(override, paramOverride ? t : null, !paramOverride);
       else applyTheme(t ? normalize(t.clave) : 'default', t);
     } catch (e) {
       console.warn('theme load', e);
-      if (override) applyTheme(override, null);
+      if (override) applyTheme(override, null, !paramOverride);
     }
   }
 

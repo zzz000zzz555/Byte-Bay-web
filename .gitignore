@@ -4,22 +4,22 @@
 node_modules/
 output/
 tmp/
+# SQL: se versionan todas las migraciones y seeds del proyecto.
+# Cualquier SQL nuevo debe añadirse a supabase/migrations/ (ya permitido abajo).
 *.sql
-!migrations_delta_update.sql
-!migrations_dashboard_ofertas.sql
 !database_schema_master.sql
-!migrations_checkout_cuenta_obligatoria.sql
-!insert_productos_prueba_mercado_pago.sql
-*.log
 !seed_100_productos.sql
-!migrations_catalogo_calidad.sql
-!migrations_enterprise_rbac_catalogo.sql
-!migrations_stock_en_vivo.sql
-!migrations_admin_producto_extra.sql
-!migrations_admin_toggle_producto.sql
-!migrations_packs.sql
-!migrations_packs_2.sql
-!migrations_themes.sql
-!migrations_promociones_ofertas.sql
-!migrations_promo_ofertas2.sql
-!migrations_ofertas_packs.sql
+!insert_productos_prueba_mercado_pago.sql
+!producto-prueba-3-soles.sql
+!migrations_*.sql
+!supabase/migrations/
+!supabase/migrations/*.sql
+*.log
+
+# Artefactos generados y de herramientas (no se publican ni se versionan)
+generador_afiches/afiches_generados/
+generador_afiches/*.zip
+.codex-finalizer-byte-bay/
+.presentation-build/
+.docx-work/
+.impeccable/

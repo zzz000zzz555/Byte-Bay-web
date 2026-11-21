@@ -36,7 +36,8 @@ function leerJSON(key) {
 
 function cargarPreferencias() {
   const guardadas = leerJSON(PREFS_KEY) || {};
-  const temaLegado = localStorage.getItem(LEGACY_THEME_KEY);
+  let temaLegado = null;
+  try { temaLegado = localStorage.getItem(LEGACY_THEME_KEY); } catch (e) {}
   const tema = guardadas.theme || (temaLegado === 'noche' ? 'dark' : temaLegado === 'claro' ? 'light' : 'auto');
   return {
     ...DEFAULT_PREFS,
@@ -86,6 +87,10 @@ function cuentaActual() {
 
 function nombreCuenta(cuenta) {
   return cuenta?.name || cuenta?.username || cuenta?.email?.split('@')[0] || 'Cliente';
+}
+
+function escaparTexto(valor) {
+  return String(valor == null ? '' : valor).replace(/[&<>'"]/g, caracter => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[caracter]));
 }
 
 function refrescarCuenta() {
@@ -185,7 +190,7 @@ function renderizarAvisosSistema(mensajeTemporal = '') {
     ? { tipo: 'success', texto: `Sesión iniciada como ${nombreCuenta(cuenta)}.` }
     : { tipo: 'info', texto: 'Estás comprando como invitado.' });
 
-  contenedor.innerHTML = avisos.map(aviso => `<div class="system-alert is-${aviso.tipo}"><span>${aviso.texto}</span></div>`).join('');
+  contenedor.innerHTML = avisos.map(aviso => `<div class="system-alert is-${escaparTexto(aviso.tipo)}"><span>${escaparTexto(aviso.texto)}</span></div>`).join('');
 }
 
 function actualizarNotaEntrega() {

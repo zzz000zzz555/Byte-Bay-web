@@ -1,0 +1,52 @@
+name: CI - Byte Bay
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verificacion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Sintaxis JavaScript del núcleo
+        run: |
+          status=0
+          for file in *.js; do
+            node --check "$file" || status=1
+          done
+          exit $status
+
+      - name: Sin secretos versionados
+        run: |
+          if grep -rEn --include='*.js' --include='*.ts' --include='*.html' --include='*.css' \
+            'sk_live_[A-Za-z0-9]{10,}|sb_secret_[A-Za-z0-9]{10,}|AIza[A-Za-z0-9_-]{30,}' \
+            --exclude-dir=.git --exclude-dir=node_modules --exclude='AUDITORIA*.md' .; then
+            echo "ERROR: posible secreto real versionado"; exit 1
+          fi
+
+      - name: Referencias locales existentes
+        run: |
+          python3 - <<'PY'
+          import re, pathlib, sys
+          fallo = False
+          for html in ('index.html', 'admin.html'):
+            texto = pathlib.Path(html).read_text(encoding='utf-8', errors='replace')
+            for ref in re.findall(r'(?:src|href)=["\']([^"\']+)["\']', texto):
+              if ref.startswith(('http', 'data:', '#', 'mailto:', 'tel:', '{{')):
+                continue
+              archivo = ref.split('?', 1)[0].split('#', 1)[0]
+              if not pathlib.Path(archivo).exists():
+                print(f'REFERENCIA ROTA {html}: {ref}')
+                fallo = True
+          sys.exit(1 if fallo else 0)
+          PY
+
+      - name: Diff limpio
+        run: git diff --check

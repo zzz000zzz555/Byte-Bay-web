@@ -43,6 +43,17 @@ const imagenSegura=(url,respaldo=IMAGEN_PRODUCTO_RESPALDO)=>{
   return permitida&&!/^(javascript|vbscript):/i.test(valor)?valor:respaldo;
 };
 const atributoRespaldo=archivo=>`onerror="this.onerror=null;this.src='${archivo}'"`;
+// Lectura defensiva de localStorage: un valor corrupto nunca debe detener la tienda.
+function leerJSON(clave,fallo){
+  try{
+    const crudo=localStorage.getItem(clave);
+    return crudo==null?fallo:JSON.parse(crudo);
+  }catch(error){
+    console.warn('Estado local ilegible, se usa valor seguro:',clave);
+    try{localStorage.removeItem(clave);}catch(e){}
+    return fallo;
+  }
+}
 
 document.addEventListener('error',evento=>{
   const imagen=evento.target;
@@ -208,14 +219,18 @@ document.querySelector('#heroNext').onclick=()=>mostrarSlideHero(heroSlideIndex+
 const CART_STORAGE_KEY='bbCart';
 function loadSavedCart(){
   try{
-    const saved=JSON.parse(localStorage.getItem(CART_STORAGE_KEY)||'[]');
+    const saved=leerJSON(CART_STORAGE_KEY,[]);
     if(!Array.isArray(saved)) return [];
-    return saved.filter(item=>
-      item&&typeof item==='object'&&
-      Number.isInteger(Number(item.id))&&Number(item.id)>0&&
-      Number.isInteger(Number(item.qty))&&Number(item.qty)>0&&Number(item.qty)<=99&&
-      Number.isFinite(Number(item.price))&&Number(item.price)>=0
-    ).map(item=>({
+    const vistos=new Set();
+    return saved.filter(item=>{
+      if(!(item&&typeof item==='object'&&
+        Number.isInteger(Number(item.id))&&Number(item.id)>0&&
+        Number.isInteger(Number(item.qty))&&Number(item.qty)>0&&Number(item.qty)<=99&&
+        Number.isFinite(Number(item.price))&&Number(item.price)>=0)) return false;
+      if(vistos.has(Number(item.id))) return false;
+      vistos.add(Number(item.id));
+      return true;
+    }).map(item=>({
       id:Number(item.id),
       name:typeof item.name==='string'?item.name.slice(0,200):'Producto',
       price:Number(item.price),
@@ -232,17 +247,18 @@ function loadSavedCart(){
 let cart=loadSavedCart();
 let start=0;
 let discountRate=0;
+let activeCoupon=null;
 let shippingValue=0;
 let activeCategory='all';
 let activeBrand='all';
 let activeGender='all';
 let inStockOnly=false;
 let activeQuery='';
-let notificationSubscription=JSON.parse(localStorage.getItem('beruNotifications')||'null');
+let notificationSubscription=leerJSON('beruNotifications',null);
 let activeFilter='all';
 let soloOfertas=false;
 let lastViewedProduct=null;
-const favorites=new Set(JSON.parse(localStorage.getItem('beruFavorites')||'[]'));
+const favorites=new Set(leerJSON('beruFavorites',[]));
 // La personalización y el consentimiento viven en site-privacy.js.
 // El modo local solo procesa señales en este dispositivo cuando el usuario lo autoriza.
 function puedePersonalizar(){return Boolean(window.BBPrivacy?.personalizacionActiva?.());}
@@ -344,7 +360,8 @@ async function cargarPacksTienda(){
     return {...p,img};
   }));
   grid.innerHTML=packsWithImg.map(p=>{
-    const descuento=Math.round((1-Number(p.precio_especial)/Number(p.suma_individual))*100);
+    const sumaIndividual=Number(p.suma_individual)||0;
+    const descuento=sumaIndividual>0?Math.max(0,Math.round((1-Number(p.precio_especial)/sumaIndividual)*100)):0;
     return `<article class="combo-card" data-pack="${p.id}">
       <div class="combo-media">
         <span class="combo-badge">PACK AHORRO</span>
@@ -597,7 +614,7 @@ function addToCart(id,cantidad=1){
   found?found.qty+=cantidadSegura:cart.push({...product,qty:cantidadSegura});
   const cartSaved=updateCart();
   window.BBPrivacy?.registrarEvento?.('CARRITO',{idProducto:product.id,categoria:product.category});
-  const account=JSON.parse(localStorage.getItem('beruAccount')||'null');
+  const account=leerJSON('beruAccount',null);
   if(!cartSaved){
     showToast('No se pudo guardar el carrito. No recargues ni cierres esta página.');
     if(!account?.verified) openAccountModal();
@@ -641,12 +658,14 @@ function updateCart(){
 }
 
 window.changeQty=(id,n)=>{
-  const x=cart.find(item=>item.id===id);
+  if(!Number.isInteger(Number(id))||!Number.isInteger(n)||Math.abs(n)!==1) return;
+  const x=cart.find(item=>item.id===Number(id));
   if(!x) return;
-  const product=products.find(item=>item.id===id);
-  if(n>0&&product&&x.qty>=product.stock){showToast(`Solo quedan ${product.stock} unidades.`);return;}
-  x.qty+=n;
-  if(x.qty<=0) cart=cart.filter(item=>item.id!==id);
+  const product=products.find(item=>item.id===Number(id));
+  const stock=Number(product?.stock);
+  const maxima=Number.isFinite(stock)&&stock>0?Math.min(stock,99):99;
+  if(n>0&&x.qty>=maxima){showToast(`Solo quedan ${maxima} unidades.`);return;}
+  x.qty=Math.min(maxima,Math.max(1,Number(x.qty)+n));
   if(!updateCart()) showToast('No se pudo guardar el carrito en este dispositivo.');
 };
 window.removeItem=id=>{cart=cart.filter(item=>item.id!==id);if(!updateCart()) showToast('No se pudo guardar el carrito en este dispositivo.');};
@@ -725,7 +744,7 @@ window.bbAyuda={
 
 let accountMode='register';
 function openAccountModal(forceLogin=false){
-  const cuenta=JSON.parse(localStorage.getItem('beruAccount')||'null');
+  const cuenta=leerJSON('beruAccount',null);
   if(cuenta?.verified&&!forceLogin){showToast(`Sesión activa: ${cuenta.name||cuenta.email}. Usa “Salir” para cerrar sesión.`);return;}
   setAccountMode(cuenta?.verified||forceLogin?'login':'register');
   document.querySelector('#accountModal').classList.add('open');document.querySelector('#accountModal').setAttribute('aria-hidden','false');
@@ -737,7 +756,7 @@ function setAccountBusy(busy,label){
   if(label) submit.textContent=label;
 }
 function updateAccountHeader(){
-  const saved=JSON.parse(localStorage.getItem('beruAccount')||'null');
+  const saved=leerJSON('beruAccount',null);
   const account=document.querySelector('.account');
   if(!account) return;
   account.querySelector('small').textContent=saved?.verified?'Hola, '+(saved.username||saved.name?.split(' ')[0]||'cliente'):'Hola, ingresa';
@@ -767,7 +786,7 @@ document.querySelector('#accountModeToggle').onclick=()=>setAccountMode(accountM
 document.querySelector('#mobileAccountAccess').onclick=()=>openAccountModal();
 document.querySelector('#mobileAccountLogout').onclick=()=>document.querySelector('#accountLogout').click();
 document.querySelector('#accountLogout').onclick=async()=>{
-  const cuenta=JSON.parse(localStorage.getItem('beruAccount')||'null');
+  const cuenta=leerJSON('beruAccount',null);
   try{
     if(window.BBPrivacy?.cerrarSesionActual) await window.BBPrivacy.cerrarSesionActual();
     else if(cuenta?.provider==='google'&&supabaseClient) await supabaseClient.auth.signOut();
@@ -1003,7 +1022,8 @@ function showNotificationStatus(){
     return;
   }
   const delivery=notificationSubscription.emailSent?' Confirmación enviada por correo.':' Correo pendiente de configuración.';
-  status.textContent=`Suscrito con ${notificationSubscription.email}. Recibes: ${notificationSubscription.wants.join(', ') || 'ofertas'}.${delivery} Puedes cancelar cuando quieras.`;
+  const wants=Array.isArray(notificationSubscription.wants)?notificationSubscription.wants:[];
+  status.textContent=`Suscrito con ${notificationSubscription.email}. Recibes: ${wants.join(', ') || 'ofertas'}.${delivery} Puedes cancelar cuando quieras.`;
 }
 
 document.querySelector('#notifyCancel').onclick=()=>{
@@ -1026,6 +1046,7 @@ document.querySelector('#couponForm').onsubmit=e=>{
   e.preventDefault();
   const code=document.querySelector('#couponInput').value.trim().toUpperCase();
   discountRate=code==='BERU10'||code==='BYTE10'?0.1:code==='HOGAR15'?0.15:0;
+  activeCoupon=discountRate?code:null;
   if(discountRate){
     showToast(`Cupón aplicado: ${Math.round(discountRate*100)}% de descuento`);
   }else{
@@ -1052,7 +1073,7 @@ function setPaymentStep(step){
   paymentProcessing.classList.toggle('hidden',step!==3);
   document.querySelector('#walletPanel').classList.toggle('hidden',step!==2);
   if(step===2){
-    const account=JSON.parse(localStorage.getItem('beruAccount')||'null');
+    const account=leerJSON('beruAccount',null);
     const emailInput=document.querySelector('#email');
     emailInput.readOnly=Boolean(account?.verified&&account.email);
     if(emailInput.readOnly) emailInput.value=account.email;
@@ -1062,7 +1083,7 @@ function setPaymentStep(step){
 
 async function openCheckout(){
   if(!cart.length){showToast('Agrega productos antes de continuar');return;}
-  const account=JSON.parse(localStorage.getItem('beruAccount')||'null');
+  const account=leerJSON('beruAccount',null);
   if(!account?.verified){
     showToast('Para comprar necesitas iniciar sesión o crear una cuenta Byte Bay.');
     openAccountModal();
@@ -1411,6 +1432,18 @@ document.querySelector('#payNow').onclick=async()=>{
     document.querySelector(missing).focus();
     return;
   }
+  const correoCheckout=document.querySelector('#email').value.trim();
+  const telefonoCheckout=document.querySelector('#phone').value.replace(/\D/g,'');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correoCheckout)){
+    showToast('Ingresa un correo electrónico válido.');
+    document.querySelector('#email').focus();
+    return;
+  }
+  if(telefonoCheckout.length<9){
+    showToast('Ingresa un teléfono válido de 9 dígitos.');
+    document.querySelector('#phone').focus();
+    return;
+  }
   if(!supabaseClient){
     showToast('No se puede registrar la compra: la BD no está conectada.');
     return;
@@ -1443,7 +1476,7 @@ document.querySelector('#payNow').onclick=async()=>{
   }
 
   const cliente=datosClienteCheckout();
-  const cupon=document.querySelector('#couponInput').value.trim().toUpperCase();
+  const cupon=activeCoupon||'';
   const firma=[
     firmaCarritoCompra(),
     cliente.correo,
@@ -1696,7 +1729,7 @@ async function openProductModal(id){
   document.querySelector('#modalAddToCart').disabled=lastViewedProduct.stock<=0;
   document.querySelector('#modalAddToCart').textContent=lastViewedProduct.stock<=0?'Producto agotado':'Agregar al carrito';
   document.querySelector('#modalAddToCart').onclick=()=>{const q=Number(document.querySelector('#modalQty')?.value||1);addToCart(lastViewedProduct.id,q);closeProductModal();};
-  const cuenta=JSON.parse(localStorage.getItem('beruAccount')||'null');
+  const cuenta=leerJSON('beruAccount',null);
   const usaGoogle=cuenta?.provider==='google';
   document.querySelector('#productCommentForm').reset();
   actualizarCalificacionComentario();
@@ -1710,7 +1743,7 @@ async function openProductModal(id){
 
 document.querySelector('#productCommentForm').onsubmit=async event=>{
   event.preventDefault();
-  const cuenta=JSON.parse(localStorage.getItem('beruAccount')||'null');
+  const cuenta=leerJSON('beruAccount',null);
   const estado=document.querySelector('#commentStatus');
   if(!cuenta?.verified||!cuenta.email){estado.textContent='Inicia sesión como cliente antes de comentar.';return;}
   if(!lastViewedProduct){estado.textContent='No hay un producto seleccionado.';return;}
@@ -1854,11 +1887,12 @@ function configurarAsistenteIA(){
 }
 
 if(notificationSubscription){
-  document.querySelector('#notifyEmail').value=notificationSubscription.email;
-  document.querySelector('#notifyDeals').checked=notificationSubscription.wants.includes('ofertas');
-  document.querySelector('#notifyDrops').checked=notificationSubscription.wants.includes('novedades');
-  document.querySelector('#notifyStock').checked=notificationSubscription.wants.includes('stock');
-  showStickyNotice(`Suscripción cargada para ${notificationSubscription.email}`);
+  const wantsGuardados=Array.isArray(notificationSubscription.wants)?notificationSubscription.wants:[];
+  document.querySelector('#notifyEmail').value=notificationSubscription.email||'';
+  document.querySelector('#notifyDeals').checked=wantsGuardados.includes('ofertas');
+  document.querySelector('#notifyDrops').checked=wantsGuardados.includes('novedades');
+  document.querySelector('#notifyStock').checked=wantsGuardados.includes('stock');
+  showStickyNotice(`Suscripción cargada para ${notificationSubscription.email||'tu correo'}`);
 }
 showNotificationStatus();
 updateAccountHeader();
