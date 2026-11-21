@@ -15,7 +15,7 @@
     tag: '0 0 80 80', bag: '0 0 80 90', pencil: '0 0 100 30',
     book: '0 0 80 64', horn: '0 0 80 60', glass: '0 0 50 90',
     clock: '0 0 80 80', empanada: '0 0 100 70', flag: '0 0 80 60',
-    wreath: '0 0 100 100', reindeer: '0 0 120 110', candle: '0 0 50 90', holly: '0 0 60 40',
+    wreath: '0 0 100 100', reindeer: '0 0 140 110', candle: '0 0 50 90', holly: '0 0 60 40',
     sleigh: '0 0 150 96', star: '0 0 40 40'
   };
 
@@ -292,20 +292,38 @@
     '</symbol>';
 
   S.reindeer =
-    '<symbol id="bb-reindeer" viewBox="0 0 120 110">' +
-      '<g fill="none" stroke="#6b4423" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">' +
-        '<path d="M34 40 22 14M34 40 44 12M86 40 76 12M86 40 98 14"/>' +
-        '<path d="m22 14-9-7m9 7 8-9m14 7 8-9m-20 8-8-9m30 10 9-7"/>' +
+    '<symbol id="bb-reindeer" viewBox="0 0 140 110">' +
+      /* Astas: salen de la parte alta de la cabeza y se ramifican hacia arriba */
+      '<g fill="none" stroke="#6b4423" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M38 25Q34 12 27 5"/>' +
+        '<path d="M34 15Q26 13 21 7M31 9Q26 5 24 1M37 18Q44 12 46 5"/>' +
+        '<path d="M45 25Q46 12 53 6M47 15Q55 12 59 7"/>' +
       '</g>' +
-      '<path d="M28 78v24M46 80v22M74 80v22M92 78v24" stroke="#6b4423" stroke-width="6" stroke-linecap="round"/>' +
-      '<ellipse cx="60" cy="62" rx="37" ry="24" fill="#8b5a2b"/>' +
-      '<path d="M24 58a36 36 0 0 1 72 0Z" fill="#a16a35" opacity=".55"/>' +
-      '<ellipse cx="60" cy="35" rx="18" ry="15" fill="#9a6633"/>' +
-      '<path d="m50 45-6 10m26-10 6 10" stroke="#6b4423" stroke-width="6" stroke-linecap="round"/>' +
-      '<path d="M20 48 4 34M100 48l16-14" stroke="#6b4423" stroke-width="5" stroke-linecap="round"/>' +
-      '<circle cx="49" cy="33" r="2.5" fill="#1c1917"/><circle cx="71" cy="33" r="2.5" fill="#1c1917"/>' +
-      '<circle cx="60" cy="42" r="5.5" fill="#dc2626"/><circle cx="58" cy="40" r="1.8" fill="#fca5a5"/>' +
-      '<path d="m52 22-6-12 11 7Z" fill="#6b4423"/>' +
+      /* Cola: una sola, atrás */
+      '<path d="M116 50q11-9 14 1-7 8-14-1Z" fill="#a16a35"/>' +
+      /* Patas y pezuñas */
+      '<path d="M56 74v30M68 76v28M98 76v28M110 74v30" stroke="#6b4423" stroke-width="7" stroke-linecap="round"/>' +
+      '<g fill="#3f2a17">' +
+        '<ellipse cx="56" cy="105" rx="5.5" ry="3"/><ellipse cx="68" cy="105" rx="5.5" ry="3"/>' +
+        '<ellipse cx="98" cy="105" rx="5.5" ry="3"/><ellipse cx="110" cy="105" rx="5.5" ry="3"/>' +
+      '</g>' +
+      /* Cuerpo, cuello y oreja */
+      '<ellipse cx="84" cy="58" rx="34" ry="22" fill="#8b5a2b"/>' +
+      '<path d="M50 58a34 22 0 0 1 68 0Z" fill="#a16a35" opacity=".5"/>' +
+      '<path d="M70 50Q58 32 42 28L34 44Q48 52 56 68Z" fill="#8b5a2b"/>' +
+      '<path d="M44 27Q52 17 57 23Q51 31 44 27Z" fill="#7c4a21"/>' +
+      /* Cabeza, hocico y cara */
+      '<ellipse cx="36" cy="33" rx="15" ry="10" transform="rotate(-12 36 33)" fill="#9a6633"/>' +
+      '<ellipse cx="23" cy="38" rx="9" ry="6" transform="rotate(-8 23 38)" fill="#c89a63"/>' +
+      '<circle cx="17" cy="38" r="8" fill="#fca5a5" opacity=".28"/>' +
+      '<circle cx="17" cy="38" r="4" fill="#dc2626"/>' +
+      '<circle cx="15.5" cy="36.5" r="1.3" fill="#fca5a5"/>' +
+      '<circle cx="34" cy="30" r="2.4" fill="#1c1917"/>' +
+      '<circle cx="33.3" cy="29.3" r=".8" fill="#fff"/>' +
+      /* Arnés que conecta con el trineo y cascabel */
+      '<path d="M52 58Q80 42 136 48" fill="none" stroke="#7c4a21" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<path d="M56 62Q68 70 80 62" fill="none" stroke="#b91c1c" stroke-width="4"/>' +
+      '<circle cx="68" cy="68" r="3.4" fill="#eab308"/>' +
     '</symbol>';
 
   S.candle =
