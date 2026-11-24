@@ -1867,6 +1867,7 @@ function configurarAsistenteIA(){
     if(!texto?.trim()) return;
     abrir();agregarMensaje(texto.trim(),'user');entrada.value='';
     const esperando=agregarMensaje('Buscando opciones en Byte Bay…','assistant');
+    document.dispatchEvent(new CustomEvent('bytebay:ai-thinking'));
     try{
       if(!supabaseClient) throw new Error('No se pudo conectar con el asistente.');
       let data;
@@ -1882,9 +1883,11 @@ function configurarAsistenteIA(){
       document.dispatchEvent(new CustomEvent('bytebay:ai-response',{detail:{respuesta:data.respuesta}}));
       agregarProductosRecomendados(data.productos);
     }catch(error){esperando.textContent=`No puedo responder ahora: ${String(error.message||'').replace(/[.\s]+$/,'')}. Intenta nuevamente en unos minutos.`;}
+    document.dispatchEvent(new CustomEvent('bytebay:ai-done'));
   };
   formulario.onsubmit=evento=>{evento.preventDefault();preguntar(entrada.value);};
   document.querySelectorAll('[data-ai-question]').forEach(botonSugerencia=>botonSugerencia.onclick=()=>preguntar(botonSugerencia.dataset.aiQuestion));
+  document.querySelectorAll('[data-ai-prompt]').forEach(botonPrompt=>botonPrompt.onclick=()=>preguntar(botonPrompt.dataset.aiPrompt));
 }
 
 if(notificationSubscription){
