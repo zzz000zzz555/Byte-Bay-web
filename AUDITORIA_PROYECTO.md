@@ -62,7 +62,7 @@ Severidad: **Crítico** = explotable o rompe la tienda · **Alto** = impacto fin
 | 25 | Alto | `index.html` | Sin canonical/robots/sitemap/JSON-LD; `og:image` relativo | SEO técnico | Indexación nula | **Canonical + `robots.txt` + `sitemap.xml` + Store JSON-LD** |
 | 26 | Medio | `admin.html` | `noindex` ausente y dos `<h1>` | SEO/WCAG 1.3.1 | Indexable | **`noindex` + un solo `h1`** |
 | 27 | Alto | `site-motion.js` | `mousemove` con `getBoundingClientRect()` por evento + 2 observadores | CWV (INP) | Thrashing | **RAF + WeakMap + observador único** |
-| 28 | Alto | `.gitignore` | 17 migraciones críticas (RLS/pagos/seguridad) fuera del repo | ISO 27001 A.8.9 | Deriva BD↔repo | **Whitelist explícita** |
+| 28 | Alto | `.gitignore` | 17 migraciones críticas (RLS/pagos/seguridad) fuera del repo | ISO 27001 A.8.9 | Deriva BD/repo | **Whitelist explícita** |
 | 29 | Alto | CI | Sin workflow: el bug #1 pudo llegar a producción | ISO 27001 A.8.32 | Sin señal | **`.github/workflows/ci.yml`** |
 
 ### 2.2 Pendientes — requieren acción manual / secretos / decisión de negocio

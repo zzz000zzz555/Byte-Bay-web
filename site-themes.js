@@ -13,14 +13,14 @@
     'dia_del_nino', 'primavera', 'verano', 'otonio', 'dia_de_muertos'
   ];
   const LABELS = {
-    default: 'Sin tema (clásico)', navidad: '🎄 Navidad', halloween: '🎃 Halloween',
-    ano_nuevo: '🥂 Año Nuevo', black_friday: '🖤 Black Friday', cyber_days: '💜 Cyber Days',
-    san_valentin: '💘 San Valentín', dia_madre_padre: '💐 Día de la Madre y el Padre',
-    fiestas_patrias: '🇵🇪 Fiestas Patrias', vuelta_clases: '✏️ Vuelta a clases',
-    san_patricio: '🍀 San Patricio', dia_de_la_bandera: '🇵🇪 Día de la Bandera',
-    dia_del_trabajo: '🔧 Día del Trabajo', dia_del_nino: '🎈 Día del Niño',
-    primavera: '🌸 Primavera', verano: '☀️ Verano', otonio: '🍂 Otoño',
-    dia_de_muertos: '💀 Día de Muertos'
+    default: 'Sin tema (clásico)', navidad: 'Navidad', halloween: 'Halloween',
+    ano_nuevo: 'Año Nuevo', black_friday: 'Black Friday', cyber_days: 'Cyber Days',
+    san_valentin: 'San Valentín', dia_madre_padre: 'Día de la Madre y el Padre',
+    fiestas_patrias: 'Fiestas Patrias', vuelta_clases: 'Vuelta a clases',
+    san_patricio: 'San Patricio', dia_de_la_bandera: 'Día de la Bandera',
+    dia_del_trabajo: 'Día del Trabajo', dia_del_nino: 'Día del Niño',
+    primavera: 'Primavera', verano: 'Verano', otonio: 'Otoño',
+    dia_de_muertos: 'Día de Muertos'
   };
   const SEASON_KEY = 'bb-season-theme';
   let sb = window.BBStore && window.BBStore.client;

@@ -83,11 +83,11 @@ Basado en la revisión de `app.js`, `site-orders.js` y las Edge Functions de Sup
 
 | Paso | Requisito (Diapositiva) | Estado en Byte Bay | Evidencia / Observación |
 |---|---|---|---|
-| 1 | Revisión del carrito | ✅ Cumple | El carrito muestra items, cantidades y subtotal antes de pagar. |
-| 2 | Total y condiciones visibles | ✅ Cumple | Checkout muestra subtotal, envío gratis y total a pagar. |
-| 3 | Elección de medio de pago | ✅ Cumple | Culqi (tarjeta) y Mercado Pago disponibles. |
-| 4 | Procesamiento por proveedor | ✅ Cumple | Se invoca `crear-pago-culqi` / `crear-pago` que procesa el cargo en la pasarela. |
-| 5 | Verificación automática (sin capturas manuales) | ✅ Cumple | El estado se actualiza vía webhook (`webhook-culqi`) y consulta API (`consultar-pago-culqi`); no se acepta captura de imagen como confirmación. |
-| 6 | Confirmación y comprobante | ✅ Cumple | Al confirmar, se muestra banner de pago confirmado y se registra el pedido; el cliente puede ver el comprobante en 'Mis pedidos'. |
+| 1 | Revisión del carrito | Cumple | El carrito muestra items, cantidades y subtotal antes de pagar. |
+| 2 | Total y condiciones visibles | Cumple | Checkout muestra subtotal, envío gratis y total a pagar. |
+| 3 | Elección de medio de pago | Cumple | Culqi (tarjeta) y Mercado Pago disponibles. |
+| 4 | Procesamiento por proveedor | Cumple | Se invoca `crear-pago-culqi` / `crear-pago` que procesa el cargo en la pasarela. |
+| 5 | Verificación automática (sin capturas manuales) | Cumple | El estado se actualiza vía webhook (`webhook-culqi`) y consulta API (`consultar-pago-culqi`); no se acepta captura de imagen como confirmación. |
+| 6 | Confirmación y comprobante | Cumple | Al confirmar, se muestra banner de pago confirmado y se registra el pedido; el cliente puede ver el comprobante en 'Mis pedidos'. |
 
 **Conclusión:** El flujo de pago cumple los 6 pasos de la diapositiva. No se permite marcar un pedido como pagado solo por subir una imagen; la confirmación proviene de la pasarela (webhook/API).

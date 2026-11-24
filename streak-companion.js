@@ -392,7 +392,7 @@
 
       if (leveled) {
         this.playClass('is-levelup', 1500);
-        this.showBubble('¡Nueva forma! Ya soy ' + TIERS[tier - 1].label.toLowerCase() + ' 🔥', 2600);
+        this.showBubble('¡Nueva forma! Ya soy ' + TIERS[tier - 1].label.toLowerCase(), 2600);
         this.burst(this.center.x, this.center.y);
         this.playTone('level');
       } else if (renamed && !fromServer) {
@@ -459,7 +459,7 @@
       if (this.nameError) this.nameError.textContent = '';
       this.closeEditor();
       if (name === this.state.name) {
-        this.showBubble('Tu racha ya se llama "' + name + '" ✨', 1800);
+        this.showBubble('Tu racha ya se llama "' + name + '"', 1800);
         return;
       }
 
@@ -468,7 +468,7 @@
       this.renderName();
       this.saveCache(this.state.customerId, this.state.days, this.state.best, name, dayKey(new Date()));
       this.playClass('is-levelup', 950);
-      this.showBubble('¡Desde ahora me llamo ' + name + '! ✨', 2300);
+      this.showBubble('¡Desde ahora me llamo ' + name + '!', 2300);
       this.playTone('level');
       window.dispatchEvent(new CustomEvent('bytebay:streak-renamed', { detail: { nombre: name } }));
 
@@ -792,10 +792,10 @@
       this.state.lastTap = stamp;
       this.playClass(doubleTap ? 'is-levelup' : 'is-happy', doubleTap ? 1100 : 950);
       var messages = [
-        this.state.name + ' lleva ' + this.state.days + ' días seguidos 🔥',
-        TIERS[this.state.tier - 1].label + ' · ' + this.state.best + ' días como máximo ✨',
+        this.state.name + ' lleva ' + this.state.days + ' días seguidos',
+        TIERS[this.state.tier - 1].label + ' · ' + this.state.best + ' días como máximo',
         'Vuelve mañana y ' + this.state.name + ' sigue creciendo',
-        'Toca el lápiz ✎ para cambiar el nombre de tu racha'
+        'Toca el lápiz para cambiar el nombre de tu racha'
       ];
       this.showBubble(messages[Math.floor(Math.random() * messages.length)], 2900);
       this.playTone(doubleTap ? 'level' : 'bubble');
@@ -877,7 +877,7 @@
     meet(x, y) {
       this.state.lastMeet = Date.now();
       this.playClass('is-meet', 1600);
-      this.showBubble('¡Hola, Byte! Soy ' + this.state.name + ' 🔥', 2300);
+      this.showBubble('¡Hola, Byte! Soy ' + this.state.name, 2300);
       this.burst(x, y);
       this.playTone('meet');
       window.dispatchEvent(new CustomEvent('bytebay:streak-meet', {
@@ -900,7 +900,6 @@
         var particle = document.createElement('span');
         particle.className = 'bb-meet-burst__p';
         particle.style.setProperty('--i', String(i));
-        particle.textContent = i % 3 === 0 ? '✦' : (i % 3 === 1 ? '💛' : '🔥');
         burst.appendChild(particle);
       }
       document.body.appendChild(burst);

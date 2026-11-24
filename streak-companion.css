@@ -131,7 +131,7 @@ body.bb-streak-dragging{cursor:grabbing}
 .bb-streak.is-levelup .bb-streak__spark,
 .bb-streak.is-meet .bb-streak__spark{animation:bb-streak-spark .85s ease-out both;animation-delay:calc(var(--i,0) * 35ms)}
 .bb-meet-burst{position:fixed;z-index:130;width:0;height:0;pointer-events:none}
-.bb-meet-burst__p{position:absolute;left:0;top:0;font-size:15px;line-height:1;animation:bb-meet-particle 1.05s cubic-bezier(.16,.8,.3,1) both;animation-delay:calc(var(--i,0) * 28ms)}
+.bb-meet-burst__p{position:absolute;left:0;top:0;width:7px;height:7px;border-radius:50%;background:#FF9F1C;box-shadow:0 0 9px #FF9F1C;animation:bb-meet-particle 1.05s cubic-bezier(.16,.8,.3,1) both;animation-delay:calc(var(--i,0) * 28ms)}
 
 @keyframes bb-streak-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes bb-streak-flicker{0%,100%{transform:scale(1,1)}42%{transform:scale(1.025,.975)}70%{transform:scale(.985,1.025)}}

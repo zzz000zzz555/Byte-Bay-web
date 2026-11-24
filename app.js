@@ -13,6 +13,10 @@ if(parametrosHashAuth.get('type')==='recovery'||parametrosAuth.get('type')==='re
   adminUrl.hash=window.location.hash;
   window.location.replace(adminUrl.href);
 }
+const ICON_SUN='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>';
+const ICON_MOON='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"></path></svg>';
+const ICON_HEART_ON='<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 21s-7-4.4-9.3-8.3C.9 9.5 2.5 5.5 6 5c2-.3 3.6.8 4.5 2 .9-1.2 2.5-2.3 4.5-2 3.5.5 5.1 4.5 3.3 7.7C19 16.6 12 21 12 21z"></path></svg>';
+const ICON_HEART_OFF='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 21s-7-4.4-9.3-8.3C.9 9.5 2.5 5.5 6 5c2-.3 3.6.8 4.5 2 .9-1.2 2.5-2.3 4.5-2 3.5.5 5.1 4.5 3.3 7.7C19 16.6 12 21 12 21z"></path></svg>';
 const categories=[
   {name:'Supermercado',count:'33 productos',icon:'<path d="M4 5h2l2 10h10l2-7H7"></path><circle cx="9" cy="19" r="1.4"></circle><circle cx="17" cy="19" r="1.4"></circle>'},
   {name:'Tecnología',count:'46 productos',icon:'<rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8M12 17v4"></path>'},
@@ -70,7 +74,7 @@ function actualizarTema(){
   document.querySelectorAll('[data-theme-toggle]').forEach(boton=>{
     boton.setAttribute('aria-label',esNoche?'Activar modo claro':'Activar modo noche');
     boton.title=esNoche?'Cambiar a modo claro':'Cambiar a modo noche';
-    boton.querySelector('span').textContent=esNoche?'☀':'☾';
+    boton.querySelector('span').innerHTML=esNoche?ICON_SUN:ICON_MOON;
   });
 }
 document.querySelectorAll('[data-theme-toggle]').forEach(boton=>boton.addEventListener('click',()=>{
@@ -279,7 +283,7 @@ function tarjetaProducto(producto,motivo=''){
   const marca=escapeHtml(producto.brand||'');
   const calificacion=Number(producto.rating);
   const etiquetaCalificacion=Number.isFinite(calificacion)&&calificacion>0?`Calificación ${Math.min(5,calificacion).toFixed(1)} de 5`:'Sin reseñas';
-  return `<article class="product-card ${agotado?'sold-out':''}" data-id="${id}" data-category="${categoria}">${descuento>0?`<span class="discount">-${descuento}%</span>`:''}<button class="wish ${favorites.has(id)?'active':''}" data-fav="${id}" aria-label="Guardar producto">${favorites.has(id)?'♥':'♡'}</button><div class="product-image"><img src="${escapeHtml(imagenSegura(producto.img))}" alt="${nombre}" loading="lazy" decoding="async" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}></div><span class="product-meta">${marca} · ${categoria}</span><h3>${nombre}</h3>${motivo?`<span class="product-reason">¿Por qué veo este producto? · ${escapeHtml(motivo)}</span>`:''}<div class="rating" aria-label="${etiquetaCalificacion}">${ratingMarkup(producto.rating)}</div>${descuento>0&&Number(producto.old)>Number(producto.price)?`<span class="old-price">${money(Number(producto.old)||0)}</span>`:''}<div class="price-row"><strong class="price">${money(Number(producto.price)||0)}</strong><button class="add" data-id="${id}" aria-label="Agregar al carrito" ${agotado?'disabled':''}>${agotado?'Agotado':'Agregar'}</button></div>${calcularPUM(producto)?`<div class="pum">${calcularPUM(producto)}</div>`:''}<div class="availability ${agotado?'unavailable':stock<=5?'low-stock':''}">${agotado?'Producto agotado':stock<=5?`Últimas ${stock} unidades`:'Disponible'}</div></article>`;
+  return `<article class="product-card ${agotado?'sold-out':''}" data-id="${id}" data-category="${categoria}">${descuento>0?`<span class="discount">-${descuento}%</span>`:''}<button class="wish ${favorites.has(id)?'active':''}" data-fav="${id}" aria-label="Guardar producto">${favorites.has(id)?ICON_HEART_ON:ICON_HEART_OFF}</button><div class="product-image"><img src="${escapeHtml(imagenSegura(producto.img))}" alt="${nombre}" loading="lazy" decoding="async" ${atributoRespaldo(IMAGEN_PRODUCTO_RESPALDO)}></div><span class="product-meta">${marca} · ${categoria}</span><h3>${nombre}</h3>${motivo?`<span class="product-reason">¿Por qué veo este producto? · ${escapeHtml(motivo)}</span>`:''}<div class="rating" aria-label="${etiquetaCalificacion}">${ratingMarkup(producto.rating)}</div>${descuento>0&&Number(producto.old)>Number(producto.price)?`<span class="old-price">${money(Number(producto.old)||0)}</span>`:''}<div class="price-row"><strong class="price">${money(Number(producto.price)||0)}</strong><button class="add" data-id="${id}" aria-label="Agregar al carrito" ${agotado?'disabled':''}>${agotado?'Agotado':'Agregar'}</button></div>${calcularPUM(producto)?`<div class="pum">${calcularPUM(producto)}</div>`:''}<div class="availability ${agotado?'unavailable':stock<=5?'low-stock':''}">${agotado?'Producto agotado':stock<=5?`Últimas ${stock} unidades`:'Disponible'}</div></article>`;
 }
 function renderizarPersonalizacion(){
   if(window.BBPrivacy?.renderizarRecomendaciones){window.BBPrivacy.renderizarRecomendaciones();return;}
@@ -575,7 +579,7 @@ function renderProducts(list=getVisibleProducts().slice(start,start+12)){
   const total=getVisibleProducts().length;
   document.querySelector('#catalogTitle').textContent=soloOfertas?'Ofertas activas':'Catálogo de productos';
   document.querySelector('#productCountLabel').textContent=soloOfertas?`${total} ${total===1?'oferta activa':'ofertas activas'}`:`${total} productos disponibles`;
-  const vacio=soloOfertas?`<div class="empty-cart" style="grid-column:1/-1"><span>🏷</span><h3>No hay ofertas activas</h3><p>El personal puede programar descuentos desde Gestión interna → Ofertas. Cuando haya una oferta real, aparecerá aquí automáticamente.</p></div>`:`<div class="empty-cart" style="grid-column:1/-1"><span>▱</span><h3>No hay resultados</h3><p>Prueba otra categoría, cambia el orden de precio o limpia los filtros.</p></div>`;
+  const vacio=soloOfertas?`<div class="empty-cart" style="grid-column:1/-1"><span>%</span><h3>No hay ofertas activas</h3><p>El personal puede programar descuentos desde Gestión interna → Ofertas. Cuando haya una oferta real, aparecerá aquí automáticamente.</p></div>`:`<div class="empty-cart" style="grid-column:1/-1"><span>▱</span><h3>No hay resultados</h3><p>Prueba otra categoría, cambia el orden de precio o limpia los filtros.</p></div>`;
   document.querySelector('#productGrid').innerHTML=visible.length?visible.map(producto=>tarjetaProducto(producto)).join(''):vacio;
   bindCards();
   updateProductNav();
@@ -601,7 +605,7 @@ function toggleFavorite(id,button){
   if(favorites.has(id)) favorites.delete(id); else favorites.add(id);
   localStorage.setItem('beruFavorites',JSON.stringify([...favorites]));
   button.classList.toggle('active');
-  button.textContent=favorites.has(id)?'♥':'♡';
+  button.innerHTML=favorites.has(id)?ICON_HEART_ON:ICON_HEART_OFF;
   if(activeFilter==='favorites') renderProducts();
 }
 
@@ -1734,7 +1738,7 @@ async function openProductModal(id){
   document.querySelector('#productCommentForm').reset();
   actualizarCalificacionComentario();
   actualizarContadorComentario();
-   document.querySelector('#commentStatus').textContent=cuenta?.verified?'Tu cuenta estÃ¡ verificada. La reseÃ±a quedarÃ¡ pendiente de revisiÃ³n.':'Debes iniciar sesiÃ³n. Las reseÃ±as se publican despuÃ©s de la revisiÃ³n.';
+   document.querySelector('#commentStatus').textContent=cuenta?.verified?'Tu cuenta está verificada. La reseña quedará pendiente de revisión.':'Debes iniciar sesión. Las reseñas se publican después de la revisión.';
   cargarComentariosProducto(lastViewedProduct.id);
   document.querySelectorAll('[data-review-filter]').forEach(btn=>{btn.onclick=()=>{document.querySelectorAll('[data-review-filter]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');cargarComentariosProducto(lastViewedProduct.id,btn.dataset.reviewFilter);};});
   document.querySelector('#productModal').classList.add('open');

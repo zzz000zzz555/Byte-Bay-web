@@ -18,12 +18,14 @@ document.addEventListener('error',evento=>{
   imagen.src=imagenPredeterminada;
 },true);
 
+const ICON_SUN='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>';
+const ICON_MOON='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"></path></svg>';
 function actualizarTema(){
   const esNoche=document.documentElement.classList.contains('dark-mode');
   document.querySelectorAll('[data-theme-toggle]').forEach(boton=>{
     boton.setAttribute('aria-label',esNoche?'Activar modo claro':'Activar modo noche');
     boton.title=esNoche?'Cambiar a modo claro':'Cambiar a modo noche';
-    boton.querySelector('span').textContent=esNoche?'☀':'☾';
+    boton.querySelector('span').innerHTML=esNoche?ICON_SUN:ICON_MOON;
   });
 }
 document.querySelectorAll('[data-theme-toggle]').forEach(boton=>boton.addEventListener('click',()=>{
@@ -762,7 +764,7 @@ async function cargarTemas(){
   list.textContent='Cargando...';
   const {data,error}=await supabaseClient.from('site_themes').select('*').order('nombre');
   if(error){list.textContent=error.message;return;}
-  list.innerHTML=(data||[]).map(t=>`<article class="admin-list-item"><div style="display:flex;align-items:center;gap:10px;"><span style="width:24px;height:24px;border-radius:50%;background:${t.preview_color||'#2563eb'};display:inline-block;"></span><div><strong>${escapar(t.nombre)}</strong><span>${escapar(t.descripcion||'')}</span></div></div><div class="admin-actions"><button class="icon-btn" data-activate-theme="${t.id}" title="Activar">${t.activo?'✅':'○'}</button></div></article>`).join('')||'Sin temas.';
+  list.innerHTML=(data||[]).map(t=>`<article class="admin-list-item"><div style="display:flex;align-items:center;gap:10px;"><span style="width:24px;height:24px;border-radius:50%;background:${t.preview_color||'#2563eb'};display:inline-block;"></span><div><strong>${escapar(t.nombre)}</strong><span>${escapar(t.descripcion||'')}</span></div></div><div class="admin-actions"><button class="icon-btn" data-activate-theme="${t.id}" title="Activar">${t.activo?'Activo':'Activar'}</button></div></article>`).join('')||'Sin temas.';
   list.querySelectorAll('[data-activate-theme]').forEach(b=>b.addEventListener('click',async()=>{
     const id=Number(b.dataset.activateTheme);
     const {error}=await supabaseClient.from('site_themes').update({activo:true}).eq('id',id);

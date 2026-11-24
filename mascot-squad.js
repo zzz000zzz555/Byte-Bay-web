@@ -636,8 +636,8 @@
       var doubleTap = stamp - this.state.lastTap < 360;
       this.state.lastTap = stamp;
       var lines = this.id === 'pixel'
-        ? ['Soy Pixel, siempre explorando novedades 👾', '¿Viste los productos nuevos?', 'Doble toque: ¡voy a explorar!']
-        : ['¡Nano al rescate! ⚡', 'Las ofertas me recargan 🔥', 'Doble toque: ¡energía máxima!'];
+        ? ['Soy Pixel, siempre explorando novedades', '¿Viste los productos nuevos?', 'Doble toque: voy a explorar']
+        : ['¡Nano al rescate!', 'Las ofertas me recargan', 'Doble toque: energía máxima'];
       this.showBubble(lines[Math.floor(Math.random() * lines.length)], 2500);
       this.playClass(doubleTap ? 'is-dance' : 'is-happy', doubleTap ? 1500 : 950);
       this.playTone('social');
@@ -803,8 +803,8 @@
       });
     }
 
-    burst(x, y, symbols) {
-      if (!symbols || document.body.classList.contains('bb-mascot-inactive')) return;
+    burst(x, y) {
+      if (document.body.classList.contains('bb-mascot-inactive')) return;
       var node = document.createElement('span');
       node.className = 'bb-social-burst';
       node.setAttribute('aria-hidden', 'true');
@@ -813,7 +813,6 @@
       for (var i = 0; i < 10; i += 1) {
         var particle = document.createElement('span');
         particle.style.setProperty('--i', String(i));
-        particle.textContent = symbols[i % symbols.length];
         node.appendChild(particle);
       }
       document.body.appendChild(node);
@@ -821,13 +820,13 @@
       this.timers.push(timer);
     }
 
-    emojis(x, y) {
-      var list = ['⚡', '🛒', '❤️', '👾'];
+    chatTags(x, y) {
+      var list = ['Tech', 'Oferta', 'Me gusta', 'Explora'];
       var self = this;
-      list.forEach(function (symbol, index) {
+      list.forEach(function (label, index) {
         var node = document.createElement('span');
-        node.className = 'bb-social-emoji';
-        node.textContent = symbol;
+        node.className = 'bb-social-tag';
+        node.textContent = label;
         node.style.left = Math.round(x + (index - 1.5) * 16) + 'px';
         node.style.top = Math.round(y) + 'px';
         node.style.setProperty('--ex', ((index % 2 ? 1 : -1) * (12 + index * 4)) + 'px');
@@ -910,7 +909,7 @@
             entity.playTone('social');
           }
         });
-        this.burst(x, y, ['✦', '💛', '⚡']);
+        this.burst(x, y);
         this.finish(1600, ['is-highfive'], [a, b]);
       } else if (kind === 'ball') {
         [a, b].forEach(function (entity) {
@@ -921,7 +920,7 @@
         var byteEntity = this.manager.entity('byte');
         if (byteEntity && byteEntity.visible) {
           byteEntity.playClass('is-happy', 900);
-          byteEntity.showBubble('¡Pásala! ⚽', 1400, { silent: true });
+          byteEntity.showBubble('¡Pásala!', 1400, { silent: true });
         }
         [0, 1, 2, 3].forEach(function (step, index) {
           var timer = window.setTimeout(function () {
@@ -933,15 +932,15 @@
           }, 420 + index * 620);
           self.timers.push(timer);
         });
-        this.burst(x, y, ['⚽', '💫', '✨']);
+        this.burst(x, y);
         this.finish(3400, ['is-ball'], [a, b]);
       } else {
         [a, b].forEach(function (entity) {
           entity.playClass('is-chat', 2200);
-          entity.showBubble(['⚡', '👾', '❤️', '🛒'][Math.floor(Math.random() * 4)], 1800,
+          entity.showBubble(['¡Dato!', '¿Viste esto?', 'Me encanta', 'Exploremos'][Math.floor(Math.random() * 4)], 1800,
             entity.id === 'byte' ? { silent: true } : undefined);
         });
-        this.emojis(x, y);
+        this.chatTags(x, y);
         this.finish(2300, ['is-chat'], [a, b]);
       }
       window.dispatchEvent(new CustomEvent('bytebay:social-interaction', { detail: { kind: kind, a: a.id, b: b.id } }));
@@ -1011,7 +1010,7 @@
         if (entity.host) {
           var tooltip = entity.host.querySelector('.bb-squad__tooltip');
           if (tooltip && entity.id !== 'byte') {
-            tooltip.textContent = entity.id === 'pixel' ? 'Pixel explora productos contigo 👾' : 'Nano se energiza con ofertas y carritos ⚡';
+            tooltip.textContent = entity.id === 'pixel' ? 'Pixel explora productos contigo' : 'Nano se energiza con ofertas y carritos';
           }
         }
       });
@@ -1052,7 +1051,7 @@
       this.entities.forEach(function (entity) {
         if (!entity.visible) return;
         entity.playClass('is-dance', 1500);
-        if (entity.id !== 'byte') entity.showBubble('¡Baile de celebración! 🎉', 1500);
+        if (entity.id !== 'byte') entity.showBubble('¡Baile de celebración!', 1500);
       });
     }
 
@@ -1061,7 +1060,7 @@
       var pixel = this.entity('pixel');
       if (nano && nano.visible) {
         nano.playClass('is-happy', 1100);
-        nano.showBubble('¡Excelente elección! ⚡', 1800);
+        nano.showBubble('¡Excelente elección!', 1800);
         nano.playTone('social');
       }
       if (pixel && pixel.visible) pixel.playClass('is-curious', 1100);
@@ -1071,13 +1070,13 @@
       var pixel = this.entity('pixel');
       if (!pixel || !pixel.visible) return;
       pixel.playClass('is-scan', 2200);
-      pixel.showBubble('Voy a explorar eso 👾', 1700);
+      pixel.showBubble('Voy a explorar eso', 1700);
     }
 
     reactToFilter() {
       this.celebrate();
       var nano = this.entity('nano');
-      if (nano && nano.visible) nano.showBubble('¡Filtro aplicado! ⚡', 1400);
+      if (nano && nano.visible) nano.showBubble('¡Filtro aplicado!', 1400);
     }
 
     bindStoreEvents() {
@@ -1208,7 +1207,7 @@
           '<span class="bb-wardrobe__name" id="bbWardrobeName">Byte</span></div>' +
           '<div class="bb-wardrobe__panel">' + categories + '</div></div>' +
         '<footer class="bb-wardrobe__foot"><div class="bb-wardrobe__squad"><span>Mostrar en pantalla</span>' + squadButtons + '</div>' +
-          '<div class="bb-wardrobe__actions"><button class="bb-wardrobe__action" id="bbWardrobeRandom" type="button">🎲 Aleatorio</button>' +
+          '<div class="bb-wardrobe__actions"><button class="bb-wardrobe__action" id="bbWardrobeRandom" type="button">Aleatorio</button>' +
           '<button class="bb-wardrobe__action is-primary" id="bbWardrobeSave" type="button">Guardar look</button></div>' +
           '<span class="bb-wardrobe__status" id="bbWardrobeStatus" role="status"></span></footer></div>';
       document.body.appendChild(node);
@@ -1316,7 +1315,7 @@
 
     save() {
       this.manager.saveLook(this.current, this.draft);
-      this.flash('Look guardado en este dispositivo ✨');
+      this.flash('Look guardado en este dispositivo');
     }
 
     random() {
@@ -1327,7 +1326,7 @@
       });
       this.draft = look;
       this.renderPreview();
-      this.flash('¡Nuevo look aleatorio! 🎲');
+      this.flash('Nuevo look aleatorio');
     }
 
     syncSquad() {

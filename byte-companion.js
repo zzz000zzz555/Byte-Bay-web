@@ -18,6 +18,11 @@
   var ACTIVITY_MAX = 30000;
   var FIXED_STEP = 1 / 240;
   var MAX_SUBSTEPS = 8;
+  var SVG_ATTRS = 'viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+  var ICON_VOICE_ON = '<svg ' + SVG_ATTRS + '><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16 9a4 4 0 0 1 0 6"></path><path d="M19 6a8 8 0 0 1 0 12"></path></svg>';
+  var ICON_VOICE_OFF = '<svg ' + SVG_ATTRS + '><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="m17 9 4 6M21 9l-4 6"></path></svg>';
+  var ICON_ACTIVE_ON = '<svg ' + SVG_ATTRS + '><rect x="4" y="7" width="16" height="12" rx="3"></rect><path d="M12 7V4"></path><circle cx="9" cy="13" r="1"></circle><circle cx="15" cy="13" r="1"></circle><path d="M9 16h6"></path></svg>';
+  var ICON_ACTIVE_OFF = '<svg ' + SVG_ATTRS + '><rect x="4" y="7" width="16" height="12" rx="3"></rect><path d="M12 7V4"></path><path d="m5 3 14 18"></path></svg>';
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
@@ -146,7 +151,7 @@
       var host = this.host;
       var mascot = host.mascot;
       if (name === 'wave') {
-        host.showBubble('¡Hola! 👋', 1500, { countIgnored: true });
+        host.showBubble('¡Hola! Qué gusto verte', 1500, { countIgnored: true });
       }
       this.current = name;
       this.last = name;
@@ -435,7 +440,7 @@
       window.addEventListener('bytebay:streak-meet', function (event) { self.onStreakMeet(event); });
       window.addEventListener('bytebay:streak-renamed', function (event) {
         var nombre = event && event.detail ? event.detail.nombre : '';
-        if (nombre) self.showBubble('¡Qué buen nombre, ' + nombre + '! ✨', 1900);
+        if (nombre) self.showBubble('¡Qué buen nombre, ' + nombre + '! Queda guardado.', 1900);
       });
       document.addEventListener('bytebay:ai-response', function (event) {
         if (event.detail && event.detail.respuesta && !self.panel.classList.contains('hidden')) {
@@ -535,7 +540,7 @@
     setControl(button, onIcon, offIcon, onLabel, offLabel, isOn, iconAttribute) {
       if (!button) return;
       var icon = button.querySelector('[' + iconAttribute + ']');
-      if (icon) icon.textContent = isOn ? onIcon : offIcon;
+      if (icon) icon.innerHTML = isOn ? onIcon : offIcon;
       var label = isOn ? onLabel : offLabel;
       button.setAttribute('aria-pressed', String(isOn));
       button.setAttribute('aria-label', label);
@@ -545,8 +550,8 @@
 
     applyPreferences() {
       document.body.classList.toggle('bb-mascot-inactive', !this.state.active);
-      this.setControl(this.voiceButton, '🔊', '🔇', 'Silenciar voz de Byte', 'Activar voz de Byte', this.state.voice, 'data-mascot-icon');
-      this.setControl(this.activeButton, '👾', '🚫', 'Desactivar animaciones de Byte', 'Activar animaciones de Byte', this.state.active, 'data-mascot-icon');
+      this.setControl(this.voiceButton, ICON_VOICE_ON, ICON_VOICE_OFF, 'Silenciar voz de Byte', 'Activar voz de Byte', this.state.voice, 'data-mascot-icon');
+      this.setControl(this.activeButton, ICON_ACTIVE_ON, ICON_ACTIVE_OFF, 'Desactivar animaciones de Byte', 'Activar animaciones de Byte', this.state.active, 'data-mascot-icon');
       this.setControl(this.pocketButton, '⇤', '⇥', 'Mostrar Byte completo', 'Minimizar Byte al borde', this.state.pocket, 'data-mascot-pocket-icon');
       this.mascot.classList.toggle('is-pocket', this.state.pocket);
       if (!this.state.voice) this.stopSpeaking();
@@ -674,7 +679,7 @@
       this.mascot.classList.remove('is-blinking');
     }
 
-    /* Web Audio: pop tecnológico de <80 ms, sin archivos y supeditado a 🔇. */
+    /* Web Audio: pop tecnológico de <80 ms, sin archivos y supeditado al control de silencio. */
     ensureAudio() {
       if (!this.state.voice) return null;
       var AudioCtor = window.AudioContext || window.webkitAudioContext;
@@ -884,8 +889,8 @@
       var days = Number(detail.dias) || 0;
       var name = typeof detail.nombre === 'string' && detail.nombre ? detail.nombre : 'tu racha';
       this.showBubble(days > 0
-        ? '¡' + name + ' y sus ' + days + ' días! 🔥'
-        : '¡Hola, ' + name + '! 🔥', 2300);
+        ? '¡' + name + ' y sus ' + days + ' días!'
+        : '¡Hola, ' + name + '!', 2300);
       this.playTone('bubble');
       this.noteActivity();
     }

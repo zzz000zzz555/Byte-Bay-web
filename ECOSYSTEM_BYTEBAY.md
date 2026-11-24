@@ -29,11 +29,11 @@ Las posiciones de Pixel y Nano se guardan por separado en `bytebay_squad_pos_<id
 
 ## Vestidor / Estudio de personalización
 
-Se abre desde **👕 Personalizar** en el encabezado del chat, desde el cierre de ⚙️ Configuración o mediante `window.ByteBaySquad.openWardrobe('pixel')`.
+Se abre desde **Personalizar** en el encabezado del chat, desde el cierre de Configuración o mediante `window.ByteBaySquad.openWardrobe('pixel')`.
 
 - Pestañas Byte / Pixel / Nano con vista previa interactiva.
 - Categorías: skins, sombreros, ropa, visores y auras.
-- Botón **🎲 Aleatorio** y **Guardar look**.
+- Botón **Aleatorio** y **Guardar look**.
 - Cierre con Escape, backdrop o botón ×; el foco vuelve al control que abrió el modal.
 - Capas SVG: `#layer-aura`, `#layer-back`, `#layer-body`, `#layer-outfit`, `#layer-visor`, `#layer-hat`, `#layer-hands` y `#layer-jet`. La vista previa usa IDs con namespace propio para no colisionar con las mascotas vivas.
 

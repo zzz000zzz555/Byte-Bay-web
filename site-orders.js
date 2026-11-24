@@ -5,7 +5,7 @@ let filtroPedidos='all';
   function escHtml(v){return (window.BBStore?.escapeHtml||function(x){return String(x).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));})(v);}
   function moneyFn(v){return (window.BBStore?.money||function(x){return 'S/ '+Number(x).toFixed(2)})(v);}
   function etiquetaEstado(estado){return ({pendiente:'Pendiente',confirmado:'Confirmado',preparando:'Preparando',enviado:'Enviado',entregado:'Entregado',cancelado:'Cancelado',aprobado:'Aprobado',rechazado:'Rechazado'})[estado]||estado;}
-  function iconoEstado(estado){return ({pendiente:'⏳',confirmado:'✓',preparando:'📦',enviado:'🚚',entregado:'✅',cancelado:'✕'})[estado]||'•';}
+  function iconoEstado(estado){return ({pendiente:'Pend.',confirmado:'Conf.',preparando:'Prep.',enviado:'Env.',entregado:'Ent.',cancelado:'Can.'})[estado]||'—';}
 
   function estadoGrupo(estado){
     if(estado==='cancelado'||estado==='rechazado') return 'cancelado';
@@ -22,7 +22,7 @@ let filtroPedidos='all';
       if(busqueda && !(p.numero||'').toLowerCase().includes(busqueda) && !(p.items||[]).some(it=>(it.nombre||'').toLowerCase().includes(busqueda))) return false;
       return true;
     });
-    if(!lista.length){ cont.innerHTML='<div class="orders-empty-state"><div class="empty-icon">📦</div><p>No hay pedidos en esta categoría.</p><a class="btn secondary" href="#ofertas">Explorar ofertas del catálogo</a></div>'; return; }
+    if(!lista.length){ cont.innerHTML='<div class="orders-empty-state"><div class="empty-icon">—</div><p>No hay pedidos en esta categoría.</p><a class="btn secondary" href="#ofertas">Explorar ofertas del catálogo</a></div>'; return; }
     cont.innerHTML=lista.map(p=>{
       const cancelado=p.estado==='cancelado';
       const idx=ORDEN_ESTADOS.indexOf(p.estado);
@@ -33,7 +33,7 @@ let filtroPedidos='all';
       }).join('');
       const items=(p.items||[]).map(it=>`<div class="order-item"><img src="${escHtml(it.imagen||'imagen-producto-predeterminada.svg')}" alt=""><div><strong>${escHtml(it.nombre)}</strong><small>${escHtml(it.variante||'')} x${it.cantidad}</small></div><span>${moneyFn(Number(it.precio)*Number(it.cantidad))}</span></div>`).join('');
       const trackingInfo = p.tracking_number ? `<div class="order-tracking-info"><strong>Tracking:</strong> ${escHtml(p.carrier||'')} ${escHtml(p.tracking_number)}${p.tracking_url?` <a href="${escHtml(p.tracking_url)}" target="_blank" rel="noopener">Ver seguimiento</a>`:''}</div>` : '';
-      const whatsappMsg = p.estado==='enviado' ? `<div class="order-whatsapp-alert"><span>📱</span><div><strong>Tu pedido está en camino</strong><p>Estate atento a WhatsApp para coordinar la entrega.</p></div></div>` : '';
+      const whatsappMsg = p.estado==='enviado' ? `<div class="order-whatsapp-alert"><span>WhatsApp</span><div><strong>Tu pedido está en camino</strong><p>Estate atento a WhatsApp para coordinar la entrega.</p></div></div>` : '';
       return `<article class="order-card">
         <div class="order-head">
           <div><strong>#${escHtml(p.numero)}</strong><br><small>${new Date(p.creado_en).toLocaleString('es-PE')}</small></div>

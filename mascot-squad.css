@@ -101,8 +101,8 @@ body.bb-squad-dragging,body.bb-squad-dragging *{cursor:grabbing!important;user-s
 
 /* Efectos sociales en coordenadas de viewport. */
 .bb-social-burst{position:fixed;z-index:131;width:0;height:0;pointer-events:none}
-.bb-social-burst span{position:absolute;left:0;top:0;font-size:16px;line-height:1;animation:bb-social-particle 1s cubic-bezier(.16,.8,.3,1) both;animation-delay:calc(var(--i,0) * 26ms)}
-.bb-social-emoji{position:fixed;z-index:132;padding:5px 9px;border:1px solid #E9C2FF;border-radius:999px;background:#150B22;color:#fff;font:800 15px/1 Manrope,sans-serif;pointer-events:none;box-shadow:0 8px 20px rgba(12,6,32,.35);animation:bb-social-emoji 1.5s ease-out both}
+.bb-social-burst span{position:absolute;left:0;top:0;width:7px;height:7px;border-radius:50%;background:#38FEDC;box-shadow:0 0 9px #38FEDC;animation:bb-social-particle 1s cubic-bezier(.16,.8,.3,1) both;animation-delay:calc(var(--i,0) * 26ms)}
+.bb-social-tag{position:fixed;z-index:132;padding:5px 9px;border:1px solid #E9C2FF;border-radius:999px;background:#150B22;color:#fff;font:800 11px/1 Manrope,sans-serif;pointer-events:none;box-shadow:0 8px 20px rgba(12,6,32,.35);animation:bb-social-tag 1.5s ease-out both}
 
 @keyframes bb-sq-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes bb-sq-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.015,1.025)}}
@@ -123,7 +123,7 @@ body.bb-squad-dragging,body.bb-squad-dragging *{cursor:grabbing!important;user-s
 @keyframes bb-sq-meet{0%,100%{transform:translateX(0)}25%{transform:translateX(12px) rotate(7deg)}60%{transform:translateX(3px) rotate(-5deg)}}
 @keyframes bb-sq-land{0%{transform:translateY(-11px) scaleX(.94) scaleY(1.08)}55%{transform:translateY(0) scaleX(1.06) scaleY(.92)}100%{transform:none}}
 @keyframes bb-social-particle{0%{opacity:0;transform:rotate(calc(var(--i,0) * 30deg)) translateX(4px) scale(.4)}25%{opacity:1}100%{opacity:0;transform:rotate(calc(var(--i,0) * 30deg)) translateX(74px) scale(1.1)}}
-@keyframes bb-social-emoji{0%{opacity:0;transform:translateY(6px) scale(.7)}25%{opacity:1;transform:translateY(-4px) scale(1.08)}75%{opacity:1}100%{opacity:0;transform:translateY(-34px) scale(.9)}}
+@keyframes bb-social-tag{0%{opacity:0;transform:translateY(6px) scale(.7)}25%{opacity:1;transform:translateY(-4px) scale(1.08)}75%{opacity:1}100%{opacity:0;transform:translateY(-34px) scale(.9)}}
 
 /* ---------- Vestidor / estudio de personalización ---------- */
 body.bb-wardrobe-open{overflow:hidden}
@@ -205,7 +205,7 @@ body.bb-wardrobe-open{overflow:hidden}
 
 /* Respeto de preferencias de movimiento y efectos de temporada. */
 @media(prefers-reduced-motion:reduce){
-  .bb-squad,.bb-squad__motion,.bb-squad__figure,.bb-squad__svg,.bb-squad__eye,.bb-squad__hand,.bb-squad__flame,.bb-squad__aura-item,.bb-squad__drone,.bb-squad__glass,.bb-wardrobe__card,.bb-wardrobe__preview,.bb-social-burst span,.bb-social-emoji{animation:none!important;transition:none!important}
+  .bb-squad,.bb-squad__motion,.bb-squad__figure,.bb-squad__svg,.bb-squad__eye,.bb-squad__hand,.bb-squad__flame,.bb-squad__aura-item,.bb-squad__drone,.bb-squad__glass,.bb-wardrobe__card,.bb-wardrobe__preview,.bb-social-burst span,.bb-social-tag{animation:none!important;transition:none!important}
   .bb-wardrobe__preview{transform:none}
 }
 html[data-season-fx="off"] .bb-squad__figure,
