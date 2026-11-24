@@ -16,6 +16,8 @@
   var SLEEP_AFTER = 90000;
   var ACTIVITY_MIN = 18000;
   var ACTIVITY_MAX = 30000;
+  var FIXED_STEP = 1 / 240;
+  var MAX_SUBSTEPS = 8;
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
@@ -257,8 +259,10 @@
         look: { x: 0, y: 0 },
         lookTarget: { x: 0, y: 0 },
         lastTime: now(),
+        accumulator: 0,
         everTicked: false
       };
+      this.size = { w: 78, h: 84 };
 
       this.drag = {
         active: false, moved: false, pointerId: null,
@@ -285,6 +289,7 @@
     init() {
       this.ensureDom();
       document.body.classList.add('bb-mascot-ready');
+      this.measure();
       this.defaultPos = this.computeDefaultPosition();
       var saved = readPosition();
       var start = saved ? this.clampPoint(saved.x, saved.y) : this.defaultPos;
@@ -428,6 +433,10 @@
       });
       document.addEventListener('bytebay:ai-done', function () { self.setThinking(false); });
       window.addEventListener('bytebay:streak-meet', function (event) { self.onStreakMeet(event); });
+      window.addEventListener('bytebay:streak-renamed', function (event) {
+        var nombre = event && event.detail ? event.detail.nombre : '';
+        if (nombre) self.showBubble('¡Qué buen nombre, ' + nombre + '! ✨', 1900);
+      });
       document.addEventListener('bytebay:ai-response', function (event) {
         if (event.detail && event.detail.respuesta && !self.panel.classList.contains('hidden')) {
           self.speak(event.detail.respuesta);
@@ -474,9 +483,15 @@
         !document.body.classList.contains('bb-mascot-hidden') && !this.state.quiet;
     }
 
+    measure() {
+      if (!this.mascot) return;
+      var w = this.mascot.offsetWidth;
+      var h = this.mascot.offsetHeight;
+      if (w > 0 && h > 0) this.size = { w: w, h: h };
+    }
+
     metrics() {
-      var rect = this.mascot.getBoundingClientRect();
-      return { w: rect.width || 78, h: rect.height || 84 };
+      return this.size;
     }
 
     computeDefaultPosition() {
@@ -865,8 +880,12 @@
       if (this.activities.current) this.abortActivity();
       this.flashHands(1500);
       this.playClass('is-meet', 1500);
-      var days = event && event.detail ? Number(event.detail.dias) : 0;
-      this.showBubble(days > 0 ? '¡Vas con ' + days + ' días de racha! 🔥' : '¡Hola, racha! 🔥', 2200);
+      var detail = event && event.detail ? event.detail : {};
+      var days = Number(detail.dias) || 0;
+      var name = typeof detail.nombre === 'string' && detail.nombre ? detail.nombre : 'tu racha';
+      this.showBubble(days > 0
+        ? '¡' + name + ' y sus ' + days + ' días! 🔥'
+        : '¡Hola, ' + name + '! 🔥', 2300);
       this.playTone('bubble');
       this.noteActivity();
     }
@@ -1087,20 +1106,7 @@
       }
     }
 
-    tick(time) {
-      if (this.watchdog && this.physics.everTicked) {
-        window.clearTimeout(this.watchdog);
-        this.watchdog = null;
-      }
-      var stamp = typeof time === 'number' ? time : now();
-      var delta = (stamp - this.physics.lastTime) / 16.6667;
-      this.physics.lastTime = stamp;
-      if (!isFinite(delta) || delta <= 0) delta = 1;
-      delta = clamp(delta, 0.5, 6);
-      this.physics.everTicked = true;
-      this.refreshBoundsAndCenter();
-      this.updateLookTarget();
-
+    integrate(frames) {
       var p = this.physics;
       if (this.motionOff()) {
         p.current.x = p.target.x;
@@ -1112,19 +1118,43 @@
         p.tiltVelocity = 0;
         p.look.x = 0;
         p.look.y = 0;
-      } else {
-        p.velocity.x = (p.velocity.x + (p.target.x - p.current.x) * 0.17 * delta) * Math.pow(0.74, delta);
-        p.velocity.y = (p.velocity.y + (p.target.y - p.current.y) * 0.17 * delta) * Math.pow(0.74, delta);
-        p.current.x += p.velocity.x * delta;
-        p.current.y += p.velocity.y * delta;
-        p.tiltTarget *= Math.pow(0.86, delta);
-        p.tiltVelocity = (p.tiltVelocity + (p.tiltTarget - p.tilt) * 0.18 * delta) * Math.pow(0.76, delta);
-        p.tilt = clamp(p.tilt + p.tiltVelocity * delta, -14, 14);
-        var lookLerp = 1 - Math.pow(0.82, delta);
-        p.look.x += (p.lookTarget.x - p.look.x) * lookLerp;
-        p.look.y += (p.lookTarget.y - p.look.y) * lookLerp;
+        return;
       }
-      this.activities.tick(stamp, delta);
+      p.velocity.x = (p.velocity.x + (p.target.x - p.current.x) * 0.17 * frames) * Math.pow(0.74, frames);
+      p.velocity.y = (p.velocity.y + (p.target.y - p.current.y) * 0.17 * frames) * Math.pow(0.74, frames);
+      p.current.x += p.velocity.x * frames;
+      p.current.y += p.velocity.y * frames;
+      p.tiltTarget *= Math.pow(0.86, frames);
+      p.tiltVelocity = (p.tiltVelocity + (p.tiltTarget - p.tilt) * 0.18 * frames) * Math.pow(0.76, frames);
+      p.tilt = clamp(p.tilt + p.tiltVelocity * frames, -14, 14);
+      var lookLerp = 1 - Math.pow(0.82, frames);
+      p.look.x += (p.lookTarget.x - p.look.x) * lookLerp;
+      p.look.y += (p.lookTarget.y - p.look.y) * lookLerp;
+    }
+
+    tick(time) {
+      if (this.watchdog && this.physics.everTicked) {
+        window.clearTimeout(this.watchdog);
+        this.watchdog = null;
+      }
+      var stamp = typeof time === 'number' ? time : now();
+      var elapsed = (stamp - this.physics.lastTime) / 1000;
+      this.physics.lastTime = stamp;
+      if (!isFinite(elapsed) || elapsed <= 0) elapsed = FIXED_STEP;
+      elapsed = Math.min(elapsed, 0.1);
+      this.physics.accumulator += elapsed;
+      this.physics.everTicked = true;
+      this.updateLookTarget();
+
+      var steps = 0;
+      while (this.physics.accumulator >= FIXED_STEP && steps < MAX_SUBSTEPS) {
+        this.integrate(FIXED_STEP * 60);
+        this.physics.accumulator -= FIXED_STEP;
+        steps += 1;
+      }
+      if (steps === MAX_SUBSTEPS) this.physics.accumulator = 0;
+      if (steps) this.refreshBoundsAndCenter();
+      this.activities.tick(stamp, steps * FIXED_STEP * 60);
       this.render();
     }
 
@@ -1147,6 +1177,7 @@
     }
 
     normalizePosition() {
+      this.measure();
       this.defaultPos = this.computeDefaultPosition();
       var point = this.clampPoint(this.physics.target.x, this.physics.target.y);
       if (this.state.dockSide === 'left') point.x = 0;

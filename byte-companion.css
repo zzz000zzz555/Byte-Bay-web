@@ -22,6 +22,24 @@ body.bb-mascot-dragging *{user-select:none!important;-webkit-user-select:none!im
 .bb-mascot__antenna{animation:none}
 .bb-mascot__pack{animation:none}
 .bb-mascot__waves{opacity:0}
+.bb-mascot__mouth,.bb-mascot__cheek,.bb-mascot__core,.bb-mascot__core-ring,.bb-mascot__antenna-dot{transform-box:fill-box;transform-origin:center}
+.bb-mascot__antenna-dot{animation:bb-mascot-beacon 2.8s ease-in-out infinite}
+.bb-mascot__core{animation:bb-mascot-core 3.4s ease-in-out infinite}
+.bb-mascot__core-ring{opacity:.7;animation:bb-mascot-core-ring 3.4s ease-in-out infinite}
+.bb-mascot__cheek{opacity:0;transition:opacity .18s ease}
+.bb-mascot__mouth{transition:transform .18s ease}
+.bb-mascot.is-happy .bb-mascot__cheek,
+.bb-mascot.is-meet .bb-mascot__cheek,
+.bb-mascot.is-celebrating .bb-mascot__cheek{opacity:.55}
+.bb-mascot.is-happy .bb-mascot__mouth,
+.bb-mascot.is-meet .bb-mascot__mouth,
+.bb-mascot.is-celebrating .bb-mascot__mouth{transform:scaleY(1.4)}
+.bb-mascot.is-sleeping .bb-mascot__mouth{transform:scale(.65) translateY(1px)}
+.bb-mascot.is-thinking .bb-mascot__mouth{transform:translateX(2px) scaleX(.7)}
+.bb-mascot.is-speaker .bb-mascot__mouth,
+.bb-mascot.is-speaking .bb-mascot__mouth{transform:scaleY(1.55)}
+.bb-mascot.is-meet .bb-mascot__antenna-dot{animation-duration:.55s}
+.bb-mascot.is-meet .bb-mascot__core{animation-duration:.8s}
 
 .bb-mascot__badge,.bb-mascot__bubble,.bb-mascot__zzz,.bb-mascot__spark{pointer-events:none}
 .bb-mascot__badge{position:absolute;left:50%;bottom:-9px;z-index:2;transform:translate(-50%,4px);padding:3px 9px;border:1px solid #00b8cf;border-radius:999px;background:#07383f;color:#dffffb;box-shadow:0 6px 16px rgba(6,38,43,.24);font:800 11px/1 Manrope,sans-serif;letter-spacing:.04em;white-space:nowrap;opacity:0;visibility:hidden;transition:opacity .18s ease,transform .18s ease,visibility .18s ease}
@@ -126,7 +144,12 @@ body.bb-mascot-inactive .bb-mascot__antenna,
 body.bb-mascot-inactive .bb-mascot__pack,
 body.bb-mascot-inactive .bb-mascot__waves,
 body.bb-mascot-inactive .bb-mascot__zzz,
-body.bb-mascot-inactive .bb-mascot__spark{animation:none!important;transition:none!important}
+body.bb-mascot-inactive .bb-mascot__spark,
+body.bb-mascot-inactive .bb-mascot__antenna-dot,
+body.bb-mascot-inactive .bb-mascot__core,
+body.bb-mascot-inactive .bb-mascot__core-ring,
+body.bb-mascot-inactive .bb-mascot__mouth,
+body.bb-mascot-inactive .bb-mascot__cheek{animation:none!important;transition:none!important}
 body.bb-mascot-inactive .bb-mascot__motion{transform:scale(var(--bb-scale,1))!important}
 body.bb-mascot-inactive .bb-mascot__waves{opacity:0}
 body.bb-mascot-inactive .bb-mascot:hover .bb-mascot__figure{transform:none}
@@ -153,6 +176,9 @@ body.bb-mascot-inactive .bb-mascot:hover .bb-mascot__figure{transform:none}
 @keyframes bb-mascot-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.018,1.03)}}
 @keyframes bb-mascot-blink{0%,100%{transform:scaleY(1)}45%{transform:scaleY(.08)}}
 @keyframes bb-mascot-glint{0%,100%{opacity:.6}50%{opacity:.88}}
+@keyframes bb-mascot-beacon{0%,100%{opacity:.75;transform:scale(.92)}50%{opacity:1;transform:scale(1.14)}}
+@keyframes bb-mascot-core{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.12);opacity:1}}
+@keyframes bb-mascot-core-ring{0%,100%{transform:scale(.9);opacity:.35}50%{transform:scale(1.08);opacity:.9}}
 @keyframes bb-mascot-scan{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:.75;transform:scale(1.25)}}
 @keyframes bb-mascot-antenna{0%,100%{transform:translateX(0)}50%{transform:translateX(1.5px)}}
 @keyframes bb-mascot-bounce{0%,100%{transform:translateY(0) scale(1.01)}45%{transform:translateY(-12px) scale(1.04,.96)}60%{transform:translateY(-2px) scale(.98,1.04)}}
@@ -172,7 +198,7 @@ body.bb-mascot-inactive .bb-mascot:hover .bb-mascot__figure{transform:none}
   .ai-assistant-panel header .bb-mascot-control{width:28px;height:28px}
 }
 @media(prefers-reduced-motion:reduce){
-  .bb-mascot,.bb-mascot__motion,.bb-mascot__figure,.bb-mascot__svg,.bb-mascot__eye,.bb-mascot__glint,.bb-mascot__scan,.bb-mascot__antenna,.bb-mascot__pack,.bb-mascot__waves,.bb-mascot__spark,.bb-mascot__zzz{animation:none!important;transition:none!important}
+  .bb-mascot,.bb-mascot__motion,.bb-mascot__figure,.bb-mascot__svg,.bb-mascot__eye,.bb-mascot__glint,.bb-mascot__scan,.bb-mascot__antenna,.bb-mascot__pack,.bb-mascot__waves,.bb-mascot__spark,.bb-mascot__zzz,.bb-mascot__antenna-dot,.bb-mascot__core,.bb-mascot__core-ring,.bb-mascot__mouth,.bb-mascot__cheek{animation:none!important;transition:none!important}
   .bb-mascot__motion{transform:scale(var(--bb-scale,1))!important}
   .bb-mascot:hover .bb-mascot__figure,
   .bb-mascot:focus-visible .bb-mascot__figure,
@@ -188,6 +214,9 @@ html[data-season-fx="off"] .bb-mascot__pack,
 html[data-season-fx="off"] .bb-mascot__waves,
 html[data-season-fx="off"] .bb-mascot__spark,
 html[data-season-fx="off"] .bb-mascot__zzz,
+html[data-season-fx="off"] .bb-mascot__antenna-dot,
+html[data-season-fx="off"] .bb-mascot__core,
+html[data-season-fx="off"] .bb-mascot__core-ring,
 html[data-season-fx="reduced"] .bb-mascot__figure,
 html[data-season-fx="reduced"] .bb-mascot__svg,
 html[data-season-fx="reduced"] .bb-mascot__eye,
@@ -197,7 +226,10 @@ html[data-season-fx="reduced"] .bb-mascot__antenna,
 html[data-season-fx="reduced"] .bb-mascot__pack,
 html[data-season-fx="reduced"] .bb-mascot__waves,
 html[data-season-fx="reduced"] .bb-mascot__spark,
-html[data-season-fx="reduced"] .bb-mascot__zzz{animation:none!important}
+html[data-season-fx="reduced"] .bb-mascot__zzz,
+html[data-season-fx="reduced"] .bb-mascot__antenna-dot,
+html[data-season-fx="reduced"] .bb-mascot__core,
+html[data-season-fx="reduced"] .bb-mascot__core-ring{animation:none!important}
 body.bb-mascot-inactive .bb-mascot__hand,
 body.bb-mascot-inactive .bb-mascot__prop,
 body.bb-mascot-inactive .bb-mascot__steam,

@@ -1,5 +1,6 @@
-/* Byte · mascota de racha. Se muestra solo con cuenta validada; la racha se
-   guarda en Supabase mediante bb_registrar_racha (la sesión se valida allí). */
+/* Byte · mascota de racha. Se muestra solo con cuenta validada; la racha y su
+   nombre viven en Supabase (bb_registrar_racha / bb_renombrar_racha).
+   Motor con paso fijo de 240 Hz: idéntico a 60, 120, 144 o 1000 Hz. */
 (function () {
   'use strict';
 
@@ -7,8 +8,12 @@
   var KEY_VOICE = 'bytebay_mascot_voice';
   var CACHE_PREFIX = 'bytebay_streak_cache_';
   var DRAG_THRESHOLD = 5;
-  var MEET_DISTANCE = 155;
+  var MEET_DISTANCE = 165;
   var MEET_COOLDOWN = 5500;
+  var FIXED_STEP = 1 / 240;
+  var MAX_SUBSTEPS = 8;
+  var DEFAULT_NAME = 'Chispa';
+  var NAME_MAX = 24;
   var TIERS = [
     { max: 6, name: 'Chispa', label: 'Chispa de racha' },
     { max: 13, name: 'Brasa', label: 'Brasa de racha' },
@@ -56,6 +61,16 @@
     } catch (error) {
       return fallback;
     }
+  }
+
+  function sanitizeName(value) {
+    var text = String(value == null ? '' : value)
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!text) return DEFAULT_NAME;
+    var chars = Array.from(text);
+    return (chars.length > NAME_MAX ? chars.slice(0, NAME_MAX) : chars).join('');
   }
 
   function dayKey(date) {
@@ -106,9 +121,17 @@
       this.mascot = document.querySelector('#bbStreak');
       this.bubble = document.querySelector('#bbStreakBubble');
       this.badge = document.querySelector('#bbStreakBadge');
-      if (!this.mascot || !this.bubble || !this.badge) return;
+      if (!this.mascot || !this.bubble) return;
 
       this.tooltip = document.querySelector('#bbStreakTooltip');
+      this.nameNode = document.querySelector('#bbStreakName');
+      this.daysNode = document.querySelector('#bbStreakDays');
+      this.editButton = document.querySelector('#bbStreakEdit');
+      this.editor = document.querySelector('#bbStreakNameEditor');
+      this.nameInput = document.querySelector('#bbStreakNameInput');
+      this.nameSave = document.querySelector('#bbStreakNameSave');
+      this.nameCancel = document.querySelector('#bbStreakNameCancel');
+      this.nameError = document.querySelector('#bbStreakNameError');
       this.motion = this.mascot.querySelector('.bb-streak__motion');
       this.mediaQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
       this.timers = {};
@@ -117,17 +140,21 @@
       this.intervalId = 0;
       this.refreshing = false;
       this.visible = false;
+      this.session = null;
+      this.size = { w: 72, h: 80 };
 
       this.state = {
         days: 0,
         best: 0,
         tier: 0,
+        name: DEFAULT_NAME,
         customerId: 0,
         preview: false,
         dragging: false,
         quiet: false,
         lastMeet: 0,
-        lastRefreshDay: ''
+        lastRefreshDay: '',
+        lastTap: 0
       };
 
       this.physics = {
@@ -137,7 +164,10 @@
         tilt: 0,
         tiltTarget: 0,
         tiltVelocity: 0,
+        look: { x: 0, y: 0 },
+        lookTarget: { x: 0, y: 0 },
         lastTime: now(),
+        accumulator: 0,
         everTicked: false
       };
 
@@ -151,6 +181,7 @@
     }
 
     init() {
+      this.measure();
       this.defaultPos = this.computeDefaultPosition();
       var saved = readJSON(KEY_POS);
       var start = saved && isFinite(saved.x) && isFinite(saved.y)
@@ -164,16 +195,22 @@
       this.render();
       this.bindEvents();
       this.startLoop();
+      this.scheduleBlink();
       this.refresh();
     }
 
     bindEvents() {
       var self = this;
       this.mascot.addEventListener('pointerdown', function (event) { self.onPointerDown(event); });
-      document.addEventListener('pointermove', function (event) { self.onDragMove(event); }, { passive: false });
+      document.addEventListener('pointermove', function (event) {
+        self.onDragMove(event);
+        self.onPointerMove(event);
+      }, { passive: false });
       document.addEventListener('pointerup', function (event) { self.endDrag(event, false); });
       document.addEventListener('pointercancel', function (event) { self.endDrag(event, true); });
       this.mascot.addEventListener('keydown', function (event) {
+        if (event.target && typeof event.target.closest === 'function' &&
+            event.target.closest('button,input')) return;
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           self.activate();
@@ -186,16 +223,50 @@
         if (document.visibilityState === 'visible') self.refresh();
         else self.stopAudio();
       });
+
+      if (this.editButton) {
+        this.editButton.addEventListener('click', function (event) {
+          event.stopPropagation();
+          self.openEditor();
+        });
+      }
+      if (this.nameSave) {
+        this.nameSave.addEventListener('click', function (event) {
+          event.stopPropagation();
+          self.commitName();
+        });
+      }
+      if (this.nameCancel) {
+        this.nameCancel.addEventListener('click', function (event) {
+          event.stopPropagation();
+          self.closeEditor();
+        });
+      }
+      if (this.nameInput) {
+        this.nameInput.addEventListener('keydown', function (event) {
+          event.stopPropagation();
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            self.commitName();
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            self.closeEditor();
+          }
+        });
+      }
+      document.addEventListener('pointerdown', function (event) {
+        if (self.editor && !self.editor.hidden && !self.mascot.contains(event.target)) self.closeEditor();
+      }, true);
     }
 
     motionOff() {
       var fx = document.documentElement.getAttribute('data-season-fx');
-      var active = readFlag('bytebay_mascot_active', true);
-      return !active || fx === 'off' || fx === 'reduced' ||
+      return document.body.classList.contains('bb-mascot-inactive') ||
+        fx === 'off' || fx === 'reduced' ||
         Boolean(this.mediaQuery && this.mediaQuery.matches);
     }
 
-    /* ---------- Sesión y racha ---------- */
+    /* ---------- Sesión, racha y nombre ---------- */
 
     async refresh(force) {
       if (this.refreshing) return;
@@ -208,12 +279,13 @@
           session = await withTimeout(window.BBPrivacy.obtenerSesionCliente(), 4500);
           if (session && session.ok === false) session = null;
         }
-        if (session && session.customer_id) {
+        this.session = session && session.access_token ? session : null;
+        if (this.session && session.customer_id) {
           this.state.customerId = Number(session.customer_id);
-          var result = await this.registerServer(session);
+          var result = await this.registerServer(this.session);
           if (result && result.ok) {
             this.state.preview = false;
-            this.apply(result.dias_racha, result.mejor_racha, true);
+            this.apply(result.dias_racha, result.mejor_racha, true, result.nombre);
             this.state.lastRefreshDay = today;
             return;
           }
@@ -222,14 +294,30 @@
         if (account && account.verified && Number(account.id) > 0) {
           this.state.customerId = Number(account.id);
           var cached = this.registerLocal(this.state.customerId, today);
-          this.apply(cached.dias_racha, cached.mejor_racha, false);
+          this.apply(cached.dias_racha, cached.mejor_racha, false, cached.nombre);
           this.state.lastRefreshDay = today;
           return;
         }
+        this.session = null;
+        this.closeEditor();
+        if (this.state.preview) return;
         this.hide();
       } finally {
         this.refreshing = false;
       }
+    }
+
+    cacheKey(customerId) {
+      return CACHE_PREFIX + (customerId || this.state.customerId || 0);
+    }
+
+    saveCache(customerId, days, best, name, fecha) {
+      saveJSON(this.cacheKey(customerId), {
+        dias: days,
+        mejor: best,
+        nombre: sanitizeName(name || this.state.name),
+        fecha: String(fecha || dayKey(new Date()))
+      });
     }
 
     async registerServer(session) {
@@ -244,26 +332,28 @@
         var days = Number(data.dias_racha);
         var best = Number(data.mejor_racha);
         if (!isFinite(days) || days < 1) return null;
-        saveJSON(CACHE_PREFIX + this.state.customerId, {
-          dias: days,
-          mejor: isFinite(best) ? best : days,
-          fecha: String(data.fecha || dayKey(new Date()))
-        });
-        return { ok: true, dias_racha: days, mejor_racha: isFinite(best) ? best : days };
+        var name = sanitizeName(data.nombre || this.state.name);
+        this.saveCache(this.state.customerId, days, isFinite(best) ? best : days, name, data.fecha);
+        return {
+          ok: true,
+          dias_racha: days,
+          mejor_racha: isFinite(best) ? best : days,
+          nombre: name
+        };
       } catch (error) {
         return null;
       }
     }
 
     registerLocal(customerId, today) {
-      var key = CACHE_PREFIX + customerId;
-      var cache = readJSON(key);
+      var cache = readJSON(this.cacheKey(customerId));
       if (!cache || !isFinite(Number(cache.dias))) {
-        cache = { dias: 3, mejor: 3, fecha: today };
+        cache = { dias: 3, mejor: 3, nombre: DEFAULT_NAME, fecha: today };
       } else {
         cache = {
           dias: clamp(Number(cache.dias), 1, 3650),
           mejor: clamp(Number(cache.mejor) || Number(cache.dias), 1, 3650),
+          nombre: sanitizeName(cache.nombre),
           fecha: String(cache.fecha || today)
         };
         if (cache.fecha !== today) {
@@ -272,27 +362,31 @@
           cache.fecha = today;
         }
       }
-      saveJSON(key, cache);
-      return { dias_racha: cache.dias, mejor_racha: cache.mejor };
+      this.saveCache(customerId, cache.dias, cache.mejor, cache.nombre, cache.fecha);
+      return { dias_racha: cache.dias, mejor_racha: cache.mejor, nombre: cache.nombre };
     }
 
-    apply(days, best, fromServer) {
+    apply(days, best, fromServer, name) {
       days = clamp(Number(days) || 3, 1, 3650);
       best = clamp(Number(best) || days, days, 3650);
+      var nextName = sanitizeName(name == null ? this.state.name : name);
       var tier = tierFor(days);
       var leveled = this.visible && this.state.tier && tier > this.state.tier;
       var increased = this.visible && days > this.state.days;
+      var renamed = this.visible && nextName !== this.state.name;
 
       this.state.days = days;
       this.state.best = best;
       this.state.tier = tier;
+      this.state.name = nextName;
       this.mascot.dataset.tier = String(tier);
       this.mascot.setAttribute('aria-label',
-        'Mascota de racha: ' + days + ' días consecutivos, ' + TIERS[tier - 1].label +
+        nextName + ': ' + days + ' días consecutivos, ' + TIERS[tier - 1].label +
         '. Arrástrala o toca para interactuar.');
-      this.badge.textContent = days + ' días';
+      if (this.badge) this.badge.textContent = days + ' días';
+      this.renderName();
       if (this.tooltip) {
-        this.tooltip.textContent = TIERS[tier - 1].label + ' · ' + days + ' días seguidos. ¡Sigue así!';
+        this.tooltip.textContent = nextName + ' · ' + TIERS[tier - 1].label + ' · ' + days + ' días seguidos.';
       }
       this.show();
 
@@ -301,8 +395,18 @@
         this.showBubble('¡Nueva forma! Ya soy ' + TIERS[tier - 1].label.toLowerCase() + ' 🔥', 2600);
         this.burst(this.center.x, this.center.y);
         this.playTone('level');
+      } else if (renamed && !fromServer) {
+        this.playClass('is-levelup', 900);
       } else if (increased && !fromServer) {
         this.playClass('is-happy', 900);
+      }
+    }
+
+    renderName() {
+      if (this.nameNode) this.nameNode.textContent = this.state.name;
+      if (this.daysNode) this.daysNode.textContent = this.state.days + ' días';
+      if (this.nameInput && this.nameInput !== document.activeElement) {
+        this.nameInput.value = this.state.name;
       }
     }
 
@@ -310,6 +414,7 @@
       this.visible = true;
       document.body.classList.add('bb-streak-ready');
       this.mascot.classList.add('is-visible');
+      this.measure();
       this.refreshCenter();
       this.render();
     }
@@ -317,26 +422,97 @@
     hide() {
       this.visible = false;
       document.body.classList.remove('bb-streak-ready');
-      this.mascot.classList.remove('is-visible', 'is-meet', 'is-happy', 'is-levelup', 'has-bubble');
+      this.mascot.classList.remove('is-visible', 'is-meet', 'is-happy', 'is-levelup', 'is-landing', 'has-bubble');
       clearNode(this.bubble);
     }
 
-    preview(days) {
+    preview(days, name) {
       this.state.preview = true;
       var value = clamp(Number(days) || 3, 1, 3650);
-      this.apply(value, Math.max(value, this.state.best), true);
-      return { days: value, tier: this.state.tier };
+      this.apply(value, Math.max(value, this.state.best), true, name);
+      return { days: value, tier: this.state.tier, name: this.state.name };
+    }
+
+    /* ---------- Editor de nombre ---------- */
+
+    openEditor() {
+      if (!this.visible || !this.editor || !this.nameInput) return;
+      this.editor.hidden = false;
+      this.mascot.classList.add('is-editing');
+      this.hideBubble();
+      if (this.nameError) this.nameError.textContent = '';
+      this.nameInput.value = this.state.name;
+      this.nameInput.focus();
+      this.nameInput.select();
+    }
+
+    closeEditor() {
+      if (!this.editor) return;
+      this.editor.hidden = true;
+      this.mascot.classList.remove('is-editing');
+      if (this.nameError) this.nameError.textContent = '';
+    }
+
+    async commitName() {
+      if (!this.visible || !this.nameInput) return;
+      var name = sanitizeName(this.nameInput.value);
+      if (this.nameError) this.nameError.textContent = '';
+      this.closeEditor();
+      if (name === this.state.name) {
+        this.showBubble('Tu racha ya se llama "' + name + '" ✨', 1800);
+        return;
+      }
+
+      var previous = this.state.name;
+      this.state.name = name;
+      this.renderName();
+      this.saveCache(this.state.customerId, this.state.days, this.state.best, name, dayKey(new Date()));
+      this.playClass('is-levelup', 950);
+      this.showBubble('¡Desde ahora me llamo ' + name + '! ✨', 2300);
+      this.playTone('level');
+      window.dispatchEvent(new CustomEvent('bytebay:streak-renamed', { detail: { nombre: name } }));
+
+      if (!this.session || typeof supabaseClient === 'undefined' || !supabaseClient) return;
+      try {
+        var response = await withTimeout(
+          supabaseClient.rpc('bb_renombrar_racha', {
+            p_access_token: this.session.access_token,
+            p_nombre: name
+          }),
+          6000
+        );
+        if (response && !response.error && response.data && response.data.ok === true) {
+          var confirmed = sanitizeName(response.data.nombre);
+          this.state.name = confirmed;
+          this.renderName();
+          this.saveCache(this.state.customerId, this.state.days, this.state.best, confirmed, dayKey(new Date()));
+          return;
+        }
+      } catch (error) {
+        /* Se conserva el nombre local; el RPC puede no estar aplicado aún. */
+      }
+      this.state.name = previous;
+      this.renderName();
+      this.saveCache(this.state.customerId, this.state.days, this.state.best, previous, dayKey(new Date()));
+      if (this.nameError) this.nameError.textContent = 'No se pudo guardar en la nube.';
+      this.showBubble('Guardé "' + name + '" en este dispositivo; sincroniza más tarde.', 3200);
     }
 
     /* ---------- Física y arrastre ---------- */
 
+    measure() {
+      if (!this.mascot) return;
+      var w = this.mascot.offsetWidth;
+      var h = this.mascot.offsetHeight;
+      if (w > 0 && h > 0) this.size = { w: w, h: h };
+    }
+
     metrics() {
-      var rect = this.mascot.getBoundingClientRect();
-      return { w: rect.width || 72, h: rect.height || 80 };
+      return this.size;
     }
 
     computeDefaultPosition() {
-      var size = this.metrics();
+      var size = this.size;
       var inset = window.innerWidth < 768 ? 12 : 24;
       return {
         x: inset,
@@ -345,23 +521,23 @@
     }
 
     clampPoint(x, y) {
-      var size = this.metrics();
       return {
-        x: clamp(x, 0, Math.max(0, window.innerWidth - size.w)),
-        y: clamp(y, 0, Math.max(0, window.innerHeight - size.h))
+        x: clamp(x, 0, Math.max(0, window.innerWidth - this.size.w)),
+        y: clamp(y, 0, Math.max(0, window.innerHeight - this.size.h - 32))
       };
     }
 
     refreshCenter() {
-      var size = this.metrics();
-      this.center.x = this.physics.current.x + size.w / 2;
-      this.center.y = this.physics.current.y + size.h / 2;
-      this.mascot.classList.toggle('is-near-left', this.physics.current.x < 90);
+      this.center.x = this.physics.current.x + this.size.w / 2;
+      this.center.y = this.physics.current.y + this.size.h / 2;
+      this.mascot.classList.toggle('is-near-left', this.physics.current.x < 100);
       this.mascot.classList.toggle('is-near-right',
-        this.physics.current.x + size.w > window.innerWidth - 90);
+        this.physics.current.x + this.size.w > window.innerWidth - 100);
+      this.mascot.classList.toggle('is-top', this.physics.current.y < 110);
     }
 
     normalizePosition() {
+      this.measure();
       this.defaultPos = this.computeDefaultPosition();
       var point = this.clampPoint(this.physics.target.x, this.physics.target.y);
       this.physics.target.x = point.x;
@@ -380,13 +556,13 @@
     startLoop() {
       this.physics.lastTime = now();
       var self = this;
-      var step = function (time) {
+      var frame = function (time) {
         if (self.intervalId) return;
         self.tick(time);
-        self.rafId = window.requestAnimationFrame(step);
+        self.rafId = window.requestAnimationFrame(frame);
       };
       if (typeof window.requestAnimationFrame === 'function') {
-        this.rafId = window.requestAnimationFrame(step);
+        this.rafId = window.requestAnimationFrame(frame);
         window.setTimeout(function () {
           if (!self.physics.everTicked && !self.intervalId) {
             window.cancelAnimationFrame(self.rafId);
@@ -399,15 +575,7 @@
       }
     }
 
-    tick(time) {
-      var stamp = typeof time === 'number' ? time : now();
-      var delta = (stamp - this.physics.lastTime) / 16.6667;
-      this.physics.lastTime = stamp;
-      if (!isFinite(delta) || delta <= 0) delta = 1;
-      delta = clamp(delta, 0.5, 6);
-      this.physics.everTicked = true;
-      this.refreshCenter();
-
+    integrate(frames) {
       var p = this.physics;
       if (this.motionOff()) {
         p.current.x = p.target.x;
@@ -417,31 +585,67 @@
         p.tilt = 0;
         p.tiltTarget = 0;
         p.tiltVelocity = 0;
-      } else {
-        p.velocity.x = (p.velocity.x + (p.target.x - p.current.x) * 0.17 * delta) * Math.pow(0.74, delta);
-        p.velocity.y = (p.velocity.y + (p.target.y - p.current.y) * 0.17 * delta) * Math.pow(0.74, delta);
-        p.current.x += p.velocity.x * delta;
-        p.current.y += p.velocity.y * delta;
-        p.tiltTarget *= Math.pow(0.86, delta);
-        p.tiltVelocity = (p.tiltVelocity + (p.tiltTarget - p.tilt) * 0.18 * delta) * Math.pow(0.76, delta);
-        p.tilt = clamp(p.tilt + p.tiltVelocity * delta, -14, 14);
+        p.look.x = 0;
+        p.look.y = 0;
+        return;
       }
+      p.velocity.x = (p.velocity.x + (p.target.x - p.current.x) * 0.17 * frames) * Math.pow(0.74, frames);
+      p.velocity.y = (p.velocity.y + (p.target.y - p.current.y) * 0.17 * frames) * Math.pow(0.74, frames);
+      p.current.x += p.velocity.x * frames;
+      p.current.y += p.velocity.y * frames;
+      p.tiltTarget *= Math.pow(0.86, frames);
+      p.tiltVelocity = (p.tiltVelocity + (p.tiltTarget - p.tilt) * 0.18 * frames) * Math.pow(0.76, frames);
+      p.tilt = clamp(p.tilt + p.tiltVelocity * frames, -14, 14);
+      var lerp = 1 - Math.pow(0.82, frames);
+      p.look.x += (p.lookTarget.x - p.look.x) * lerp;
+      p.look.y += (p.lookTarget.y - p.look.y) * lerp;
+    }
+
+    tick(time) {
+      var stamp = typeof time === 'number' ? time : now();
+      var elapsed = (stamp - this.physics.lastTime) / 1000;
+      this.physics.lastTime = stamp;
+      if (!isFinite(elapsed) || elapsed <= 0) elapsed = FIXED_STEP;
+      elapsed = Math.min(elapsed, 0.1);
+      this.physics.accumulator += elapsed;
+      this.physics.everTicked = true;
+
+      var steps = 0;
+      while (this.physics.accumulator >= FIXED_STEP && steps < MAX_SUBSTEPS) {
+        this.integrate(FIXED_STEP * 60);
+        this.physics.accumulator -= FIXED_STEP;
+        steps += 1;
+      }
+      if (steps === MAX_SUBSTEPS) this.physics.accumulator = 0;
+      if (steps) this.refreshCenter();
       this.checkMeet();
       this.render();
     }
 
     render() {
-      var x = this.physics.current.x;
-      this.mascot.style.transform = 'translate3d(' + x.toFixed(2) + 'px,' +
-        this.physics.current.y.toFixed(2) + 'px,0)';
-      if (this.motion) this.motion.style.setProperty('--st-tilt', this.physics.tilt.toFixed(2) + 'deg');
+      var p = this.physics;
+      this.mascot.style.transform = 'translate3d(' + p.current.x.toFixed(2) + 'px,' +
+        p.current.y.toFixed(2) + 'px,0)';
+      if (this.motion) {
+        this.motion.style.setProperty('--st-tilt', p.tilt.toFixed(2) + 'deg');
+        this.motion.style.setProperty('--st-look-x', p.look.x.toFixed(2) + 'px');
+        this.motion.style.setProperty('--st-look-y', p.look.y.toFixed(2) + 'px');
+      }
+    }
+
+    onPointerMove(event) {
+      if (!this.visible || this.state.dragging) return;
+      var nx = (event.clientX - this.center.x) / Math.max(1, window.innerWidth / 2);
+      var ny = (event.clientY - this.center.y) / Math.max(1, window.innerHeight / 2);
+      this.physics.lookTarget.x = clamp(nx, -1, 1) * 2.2;
+      this.physics.lookTarget.y = clamp(ny, -1, 1) * 1.8;
     }
 
     onPointerDown(event) {
       if (event.button !== undefined && event.button !== 0) return;
       if (!this.visible || document.body.classList.contains('bb-mascot-hidden')) return;
       if (event.target && typeof event.target.closest === 'function' &&
-          event.target.closest('.bb-streak__bubble')) return;
+          event.target.closest('.bb-streak__bubble,.bb-streak__editor,.bb-streak__edit')) return;
       var rect = this.mascot.getBoundingClientRect();
       if (!rect.width) return;
       this.ensureAudio();
@@ -476,6 +680,7 @@
         this.mascot.classList.add('is-dragging');
         document.body.classList.add('bb-streak-dragging');
         this.hideBubble();
+        this.closeEditor();
       }
       var point = this.clampPoint(this.drag.baseX + dx, this.drag.baseY + dy);
       this.physics.target.x = point.x;
@@ -506,10 +711,11 @@
       document.body.classList.remove('bb-streak-dragging');
 
       if (wasMoved) {
-        var size = this.metrics();
         var point = { x: this.physics.target.x, y: this.physics.target.y };
         if (point.x < 40) point.x = 0;
-        else if (window.innerWidth - (point.x + size.w) < 40) point.x = Math.max(0, window.innerWidth - size.w);
+        else if (window.innerWidth - (point.x + this.size.w) < 40) {
+          point.x = Math.max(0, window.innerWidth - this.size.w);
+        }
         this.physics.target.x = point.x;
         this.physics.target.y = point.y;
         if (this.motionOff()) {
@@ -525,6 +731,18 @@
     }
 
     /* ---------- Interacción y animaciones ---------- */
+
+    scheduleBlink() {
+      var self = this;
+      var next = function () {
+        var delay = 2600 + Math.random() * 4200;
+        self.timers.blink = window.setTimeout(function () {
+          self.playClass('is-blinking', 220);
+          next();
+        }, delay);
+      };
+      next();
+    }
 
     playClass(className, ms) {
       if (this.motionOff()) return;
@@ -569,14 +787,19 @@
 
     activate() {
       if (!this.visible) return;
-      this.playClass('is-happy', 950);
+      var stamp = Date.now();
+      var doubleTap = stamp - this.state.lastTap < 360;
+      this.state.lastTap = stamp;
+      this.playClass(doubleTap ? 'is-levelup' : 'is-happy', doubleTap ? 1100 : 950);
       var messages = [
-        'Llevas ' + this.state.days + ' días seguidos 🔥',
-        'Tu racha es ' + TIERS[this.state.tier - 1].label.toLowerCase() + '. ¡No la pierdas!',
-        'Vuelve mañana y la racha sigue subiendo ✨'
+        this.state.name + ' lleva ' + this.state.days + ' días seguidos 🔥',
+        TIERS[this.state.tier - 1].label + ' · ' + this.state.best + ' días como máximo ✨',
+        'Vuelve mañana y ' + this.state.name + ' sigue creciendo',
+        'Toca el lápiz ✎ para cambiar el nombre de tu racha'
       ];
-      this.showBubble(messages[Math.floor(Math.random() * messages.length)], 2800);
-      this.playTone('bubble');
+      this.showBubble(messages[Math.floor(Math.random() * messages.length)], 2900);
+      this.playTone(doubleTap ? 'level' : 'bubble');
+      if (doubleTap) this.burst(this.center.x, this.center.y);
     }
 
     ensureAudio() {
@@ -631,12 +854,20 @@
       if (!this.visible || this.state.dragging || this.motionOff() ||
           document.body.classList.contains('bb-mascot-hidden') ||
           document.visibilityState === 'hidden') return;
-      var byte = document.querySelector('#bbMascot');
-      if (!byte || !document.body.classList.contains('bb-mascot-ready')) return;
-      var rect = byte.getBoundingClientRect();
-      if (!rect.width) return;
-      var bx = rect.left + rect.width / 2;
-      var by = rect.top + rect.height / 2;
+      if (!document.body.classList.contains('bb-mascot-ready')) return;
+      var byte = window.ByteBayCompanion;
+      var bx, by;
+      if (byte && byte.center && isFinite(byte.center.x) && isFinite(byte.center.y)) {
+        bx = byte.center.x;
+        by = byte.center.y;
+      } else {
+        var node = document.querySelector('#bbMascot');
+        if (!node) return;
+        var rect = node.getBoundingClientRect();
+        if (!rect.width) return;
+        bx = rect.left + rect.width / 2;
+        by = rect.top + rect.height / 2;
+      }
       var distance = Math.hypot(bx - this.center.x, by - this.center.y);
       if (distance < MEET_DISTANCE && Date.now() - this.state.lastMeet > MEET_COOLDOWN) {
         this.meet((bx + this.center.x) / 2, (by + this.center.y) / 2);
@@ -646,11 +877,15 @@
     meet(x, y) {
       this.state.lastMeet = Date.now();
       this.playClass('is-meet', 1600);
-      this.showBubble('¡Hola, Byte! 🔥', 2200);
+      this.showBubble('¡Hola, Byte! Soy ' + this.state.name + ' 🔥', 2300);
       this.burst(x, y);
       this.playTone('meet');
       window.dispatchEvent(new CustomEvent('bytebay:streak-meet', {
-        detail: { dias: this.state.days, tier: this.state.tier }
+        detail: {
+          dias: this.state.days,
+          tier: this.state.tier,
+          nombre: this.state.name
+        }
       }));
     }
 
@@ -661,17 +896,17 @@
       burst.setAttribute('aria-hidden', 'true');
       burst.style.left = Math.round(x) + 'px';
       burst.style.top = Math.round(y) + 'px';
-      for (var i = 0; i < 8; i += 1) {
+      for (var i = 0; i < 12; i += 1) {
         var particle = document.createElement('span');
         particle.className = 'bb-meet-burst__p';
         particle.style.setProperty('--i', String(i));
-        particle.textContent = i % 2 ? '✦' : '💛';
+        particle.textContent = i % 3 === 0 ? '✦' : (i % 3 === 1 ? '💛' : '🔥');
         burst.appendChild(particle);
       }
       document.body.appendChild(burst);
       window.setTimeout(function () {
         if (burst.parentNode) burst.parentNode.removeChild(burst);
-      }, 1200);
+      }, 1300);
     }
   }
 
@@ -682,9 +917,15 @@
       refresh: companion.refresh.bind(companion),
       preview: companion.preview.bind(companion),
       setDays: function (days) { companion.apply(days, days, true); },
+      setName: function (nombre) {
+        if (companion.nameInput) companion.nameInput.value = nombre;
+        return companion.commitName();
+      },
+      openNameEditor: companion.openEditor.bind(companion),
       hide: companion.hide.bind(companion),
       bubble: companion.showBubble.bind(companion),
       meet: companion.meet.bind(companion),
+      instance: companion,
       state: companion.state
     };
   }
