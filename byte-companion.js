@@ -88,7 +88,7 @@
   class IdleActivityManager {
     constructor(host) {
       this.host = host;
-      this.options = ['ball', 'coffee', 'wave', 'console'];
+      this.options = ['ball', 'coffee', 'wave', 'console', 'dance'];
       this.current = null;
       this.last = '';
       this.startedAt = 0;
@@ -193,7 +193,7 @@
 
     abort() {
       var mascot = this.host.mascot;
-      mascot.classList.remove('is-activity', 'has-hands', 'is-ball', 'is-coffee', 'is-wave', 'is-console');
+      mascot.classList.remove('is-activity', 'has-hands', 'is-ball', 'is-coffee', 'is-wave', 'is-console', 'is-dance', 'is-meet');
       mascot.style.removeProperty('--bb-ball-x');
       mascot.style.removeProperty('--bb-ball-y');
       this.current = null;
@@ -427,6 +427,7 @@
         self.setThinking(true);
       });
       document.addEventListener('bytebay:ai-done', function () { self.setThinking(false); });
+      window.addEventListener('bytebay:streak-meet', function (event) { self.onStreakMeet(event); });
       document.addEventListener('bytebay:ai-response', function (event) {
         if (event.detail && event.detail.respuesta && !self.panel.classList.contains('hidden')) {
           self.speak(event.detail.respuesta);
@@ -856,6 +857,18 @@
         else this.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
       }
       this.setThinking(true);
+    }
+
+    /* La mascota de racha se acerca: saludo coreografiado entre las dos. */
+    onStreakMeet(event) {
+      this.userTouched();
+      if (this.activities.current) this.abortActivity();
+      this.flashHands(1500);
+      this.playClass('is-meet', 1500);
+      var days = event && event.detail ? Number(event.detail.dias) : 0;
+      this.showBubble(days > 0 ? '¡Vas con ' + days + ' días de racha! 🔥' : '¡Hola, racha! 🔥', 2200);
+      this.playTone('bubble');
+      this.noteActivity();
     }
 
     reactToCart() {
