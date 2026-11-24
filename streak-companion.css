@@ -28,6 +28,35 @@ body.bb-streak-dragging{cursor:grabbing}
 .bb-streak__figure{position:absolute;inset:0;display:block;animation:bb-streak-bob 3s ease-in-out infinite}
 .bb-streak__svg{display:block;width:100%;height:100%;overflow:visible;animation:bb-streak-flicker 2.4s ease-in-out infinite;transform-origin:50% 100%}
 .bb-streak__shadow{fill:#2A1705;opacity:.18}
+
+/* Fase de huevo: días 1 y 2. El cascarón se abre al llegar al tercer día. */
+.bb-streak__egg{opacity:0;visibility:hidden;transform:scale(.4) translateY(14px);transform-box:fill-box;transform-origin:center;transition:opacity .3s ease,transform .45s cubic-bezier(.2,1.4,.35,1),visibility .3s ease}
+.bb-streak[data-stage="egg"] .bb-streak__egg{opacity:1;visibility:visible;transform:scale(1) translateY(0)}
+.bb-streak__egg-shell{fill:url(#bbStreakEgg);stroke:#7A4A18;stroke-width:3.4;stroke-linejoin:round;filter:drop-shadow(0 0 5px var(--st-ring))}
+.bb-streak__egg-spot{fill:var(--st-mid);opacity:.55}
+.bb-streak__egg-crack{fill:none;stroke:#8A4B14;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.bb-streak[data-egg-days="2"] .bb-streak__egg-crack{opacity:.85}
+.bb-streak__egg-eye{fill:#5A3410}
+.bb-streak__egg-smile{fill:none;stroke:#5A3410;stroke-width:2.2;stroke-linecap:round}
+.bb-streak[data-stage="egg"] .bb-streak__flame-outer,
+.bb-streak[data-stage="egg"] .bb-streak__flame-inner,
+.bb-streak[data-stage="egg"] .bb-streak__shine,
+.bb-streak[data-stage="egg"] .bb-streak__arm,
+.bb-streak[data-stage="egg"] .bb-streak__eye,
+.bb-streak[data-stage="egg"] .bb-streak__cheek,
+.bb-streak[data-stage="egg"] .bb-streak__smile,
+.bb-streak[data-stage="egg"] .bb-streak__crown,
+.bb-streak[data-stage="egg"] .bb-streak__gem,
+.bb-streak[data-stage="egg"] .bb-streak__wings,
+.bb-streak[data-stage="egg"] .bb-streak__aura,
+.bb-streak[data-stage="egg"] .bb-streak__orbit{opacity:0!important;visibility:hidden!important;animation:none!important}
+.bb-streak.is-hatching .bb-streak__egg{animation:bb-streak-egg-hatch .6s ease-in both!important}
+.bb-streak.is-hatching .bb-streak__flame-outer,
+.bb-streak.is-hatching .bb-streak__flame-inner,
+.bb-streak.is-hatching .bb-streak__shine,
+.bb-streak.is-hatching .bb-streak__eye,
+.bb-streak.is-hatching .bb-streak__cheek,
+.bb-streak.is-hatching .bb-streak__smile{animation:bb-streak-hatch-appear .6s .28s both!important}
 .bb-streak__flame-outer{fill:url(#bbStreakOuter);stroke:#2B1B0A;stroke-width:3.6;stroke-linejoin:round;filter:drop-shadow(0 0 7px var(--st-ring))}
 .bb-streak__flame-inner{fill:url(#bbStreakInner);opacity:.9}
 .bb-streak__shine{stroke-linecap:round}
@@ -134,6 +163,8 @@ body.bb-streak-dragging{cursor:grabbing}
 .bb-meet-burst__p{position:absolute;left:0;top:0;width:7px;height:7px;border-radius:50%;background:#FF9F1C;box-shadow:0 0 9px #FF9F1C;animation:bb-meet-particle 1.05s cubic-bezier(.16,.8,.3,1) both;animation-delay:calc(var(--i,0) * 28ms)}
 
 @keyframes bb-streak-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes bb-streak-egg-hatch{0%{opacity:1;visibility:visible;transform:scale(1) rotate(0)}32%{opacity:1;transform:scale(1.1) rotate(-7deg)}58%{opacity:1;transform:scale(1.03) rotate(6deg)}100%{opacity:0;visibility:hidden;transform:scale(.4) translateY(16px)}}
+@keyframes bb-streak-hatch-appear{0%{opacity:0;transform:scale(.45) translateY(10px)}70%{opacity:1;transform:scale(1.08) translateY(-2px)}100%{opacity:1;transform:none}}
 @keyframes bb-streak-flicker{0%,100%{transform:scale(1,1)}42%{transform:scale(1.025,.975)}70%{transform:scale(.985,1.025)}}
 @keyframes bb-streak-blink{0%,100%{transform:scaleY(1)}45%{transform:scaleY(.08)}}
 @keyframes bb-streak-smile{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.35)}}
@@ -160,7 +191,7 @@ body.bb-streak-dragging{cursor:grabbing}
   .bb-streak.is-near-right .bb-streak__editor{left:auto;right:0}
 }
 @media(prefers-reduced-motion:reduce){
-  .bb-streak,.bb-streak__motion,.bb-streak__figure,.bb-streak__svg,.bb-streak__eye,.bb-streak__smile,.bb-streak__arm,.bb-streak__aura,.bb-streak__orbit,.bb-streak__crown,.bb-streak__gem,.bb-streak__wings,.bb-streak__spark,.bb-meet-burst__p{animation:none!important;transition:none!important}
+  .bb-streak,.bb-streak__motion,.bb-streak__figure,.bb-streak__svg,.bb-streak__eye,.bb-streak__smile,.bb-streak__arm,.bb-streak__aura,.bb-streak__orbit,.bb-streak__crown,.bb-streak__gem,.bb-streak__wings,.bb-streak__spark,.bb-streak__egg,.bb-streak__egg-shell,.bb-streak__egg-spot,.bb-streak__egg-crack,.bb-streak__egg-eye,.bb-streak__egg-smile,.bb-meet-burst__p{animation:none!important;transition:none!important}
   .bb-streak__motion{transform:scale(var(--st-scale,1))!important}
 }
 html[data-season-fx="off"] .bb-streak__figure,
@@ -174,6 +205,12 @@ html[data-season-fx="off"] .bb-streak__crown,
 html[data-season-fx="off"] .bb-streak__gem,
 html[data-season-fx="off"] .bb-streak__wings,
 html[data-season-fx="off"] .bb-streak__spark,
+html[data-season-fx="off"] .bb-streak__egg,
+html[data-season-fx="off"] .bb-streak__egg-shell,
+html[data-season-fx="off"] .bb-streak__egg-spot,
+html[data-season-fx="off"] .bb-streak__egg-crack,
+html[data-season-fx="off"] .bb-streak__egg-eye,
+html[data-season-fx="off"] .bb-streak__egg-smile,
 html[data-season-fx="reduced"] .bb-streak__figure,
 html[data-season-fx="reduced"] .bb-streak__svg,
 html[data-season-fx="reduced"] .bb-streak__eye,
@@ -185,6 +222,12 @@ html[data-season-fx="reduced"] .bb-streak__crown,
 html[data-season-fx="reduced"] .bb-streak__gem,
 html[data-season-fx="reduced"] .bb-streak__wings,
 html[data-season-fx="reduced"] .bb-streak__spark,
+html[data-season-fx="reduced"] .bb-streak__egg,
+html[data-season-fx="reduced"] .bb-streak__egg-shell,
+html[data-season-fx="reduced"] .bb-streak__egg-spot,
+html[data-season-fx="reduced"] .bb-streak__egg-crack,
+html[data-season-fx="reduced"] .bb-streak__egg-eye,
+html[data-season-fx="reduced"] .bb-streak__egg-smile,
 body.bb-mascot-inactive .bb-streak__figure,
 body.bb-mascot-inactive .bb-streak__svg,
 body.bb-mascot-inactive .bb-streak__eye,

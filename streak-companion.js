@@ -14,6 +14,10 @@
   var MAX_SUBSTEPS = 8;
   var DEFAULT_NAME = 'Chispa';
   var NAME_MAX = 24;
+  var HATCH_DAYS = 3;
+  var EGG_NAME = 'Huevo';
+  var EGG_LABEL = 'Huevo de racha';
+  var EGG_TIER = 0;
   var TIERS = [
     { max: 6, name: 'Chispa', label: 'Chispa de racha' },
     { max: 13, name: 'Brasa', label: 'Brasa de racha' },
@@ -88,6 +92,7 @@
   }
 
   function tierFor(days) {
+    if (days < HATCH_DAYS) return EGG_TIER;
     for (var i = 0; i < TIERS.length; i += 1) {
       if (days <= TIERS[i].max) return i + 1;
     }
@@ -147,6 +152,7 @@
         days: 0,
         best: 0,
         tier: 0,
+        stage: 'egg',
         name: DEFAULT_NAME,
         customerId: 0,
         preview: false,
@@ -348,7 +354,7 @@
     registerLocal(customerId, today) {
       var cache = readJSON(this.cacheKey(customerId));
       if (!cache || !isFinite(Number(cache.dias))) {
-        cache = { dias: 3, mejor: 3, nombre: DEFAULT_NAME, fecha: today };
+        cache = { dias: 1, mejor: 1, nombre: DEFAULT_NAME, fecha: today };
       } else {
         cache = {
           dias: clamp(Number(cache.dias), 1, 3650),
@@ -367,32 +373,52 @@
     }
 
     apply(days, best, fromServer, name) {
-      days = clamp(Number(days) || 3, 1, 3650);
+      days = clamp(Number(days) || 1, 1, 3650);
       best = clamp(Number(best) || days, days, 3650);
       var nextName = sanitizeName(name == null ? this.state.name : name);
       var tier = tierFor(days);
-      var leveled = this.visible && this.state.tier && tier > this.state.tier;
+      var stage = tier === EGG_TIER ? 'egg' : 'hatched';
+      var label = tier === EGG_TIER ? EGG_LABEL : TIERS[tier - 1].label;
+      var wasEgg = this.visible && this.state.stage === 'egg';
+      var hatching = wasEgg && stage === 'hatched';
+      var leveled = this.visible && this.state.tier && tier > this.state.tier && !hatching;
       var increased = this.visible && days > this.state.days;
       var renamed = this.visible && nextName !== this.state.name;
 
       this.state.days = days;
       this.state.best = best;
       this.state.tier = tier;
+      this.state.stage = stage;
       this.state.name = nextName;
       this.mascot.dataset.tier = String(tier);
-      this.mascot.setAttribute('aria-label',
-        nextName + ': ' + days + ' días consecutivos, ' + TIERS[tier - 1].label +
-        '. Arrástrala o toca para interactuar.');
-      if (this.badge) this.badge.textContent = days + ' días';
+      this.mascot.dataset.stage = stage;
+      this.mascot.dataset.eggDays = String(stage === 'egg' ? days : HATCH_DAYS);
+      if (stage === 'egg') {
+        this.mascot.setAttribute('aria-label',
+          EGG_NAME + ': llevas ' + days + ' de ' + HATCH_DAYS +
+          ' días seguidos. Eclosiona al llegar a ' + HATCH_DAYS + '. Arrástralo o toca para interactuar.');
+      } else {
+        this.mascot.setAttribute('aria-label',
+          nextName + ': ' + days + ' días consecutivos, ' + label +
+          '. Arrástrala o toca para interactuar.');
+      }
+      if (this.badge) this.badge.textContent = days + (days === 1 ? ' día' : ' días');
       this.renderName();
       if (this.tooltip) {
-        this.tooltip.textContent = nextName + ' · ' + TIERS[tier - 1].label + ' · ' + days + ' días seguidos.';
+        this.tooltip.textContent = stage === 'egg'
+          ? EGG_NAME + ' · ' + EGG_LABEL + ' · ' + days + ' de ' + HATCH_DAYS + ' días para eclosionar.'
+          : nextName + ' · ' + label + ' · ' + days + ' días seguidos.';
       }
       this.show();
 
-      if (leveled) {
+      if (hatching) {
+        this.playClass('is-hatching', 1250);
+        this.showBubble('¡Eclosionó! Ahora soy ' + label.toLowerCase(), 2800);
+        this.burst(this.center.x, this.center.y);
+        this.playTone('level');
+      } else if (leveled) {
         this.playClass('is-levelup', 1500);
-        this.showBubble('¡Nueva forma! Ya soy ' + TIERS[tier - 1].label.toLowerCase(), 2600);
+        this.showBubble('¡Nueva forma! Ya soy ' + label.toLowerCase(), 2600);
         this.burst(this.center.x, this.center.y);
         this.playTone('level');
       } else if (renamed && !fromServer) {
@@ -403,8 +429,12 @@
     }
 
     renderName() {
-      if (this.nameNode) this.nameNode.textContent = this.state.name;
-      if (this.daysNode) this.daysNode.textContent = this.state.days + ' días';
+      if (this.nameNode) {
+        this.nameNode.textContent = this.state.stage === 'egg' ? EGG_NAME : this.state.name;
+      }
+      if (this.daysNode) {
+        this.daysNode.textContent = this.state.days + (this.state.days === 1 ? ' día' : ' días');
+      }
       if (this.nameInput && this.nameInput !== document.activeElement) {
         this.nameInput.value = this.state.name;
       }
@@ -422,13 +452,13 @@
     hide() {
       this.visible = false;
       document.body.classList.remove('bb-streak-ready');
-      this.mascot.classList.remove('is-visible', 'is-meet', 'is-happy', 'is-levelup', 'is-landing', 'has-bubble');
+      this.mascot.classList.remove('is-visible', 'is-meet', 'is-happy', 'is-levelup', 'is-landing', 'is-hatching', 'has-bubble');
       clearNode(this.bubble);
     }
 
     preview(days, name) {
       this.state.preview = true;
-      var value = clamp(Number(days) || 3, 1, 3650);
+      var value = clamp(Number(days) || 1, 1, 3650);
       this.apply(value, Math.max(value, this.state.best), true, name);
       return { days: value, tier: this.state.tier, name: this.state.name };
     }
@@ -791,12 +821,19 @@
       var doubleTap = stamp - this.state.lastTap < 360;
       this.state.lastTap = stamp;
       this.playClass(doubleTap ? 'is-levelup' : 'is-happy', doubleTap ? 1100 : 950);
-      var messages = [
-        this.state.name + ' lleva ' + this.state.days + ' días seguidos',
-        TIERS[this.state.tier - 1].label + ' · ' + this.state.best + ' días como máximo',
-        'Vuelve mañana y ' + this.state.name + ' sigue creciendo',
-        'Toca el lápiz para cambiar el nombre de tu racha'
-      ];
+      var messages = this.state.stage === 'egg'
+        ? [
+          EGG_NAME + ' lleva ' + this.state.days + ' de ' + HATCH_DAYS + ' días',
+          'Eclosiona al llegar a ' + HATCH_DAYS + ' días seguidos',
+          'Vuelve mañana para seguir incubando',
+          'Toca el lápiz para elegir su nombre al eclosionar'
+        ]
+        : [
+          this.state.name + ' lleva ' + this.state.days + ' días seguidos',
+          TIERS[this.state.tier - 1].label + ' · ' + this.state.best + ' días como máximo',
+          'Vuelve mañana y ' + this.state.name + ' sigue creciendo',
+          'Toca el lápiz para cambiar el nombre de tu racha'
+        ];
       this.showBubble(messages[Math.floor(Math.random() * messages.length)], 2900);
       this.playTone(doubleTap ? 'level' : 'bubble');
       if (doubleTap) this.burst(this.center.x, this.center.y);
@@ -924,6 +961,7 @@
       hide: companion.hide.bind(companion),
       bubble: companion.showBubble.bind(companion),
       meet: companion.meet.bind(companion),
+      hatchDays: HATCH_DAYS,
       instance: companion,
       state: companion.state
     };
