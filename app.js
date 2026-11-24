@@ -1879,6 +1879,7 @@ function configurarAsistenteIA(){
         data=await consultarAsistente(texto.trim());
       }
       esperando.textContent=data.respuesta;
+      document.dispatchEvent(new CustomEvent('bytebay:ai-response',{detail:{respuesta:data.respuesta}}));
       agregarProductosRecomendados(data.productos);
     }catch(error){esperando.textContent=`No puedo responder ahora: ${String(error.message||'').replace(/[.\s]+$/,'')}. Intenta nuevamente en unos minutos.`;}
   };

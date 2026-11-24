@@ -1,0 +1,73 @@
+/* Mascota IA de Byte Bay: tripulante celeste que abre el asistente existente. */
+.bb-mascot{display:none;position:fixed;z-index:105;right:22px;bottom:20px;width:78px;height:84px;border:0;padding:0;background:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent;transform-origin:50% 100%;filter:drop-shadow(0 12px 16px rgba(6,38,43,.28));animation:bb-mascot-float 4.8s ease-in-out infinite}
+.bb-mascot:focus-visible{outline:3px solid #00E5FF;outline-offset:4px;border-radius:20px}
+body.bb-mascot-ready .bb-mascot{display:block}
+body.bb-mascot-hidden .bb-mascot,
+body.checkout-open .bb-mascot{display:none!important}
+body:has(.cookie-banner:not(.hidden),.bb-consent-banner:not(.hidden),.settings-drawer.is-open,.settings-backdrop.is-open,.claims-modal.open,.orders-modal.open,dialog[open]) .bb-mascot{display:none!important}
+body.bb-mascot-ready .ai-assistant-toggle{display:none}
+
+.bb-mascot__figure{position:absolute;inset:0;display:block;animation:bb-mascot-walk 18s ease-in-out infinite;transition:transform .28s cubic-bezier(.2,.9,.25,1.3)}
+.bb-mascot__svg{display:block;width:100%;height:100%;overflow:visible;animation:bb-mascot-breathe 3.8s ease-in-out infinite}
+.bb-mascot__eye,.bb-mascot__glint,.bb-mascot__waves{transform-box:fill-box;transform-origin:center}
+.bb-mascot__eye{animation:bb-mascot-blink 6.4s ease-in-out infinite}
+.bb-mascot__eye--right{animation-delay:.12s}
+.bb-mascot__glint{animation:bb-mascot-glint 5.2s ease-in-out infinite}
+.bb-mascot__waves{opacity:0}
+
+.bb-mascot__tooltip{position:absolute;right:calc(100% + 10px);bottom:26px;max-width:min(230px,60vw);padding:9px 12px;border:1px solid #b9edf2;border-radius:12px;background:#fff;color:#07383f;box-shadow:0 10px 26px rgba(6,38,43,.2);font:800 12px/1.35 Manrope,sans-serif;white-space:normal;text-align:left;opacity:0;visibility:hidden;transform:translateX(6px);transition:opacity .18s ease,transform .18s ease,visibility .18s ease;pointer-events:none}
+.bb-mascot:hover .bb-mascot__tooltip,.bb-mascot:focus-visible .bb-mascot__tooltip{opacity:1;visibility:visible;transform:translateX(0)}
+
+.bb-mascot:hover{animation-play-state:paused}
+.bb-mascot:hover .bb-mascot__figure,.bb-mascot:focus-visible .bb-mascot__figure{animation:none;transform:translateY(-10px) scale(1.06)}
+.bb-mascot.is-speaking .bb-mascot__figure{animation:bb-mascot-bounce .58s ease-in-out infinite}
+.bb-mascot.is-speaking .bb-mascot__waves{opacity:.9;animation:bb-mascot-wave .58s ease-in-out infinite}
+
+body.bb-mascot-inactive .bb-mascot,
+body.bb-mascot-inactive .bb-mascot__figure,
+body.bb-mascot-inactive .bb-mascot__svg,
+body.bb-mascot-inactive .bb-mascot__eye,
+body.bb-mascot-inactive .bb-mascot__glint,
+body.bb-mascot-inactive .bb-mascot__waves{animation:none!important;transition:none!important}
+body.bb-mascot-inactive .bb-mascot__waves{opacity:0}
+body.bb-mascot-inactive .bb-mascot:hover .bb-mascot__figure{transform:none}
+
+.bb-mascot-ready .ai-assistant-panel header{flex-wrap:wrap;align-items:center}
+.ai-assistant-panel header .bb-mascot-controls{display:flex;gap:6px;margin-left:auto}
+.ai-assistant-panel header .bb-mascot-control{position:relative;display:grid;width:30px;height:30px;place-items:center;border:1px solid #d6e2d0;border-radius:9px;background:#f5f9f2;color:#173c38;font-size:14px;line-height:1;cursor:pointer;transition:background-color .16s ease,border-color .16s ease,transform .16s ease}
+.ai-assistant-panel header .bb-mascot-control:hover{border-color:#00b8cf;background:#e8fbfd;transform:translateY(-1px)}
+.ai-assistant-panel header .bb-mascot-control:focus-visible{outline:2px solid #00E5FF;outline-offset:2px}
+.ai-assistant-panel header .bb-mascot-control::after{content:attr(data-tooltip);position:absolute;top:calc(100% + 7px);right:0;z-index:1;width:max-content;max-width:190px;padding:6px 8px;border-radius:8px;background:#07383f;color:#fff;font:700 10px/1.3 Inter,sans-serif;text-align:left;opacity:0;visibility:hidden;transform:translateY(-3px);transition:opacity .16s ease,transform .16s ease,visibility .16s ease;pointer-events:none}
+.ai-assistant-panel header .bb-mascot-control:hover::after,.ai-assistant-panel header .bb-mascot-control:focus-visible::after{opacity:1;visibility:visible;transform:translateY(0)}
+.dark-mode .ai-assistant-panel header .bb-mascot-control{border-color:#3a4c50;background:#152126;color:#e7f0ed}
+.dark-mode .ai-assistant-panel header .bb-mascot-control:hover{border-color:#00b8cf;background:#1d3740}
+
+@keyframes bb-mascot-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes bb-mascot-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.018,1.03)}}
+@keyframes bb-mascot-walk{0%,64%,100%{transform:translateX(0) rotate(0)}68%{transform:translateX(6px) rotate(2deg)}72%{transform:translateX(-5px) rotate(-2deg)}76%{transform:translateX(0) rotate(0)}}
+@keyframes bb-mascot-blink{0%,92%,96%,100%{transform:scaleY(1)}94%{transform:scaleY(.08)}}
+@keyframes bb-mascot-glint{0%,100%{transform:translateX(0) rotate(-16deg);opacity:.66}50%{transform:translateX(5px) rotate(-12deg);opacity:.86}}
+@keyframes bb-mascot-bounce{0%,100%{transform:translateY(0) scale(1.01)}45%{transform:translateY(-12px) scale(1.04,.96)}60%{transform:translateY(-2px) scale(.98,1.04)}}
+@keyframes bb-mascot-wave{0%,100%{opacity:.12;transform:scale(.8)}50%{opacity:.95;transform:scale(1.08)}}
+
+@media(max-width:600px){
+  .bb-mascot{right:12px;bottom:12px;width:66px;height:72px}
+  .bb-mascot__tooltip{right:0;bottom:calc(100% + 8px);max-width:min(230px,calc(100vw - 24px))}
+  .ai-assistant-panel header .bb-mascot-control{width:28px;height:28px}
+}
+@media(prefers-reduced-motion:reduce){
+  .bb-mascot,.bb-mascot__figure,.bb-mascot__svg,.bb-mascot__eye,.bb-mascot__glint,.bb-mascot__waves{animation:none!important;transition:none!important}
+  .bb-mascot:hover .bb-mascot__figure,.bb-mascot:focus-visible .bb-mascot__figure{transform:none}
+}
+html[data-season-fx="off"] .bb-mascot,
+html[data-season-fx="off"] .bb-mascot__figure,
+html[data-season-fx="off"] .bb-mascot__svg,
+html[data-season-fx="off"] .bb-mascot__eye,
+html[data-season-fx="off"] .bb-mascot__glint,
+html[data-season-fx="off"] .bb-mascot__waves,
+html[data-season-fx="reduced"] .bb-mascot,
+html[data-season-fx="reduced"] .bb-mascot__figure,
+html[data-season-fx="reduced"] .bb-mascot__svg,
+html[data-season-fx="reduced"] .bb-mascot__eye,
+html[data-season-fx="reduced"] .bb-mascot__glint,
+html[data-season-fx="reduced"] .bb-mascot__waves{animation:none!important}
