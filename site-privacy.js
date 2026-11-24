@@ -710,20 +710,13 @@
   }
 
   async function cargarRecomendaciones() {
-    if (personalizacionActiva() && state.consentimiento.localOnly) {
+    // Las recomendaciones se calculan en el dispositivo. El RPC remoto
+    // bb_obtener_recomendaciones todavía no está publicado en Supabase y
+    // llamarlo deja un 404 en consola; cuando se publique, se podrá volver
+    // a intentar sin cambiar esta interfaz.
+    if (personalizacionActiva()) {
       state.recomendaciones = localRecommendations();
       return;
-    }
-    const session = state.sesion;
-    if (session && session.access_token && state.disponible) {
-      const result = await rpc('bb_obtener_recomendaciones', {
-        p_access_token: session.access_token,
-        p_limite: 8
-      });
-      if (result.data && result.data.ok) {
-        state.recomendaciones = result.data;
-        return;
-      }
     }
     state.recomendaciones = genericRecommendations();
   }

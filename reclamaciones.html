@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,follow">
+  <meta name="description" content="Libro de Reclamaciones virtual de Byte Bay. Registra una queja o reclamo y obtén un código de seguimiento.">
+  <link rel="canonical" href="https://zzz000zzz555.github.io/Byte-Bay-web/reclamaciones.html">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#0d2b31">
+  <title>Libro de Reclamaciones | Byte Bay</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css?v=25">
+  <link rel="stylesheet" href="site-compliance.css?v=1">
+</head>
+<body class="legal-page">
+  <header class="legal-header"><div class="wrap">
+    <a class="legal-brand" href="./" aria-label="Byte Bay, volver al inicio"><img src="byte-bay-logo-transparent.png" alt="Logo de Byte Bay" loading="lazy"><span>Byte Bay</span></a>
+    <nav class="legal-nav" aria-label="Navegación legal">
+      <a href="./">Tienda</a><a href="aviso-legal.html">Aviso legal</a><a href="privacidad.html">Privacidad</a><a href="reclamaciones.html">Libro de reclamaciones</a>
+    </nav>
+  </div></header>
+  <main class="wrap legal-main" id="mainContent">
+    <header class="legal-hero">
+      <span class="section-kicker">ATENCIÓN AL CLIENTE · INDECOPI</span>
+      <h1>Libro de Reclamaciones</h1>
+      <p>Registra tu queja o reclamo sobre un producto o servicio de Byte Bay. Guarda el código de seguimiento que aparece después del envío. Tus datos se tratan según nuestra <a href="privacidad.html">Política de Privacidad</a>.</p>
+      <span class="legal-updated">Atención también por WhatsApp: +51 963 058 461</span>
+    </header>
+    <section class="legal-card">
+      <h2>Registrar una queja o reclamo</h2>
+      <p>Los campos obligatorios están marcados. No adjuntes tarjetas, contraseñas ni códigos bancarios.</p>
+      <form class="legal-form" id="claimsForm" data-public-form>
+        <label class="bb-honeypot" aria-hidden="true">No completar este campo<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+        <div class="claims-form-grid">
+          <label><span>Nombres y apellidos</span><input name="nombre" maxlength="200" autocomplete="name" required></label>
+          <label><span>DNI o CE</span><input name="documento" minlength="6" maxlength="20" required></label>
+          <label><span>Correo electrónico</span><input name="correo" type="email" maxlength="254" autocomplete="email" required></label>
+          <label><span>Teléfono (opcional)</span><input name="telefono" type="tel" maxlength="30" autocomplete="tel"></label>
+          <label><span>Tipo</span><select name="tipo" required><option value="reclamo">Reclamo</option><option value="queja">Queja</option></select></label>
+          <label><span>Categoría</span><select name="categoria" required><option value="servicio">Queja de servicio</option><option value="producto">Defecto de producto</option><option value="facturacion">Facturación</option><option value="entrega">Entrega</option></select></label>
+          <label><span>Número de pedido (opcional)</span><input name="pedido" maxlength="40"></label>
+          <label><span>Monto involucrado (opcional)</span><input name="monto" type="number" min="0" step="0.01"></label>
+        </div>
+        <label><span>Describe los hechos</span><textarea name="descripcion" minlength="10" maxlength="10000" rows="5" required></textarea></label>
+        <label><span>Adjuntar evidencia (opcional)</span><input name="evidencia" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"><small>JPG, PNG, WEBP o PDF · máximo 5 MB.</small></label>
+        <button class="btn primary" type="submit" id="claimsSubmit">Enviar reclamación</button>
+        <p class="legal-status" id="claimsStatus" role="status" aria-live="polite"></p>
+      </form>
+      <div class="legal-actions"><a href="./">Volver a la tienda</a><a class="secondary" href="aviso-legal.html">Ver aviso legal</a></div>
+    </section>
+  </main>
+  <footer class="legal-footer"><div class="wrap">© 2026 Byte Bay. Todos los derechos reservados. · <a href="privacidad.html">Privacidad</a> · <a href="aviso-legal.html">Aviso legal</a> · Atención por WhatsApp <a href="https://wa.me/51963058461?text=Hola%20Byte-Bay%2C%20vengo%20de%20su%20tienda%20web%20y%20tengo%20una%20consulta." target="_blank" rel="noopener noreferrer">+51 963 058 461</a></div></footer>
+  <a class="bb-whatsapp" href="https://wa.me/51963058461?text=Hola%20Byte-Bay%2C%20vengo%20de%20su%20tienda%20web%20y%20tengo%20una%20consulta." target="_blank" rel="noopener noreferrer" aria-label="Hablar con Byte Bay por WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-11.6 7.1L4 20l1.5-4.2A8 8 0 1 1 20 11.5z"></path><path d="M9 9c.3 2.2 2.1 4 4.3 4.3l1.3-1.5 2.1 1-1 2.1c-3.5.2-7-3.3-6.7-6.8l2.1-1 1 2.1z"></path></svg><span>WhatsApp</span></a>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="site-form-guard.js?v=2"></script>
+  <script>
+  (function () {
+    'use strict';
+    var URL_SUPABASE = 'https://inwugycvtaaceugvtfpv.supabase.co';
+    var CLAVE_PUBLICA = 'sb_publishable_5cTHcYI6byM03VSffW0OlQ_JlBB8D9u';
+    var form = document.getElementById('claimsForm');
+    var status = document.getElementById('claimsStatus');
+    var button = document.getElementById('claimsSubmit');
+    if (!form || !window.supabase) {
+      if (status) status.textContent = 'El servicio de reclamaciones no está disponible. Intenta más tarde.';
+      return;
+    }
+    var client = window.supabase.createClient(URL_SUPABASE, CLAVE_PUBLICA);
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      if (form.elements.website && String(form.elements.website.value || '').trim()) return;
+      button.disabled = true;
+      status.textContent = 'Enviando...';
+      status.setAttribute('data-error', 'false');
+      var data;
+      var error;
+      try {
+        var result = await client.functions.invoke('reclamos-publicos', { body: new FormData(form) });
+        data = result.data;
+        error = result.error;
+      } catch (requestError) {
+        button.disabled = false;
+        status.textContent = 'No se pudo conectar con el servicio. Intenta nuevamente.';
+        status.setAttribute('data-error', 'true');
+        return;
+      }
+      button.disabled = false;
+      if (error) {
+        var message = error.message;
+        try {
+          var response = error.context;
+          if (response && response.clone) {
+            var detail = await response.clone().json();
+            message = detail.error || message;
+          }
+        } catch (parseError) {
+          message = 'No se pudo registrar la reclamación.';
+        }
+        status.textContent = 'No se pudo registrar: ' + message;
+        status.setAttribute('data-error', 'true');
+        return;
+      }
+      status.textContent = 'Reclamación registrada. Guarda este código: ' + data.codigo_reclamacion;
+      status.setAttribute('data-error', 'false');
+      form.reset();
+    });
+  })();
+  </script>
+</body>
+</html>

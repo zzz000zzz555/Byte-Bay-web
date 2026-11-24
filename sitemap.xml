@@ -6,13 +6,13 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://zzz000zzz555.github.io/Byte-Bay-web/#ofertas</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <loc>https://zzz000zzz555.github.io/Byte-Bay-web/aviso-legal.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://zzz000zzz555.github.io/Byte-Bay-web/#categorias</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://zzz000zzz555.github.io/Byte-Bay-web/privacidad.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

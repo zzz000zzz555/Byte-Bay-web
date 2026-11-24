@@ -31,7 +31,7 @@ let filtroPedidos='all';
         if(!cancelado){if(i<idx)cls='done';else if(i===idx)cls='active';}
         return `<div class="timeline-step ${cls} ${cancelado&&i===0?'cancelled':''}"><div class="timeline-dot">${iconoEstado(cancelado&&i===0?'cancelado':e)}</div><span>${etiquetaEstado(cancelado&&i===0?'cancelado':e)}</span></div>`;
       }).join('');
-      const items=(p.items||[]).map(it=>`<div class="order-item"><img src="${escHtml(it.imagen||'imagen-producto-predeterminada.svg')}" alt=""><div><strong>${escHtml(it.nombre)}</strong><small>${escHtml(it.variante||'')} x${it.cantidad}</small></div><span>${moneyFn(Number(it.precio)*Number(it.cantidad))}</span></div>`).join('');
+      const items=(p.items||[]).map(it=>`<div class="order-item"><img src="${escHtml(it.imagen||'imagen-producto-predeterminada.svg')}" alt="Imagen de ${escHtml(it.nombre)}" loading="lazy" decoding="async"><div><strong>${escHtml(it.nombre)}</strong><small>${escHtml(it.variante||'')} x${it.cantidad}</small></div><span>${moneyFn(Number(it.precio)*Number(it.cantidad))}</span></div>`).join('');
       const trackingInfo = p.tracking_number ? `<div class="order-tracking-info"><strong>Tracking:</strong> ${escHtml(p.carrier||'')} ${escHtml(p.tracking_number)}${p.tracking_url?` <a href="${escHtml(p.tracking_url)}" target="_blank" rel="noopener">Ver seguimiento</a>`:''}</div>` : '';
       const whatsappMsg = p.estado==='enviado' ? `<div class="order-whatsapp-alert"><span>WhatsApp</span><div><strong>Tu pedido está en camino</strong><p>Estate atento a WhatsApp para coordinar la entrega.</p></div></div>` : '';
       return `<article class="order-card">
