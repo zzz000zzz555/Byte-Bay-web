@@ -1,16 +1,103 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { corsErrorHeaders, corsHeaders as buildCorsHeaders, originAllowed } from '../_shared/cors.ts'
 
 const CULQI_CHARGES_URL = 'https://api.culqi.com/v2/charges'
+const SIGNATURE_HEADERS = ['x-culqi-signature', 'x-signature', 'x-hub-signature-256']
+const TIMESTAMP_HEADERS = ['x-culqi-timestamp', 'x-timestamp']
 
-const json = (body: unknown, status = 200) =>
+const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' }
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Vary': 'Origin', ...headers }
   })
 
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : ''
 
 type Json = Record<string, unknown>
+
+function constantTimeEqual(left: string, right: string) {
+  if (left.length !== right.length) return false
+  let difference = 0
+  for (let index = 0; index < left.length; index++) {
+    difference |= left.charCodeAt(index) ^ right.charCodeAt(index)
+  }
+  return difference === 0
+}
+
+function hex(bytes: Uint8Array) {
+  return [...bytes].map(value => value.toString(16).padStart(2, '0')).join('')
+}
+
+function base64(bytes: Uint8Array) {
+  return btoa([...bytes].map(value => String.fromCharCode(value)).join(''))
+}
+
+function parseSignature(header: string) {
+  const fields = new Map<string, string>()
+  for (const part of header.split(',')) {
+    const separator = part.indexOf('=')
+    if (separator >= 0) {
+      fields.set(part.slice(0, separator).trim().toLowerCase(), part.slice(separator + 1).trim())
+    }
+  }
+  const timestamp = fields.get('t') || fields.get('ts') || ''
+  const firmas = [
+    fields.get('v1'),
+    fields.get('v2'),
+    fields.get('sig'),
+    fields.get('sha256')
+  ].filter((valor): valor is string => Boolean(valor))
+  if (!firmas.length && /^[a-f0-9]{64}$/i.test(header.trim())) firmas.push(header.trim())
+  return { timestamp, firmas }
+}
+
+// Firma HMAC-SHA256 con timestamp (formatos t=<Unix>,v1=<hex> o sha256=<hex> +
+// cabecera de timestamp). Se exige una antigüedad máxima de 300 s y comparación
+// de tiempo constante. Se usa el cuerpo crudo recibido, nunca un JSON reserializado.
+async function signatureIsValid(rawBody: string, secret: string, headers: Headers) {
+  const signatureHeader = SIGNATURE_HEADERS
+    .map(nombre => headers.get(nombre))
+    .find(valor => Boolean(valor)) || ''
+  if (!signatureHeader) return false
+
+  const parseada = parseSignature(signatureHeader)
+  const timestamp = parseada.timestamp ||
+    TIMESTAMP_HEADERS.map(nombre => headers.get(nombre)).find(valor => Boolean(valor)) || ''
+  if (!/^\d+$/.test(timestamp)) return false
+  const segundos = Number(timestamp)
+  if (!Number.isSafeInteger(segundos) || Math.abs(Date.now() / 1000 - segundos) > 300) return false
+
+  const recibidas = [...new Set(parseada.firmas
+    .map(valor => valor.replace(/^sha256=/i, '').trim())
+    .filter(Boolean))]
+  if (!recibidas.length) return false
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+  // Se aceptan proveedores que firman el cuerpo crudo y los que incluyen el
+  // timestamp como prefijo; en ambos casos se exige la ventana de 300 s.
+  const mensajes = parseada.timestamp ? [rawBody, `${timestamp}.${rawBody}`] : [rawBody]
+
+  for (const mensaje of mensajes) {
+    const digest = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(mensaje)))
+    const codificadas = [
+      hex(digest),
+      base64(digest),
+      base64(digest).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    ]
+    for (const recibida of recibidas) {
+      for (const esperada of codificadas) {
+        if (constantTimeEqual(recibida.toLowerCase(), esperada.toLowerCase())) return true
+      }
+    }
+  }
+  return false
+}
 
 function mapChargeState(charge: Json) {
   const state = text(charge.state).toLowerCase()
@@ -49,19 +136,43 @@ function safeChargePayload(charge: Json) {
 }
 
 Deno.serve(async request => {
-  if (request.method !== 'POST') return json({ error: 'Método no permitido' }, 405)
+  const origin = request.headers.get('origin') ?? ''
+  if (origin && !originAllowed(origin)) {
+    return json({ error: 'Origen no autorizado' }, 403, corsErrorHeaders)
+  }
+  // Los webhooks son servidor a servidor y normalmente no envían Origin; en ese
+  // caso no se emite ninguna cabecera CORS (nunca '*').
+  const cors = origin ? buildCorsHeaders(origin) : {}
+  const responder = (body: unknown, status = 200) => json(body, status, cors)
+  if (origin && request.method === 'OPTIONS') return new Response('ok', { headers: cors })
+  if (request.method !== 'POST') return responder({ error: 'Método no permitido' }, 405)
+
+  const webhookSecret = Deno.env.get('CULQI_WEBHOOK_SECRET')
+  if (!webhookSecret) {
+    return responder({ error: 'Webhook no configurado: falta CULQI_WEBHOOK_SECRET' }, 503)
+  }
 
   const privateKey = Deno.env.get('CULQI_PRIVATE_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   if (!privateKey || !supabaseUrl || !serviceKey) {
     console.error('webhook-culqi: falta configurar uno o más secretos requeridos')
-    return json({ error: 'Webhook no configurado' }, 500)
+    return responder({ error: 'Webhook no configurado' }, 500)
   }
 
-  const body = await request.json().catch(() => null) as Json | null
+  const rawBody = await request.text()
+  if (!await signatureIsValid(rawBody, webhookSecret, request.headers)) {
+    return responder({ error: 'Firma de notificación no válida' }, 401)
+  }
+
+  let body: Json | null = null
+  try {
+    body = JSON.parse(rawBody) as Json | null
+  } catch {
+    body = null
+  }
   if (!body || typeof body !== 'object') {
-    return json({ error: 'Notificación no válida' }, 400)
+    return responder({ error: 'Notificación no válida' }, 400)
   }
 
   const data = body.data && typeof body.data === 'object'
@@ -72,7 +183,7 @@ Deno.serve(async request => {
     text(body.data_id)
 
   if (!chargeId.startsWith('chr_')) {
-    return json({ ok: true, ignored: true })
+    return responder({ ok: true, ignored: true })
   }
 
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } })
@@ -86,7 +197,7 @@ Deno.serve(async request => {
 
     if (!culqiResponse.ok || !charge || text(charge.id) !== chargeId) {
       console.error('webhook-culqi: no se pudo verificar el cargo en Culqi', culqiResponse.status)
-      return json({ error: 'No se pudo verificar el cargo' }, 502)
+      return responder({ error: 'No se pudo verificar el cargo' }, 502)
     }
 
     const mapeado = mapChargeState(charge)
@@ -107,7 +218,7 @@ Deno.serve(async request => {
       })
 
     if (insertError?.code === '23505') {
-      return json({ ok: true, duplicate: true })
+      return responder({ ok: true, duplicate: true })
     }
 
     const metadata = charge.metadata && typeof charge.metadata === 'object'
@@ -133,7 +244,7 @@ Deno.serve(async request => {
     }
 
     if (!pago) {
-      return json({ ok: true, ignored: true, reason: 'pago_no_encontrado' })
+      return responder({ ok: true, ignored: true, reason: 'pago_no_encontrado' })
     }
 
     const esperado = Math.round(Number(pago.monto) * 100)
@@ -147,7 +258,7 @@ Deno.serve(async request => {
       await admin.from('pagos_eventos_culqi')
         .update({ error: 'monto_moneda_no_coinciden' })
         .eq('event_key', eventKey)
-      return json({ error: 'El monto del cargo no coincide' }, 400)
+      return responder({ error: 'El monto del cargo no coincide' }, 400)
     }
 
     const source = charge.source && typeof charge.source === 'object'
@@ -167,16 +278,16 @@ Deno.serve(async request => {
       await admin.from('pagos_eventos_culqi')
         .update({ error: String(aplicarError.message || aplicarError) })
         .eq('event_key', eventKey)
-      return json({ error: 'No se pudo aplicar el estado del cargo' }, 500)
+      return responder({ error: 'No se pudo aplicar el estado del cargo' }, 500)
     }
 
     await admin.from('pagos_eventos_culqi')
       .update({ procesado: true, actualizado_en: new Date().toISOString() })
       .eq('event_key', eventKey)
 
-    return json({ ok: true, estado: mapeado.estado })
+    return responder({ ok: true, estado: mapeado.estado })
   } catch (error) {
     console.error('webhook-culqi:', error)
-    return json({ error: 'No se pudo procesar la notificación' }, 500)
+    return responder({ error: 'No se pudo procesar la notificación' }, 500)
   }
 })

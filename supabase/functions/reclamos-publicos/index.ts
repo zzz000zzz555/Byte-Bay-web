@@ -1,23 +1,40 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { corsErrorHeaders, corsHeaders as buildCorsHeaders, originAllowed } from '../_shared/cors.ts'
 
 const bucket = 'reclamos-evidencias'
 const maxFileSize = 5 * 1024 * 1024
+const maxBodySize = maxFileSize + 256 * 1024
 const mimeExtensions: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
   'application/pdf': 'pdf'
 }
-const allowedOrigins = new Set(
-  (Deno.env.get('SITE_URL') ?? 'http://localhost:5500,http://127.0.0.1:5500')
-    .split(',')
-    .map(value => value.trim())
-    .filter(Boolean)
-    .map(value => {
-      try { return new URL(value).origin } catch { return '' }
-    })
-    .filter(Boolean)
-)
+class CuerpoDemasiadoGrande extends Error {}
+
+async function leerCuerpoLimitado(request: Request, limite: number) {
+  const reader = request.body?.getReader()
+  if (!reader) return new Uint8Array()
+  const partes: Uint8Array[] = []
+  let total = 0
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.byteLength
+    if (total > limite) {
+      await reader.cancel()
+      throw new CuerpoDemasiadoGrande('El archivo no debe superar 5 MB')
+    }
+    partes.push(value)
+  }
+  const cuerpo = new Uint8Array(total)
+  let desplazamiento = 0
+  for (const parte of partes) {
+    cuerpo.set(parte, desplazamiento)
+    desplazamiento += parte.byteLength
+  }
+  return cuerpo
+}
 const value = (form: FormData, key: string) => {
   const field = form.get(key)
   return typeof field === 'string' ? field.trim() : ''
@@ -36,18 +53,11 @@ const archivoCoincideConTipo = async (archivo: File, tipo: string) => {
 
 Deno.serve(async request => {
   const origin = request.headers.get('origin') ?? ''
-  let originAllowed = origin === ''
-  if (origin) {
-    try { originAllowed = allowedOrigins.has(new URL(origin).origin) } catch { originAllowed = false }
+  if (!originAllowed(origin)) {
+    return Response.json({ error: 'Origen no autorizado' }, { status: 403, headers: corsErrorHeaders })
   }
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': originAllowed ? (origin || '*') : 'null',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Vary': 'Origin'
-  }
+  const corsHeaders = buildCorsHeaders(origin)
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
-  if (!originAllowed) return Response.json({ error: 'Origen no autorizado' }, { status: 403, headers: corsHeaders })
   if (request.method !== 'POST') return Response.json({ error: 'Método no permitido' }, { status: 405, headers: corsHeaders })
 
   const url = Deno.env.get('SUPABASE_URL')
@@ -90,11 +100,27 @@ Deno.serve(async request => {
       return Response.json({ error: 'Se esperaba un formulario multipart' }, { status: 415, headers: corsHeaders })
     }
     const contentLength = Number(request.headers.get('content-length') ?? 0)
-    if (contentLength > maxFileSize + 64 * 1024) {
+    if (contentLength > maxBodySize) {
       return Response.json({ error: 'El archivo no debe superar 5 MB' }, { status: 413, headers: corsHeaders })
     }
 
-    const form = await request.formData()
+    // El Content-Length es orientativo: se cuentan los bytes reales del stream.
+    let cuerpo: Uint8Array
+    try {
+      cuerpo = await leerCuerpoLimitado(request, maxBodySize)
+    } catch (error) {
+      if (error instanceof CuerpoDemasiadoGrande) {
+        return Response.json({ error: 'El archivo no debe superar 5 MB' }, { status: 413, headers: corsHeaders })
+      }
+      throw error
+    }
+    const headersForm = new Headers(request.headers)
+    headersForm.delete('content-length')
+    const form = await new Request(request.url, {
+      method: request.method,
+      headers: headersForm,
+      body: cuerpo
+    }).formData()
     const nombre = value(form, 'nombre')
     const documento = value(form, 'documento')
     const correo = value(form, 'correo').toLowerCase()
@@ -105,6 +131,11 @@ Deno.serve(async request => {
     const numeroPedido = value(form, 'pedido')
     const montoTexto = value(form, 'monto')
     const archivo = form.get('evidencia')
+
+    // El campo señuelo se mantiene con su nombre original del formulario público.
+    if (value(form, 'website')) {
+      return Response.json({ error: 'No se pudo procesar la solicitud' }, { status: 400, headers: corsHeaders })
+    }
 
     if (nombre.length < 2 || nombre.length > 200 ||
       documento.length < 6 || documento.length > 20 ||

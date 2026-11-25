@@ -1,25 +1,36 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { corsErrorHeaders, corsHeaders as buildCorsHeaders, originAllowed } from '../_shared/cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+// SUPABASE_ANON_KEY o SUPABASE_PUBLISHABLE_KEY se usa SOLO para verificar el JWT
+// del usuario. La clave service_role no se crea hasta después de autenticar.
 
 type GeminiGenerateContentResponse = {
   error?: { message?: string; code?: number; status?: string }
   candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>
 }
 
-const consultasPorOrigen = new Map<string, { cantidad: number; reiniciaEn: number }>()
+const LIMITE_CONSULTAS = 10
+const VENTANA_CONSULTAS = 10 * 60 * 1000
 
-function limitarConsulta(request: Request) {
-  const origen = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'desconocido'
-  const ahora = Date.now(), registro = consultasPorOrigen.get(origen)
+class ErrorSolicitud extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message)
+  }
+}
+
+// Limitador en memoria PROVISIONAL por user.id: no se comparte entre réplicas ni
+// sobrevive a reinicios. Migrar a una tabla con contador atómico cuando exista.
+const consultasPorUsuario = new Map<string, { cantidad: number; reiniciaEn: number }>()
+
+function limitarConsulta(usuarioId: string) {
+  const ahora = Date.now(), registro = consultasPorUsuario.get(usuarioId)
   if (!registro || registro.reiniciaEn < ahora) {
-    consultasPorOrigen.set(origen, { cantidad: 1, reiniciaEn: ahora + 10 * 60 * 1000 })
+    consultasPorUsuario.set(usuarioId, { cantidad: 1, reiniciaEn: ahora + VENTANA_CONSULTAS })
     return
   }
-  if (registro.cantidad >= 10) throw new Error('Alcanzaste el límite de consultas. Intenta nuevamente en unos minutos.')
+  if (registro.cantidad >= LIMITE_CONSULTAS) {
+    throw new ErrorSolicitud('Alcanzaste el límite de consultas. Intenta nuevamente en unos minutos.', 429)
+  }
   registro.cantidad += 1
 }
 
@@ -142,20 +153,33 @@ async function generarContenidoGemini(apiKey: string, contenido: unknown) {
 }
 
 Deno.serve(async (request) => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  const origin = request.headers.get('origin') ?? ''
+  if (!originAllowed(origin)) {
+    return Response.json({ error: 'Origen no autorizado' }, { status: 403, headers: corsErrorHeaders })
+  }
+  const headers = buildCorsHeaders(origin)
+  if (request.method === 'OPTIONS') return new Response('ok', { headers })
   try {
     if (request.method !== 'POST') throw new Error('Método no permitido')
-    limitarConsulta(request)
     const apiKey = Deno.env.get('GEMINI_API_KEY')
     const urlSupabase = Deno.env.get('SUPABASE_URL')
+    const authKey = Deno.env.get('SUPABASE_ANON_KEY') || Deno.env.get('SUPABASE_PUBLISHABLE_KEY')
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    if (!apiKey || !urlSupabase || !serviceKey) throw new Error('El asistente aún no está configurado')
+    if (!apiKey || !urlSupabase || !authKey || !serviceKey) throw new Error('El asistente aún no está configurado')
+
+    const token = request.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() ?? ''
+    if (!token) throw new ErrorSolicitud('Sesión requerida', 401)
+    const authClient = createClient(urlSupabase, authKey, { auth: { persistSession: false } })
+    const { data: sesion, error: sesionError } = await authClient.auth.getUser(token)
+    if (sesionError || !sesion.user) throw new ErrorSolicitud('Sesión no válida', 401)
+    limitarConsulta(sesion.user.id)
 
     const cuerpo = await request.json()
     const mensaje = limpiarMensaje(cuerpo.mensaje)
     if (!mensaje) throw new Error('Escribe una pregunta para el asistente')
 
-    const db = createClient(urlSupabase, serviceKey)
+    // service_role solo después de autenticar y autorizar al usuario.
+    const db = createClient(urlSupabase, serviceKey, { auth: { persistSession: false } })
     const IGNORADAS = new Set(['que', 'con', 'por', 'para', 'los', 'las', 'una', 'uno', 'unos', 'unas', 'del', 'como', 'mas', 'muy', 'hay', 'tienen', 'tienes', 'quiero', 'busco', 'necesito', 'hola', 'buenas', 'precio', 'precios', 'cuesta', 'algo', 'donde', 'esta', 'este', 'estos', 'estas', 'sobre', 'sin', 'sus', 'tambien', 'pero', 'solo', 'todo', 'todos', 'seria', 'podria', 'muestrame'])
     // Se limpian signos, se descartan palabras vacías y se prueban singular/plural.
     const terminos = [...new Set(
@@ -230,11 +254,11 @@ Deno.serve(async (request) => {
         .map(item => item.producto)
     }
 
-    return Response.json({ respuesta: texto, productos: recomendados.slice(0, 3) }, { headers: corsHeaders })
+    return Response.json({ respuesta: texto, productos: recomendados.slice(0, 3) }, { headers })
   } catch (error) {
     const mensaje = error instanceof Error ? error.message : 'Error inesperado'
-    const estado = error instanceof ErrorGemini ? error.status : 400
+    const estado = error instanceof ErrorGemini || error instanceof ErrorSolicitud ? error.status : 400
     const reintentar = error instanceof ErrorGemini ? error.reintentar : false
-    return Response.json({ error: mensaje, reintentar }, { status: estado, headers: corsHeaders })
+    return Response.json({ error: mensaje, reintentar }, { status: estado, headers })
   }
 })

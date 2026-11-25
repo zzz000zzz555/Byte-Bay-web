@@ -1,6 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { corsErrorHeaders, corsHeaders as buildCorsHeaders, originAllowed, redirectUrlAllowed } from '../_shared/cors.ts'
 
-const corsHeaders = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' }
+// RPC opcional (SECURITY DEFINER) para revocar sesiones por id cuando la versión
+// de supabase-js solo acepta un JWT en auth.admin.signOut. Configurar en secrets.
+const REVOKE_SESSIONS_RPC = Deno.env.get('SUPABASE_REVOKE_SESSIONS_RPC') || 'bb_revocar_sesiones_usuario'
 const rolesValidos = ['jefe', 'empleado']
 const texto = (valor: unknown) => typeof valor === 'string' ? valor.trim() : ''
 const contrasenaSegura = (valor: unknown): valor is string =>
@@ -11,8 +14,50 @@ const contrasenaSegura = (valor: unknown): valor is string =>
   /\d/.test(valor) &&
   /[@$!%*#?&.]/.test(valor)
 
+type RespuestaAdmin = { error?: { message?: string } | null }
+type AdminRevocador = {
+  auth: { admin: { signOut?: (jwt: string, scope?: string) => Promise<RespuestaAdmin> } }
+  rpc: (fn: string, args: Record<string, unknown>) => Promise<RespuestaAdmin>
+  from: (tabla: string) => { delete: () => { eq: (columna: string, valor: string) => Promise<RespuestaAdmin> } }
+}
+
+// Revocación best-effort: el ban bloquea Auth, pero también cerramos sesiones
+// activas/refresh tokens. Ningún fallo aquí debe alterar el flujo normal.
+async function revocarSesiones(cliente: unknown, usuarioId: string) {
+  const admin = cliente as AdminRevocador
+  const signOut = admin.auth?.admin?.signOut
+  if (typeof signOut === 'function') {
+    const intentos: Array<[string, string?]> = [[usuarioId, 'global'], [usuarioId]]
+    for (const args of intentos) {
+      try {
+        const { error } = await signOut.apply(admin.auth.admin, args)
+        if (!error) return
+      } catch {
+        // Esta versión de supabase-js solo admite un JWT; se prueba el equivalente.
+      }
+    }
+  }
+  try {
+    const { error } = await admin.rpc(REVOKE_SESSIONS_RPC, { p_usuario_id: usuarioId })
+    if (!error) return
+  } catch {
+    // RPC no desplegada todavía.
+  }
+  try {
+    const { error } = await admin.from('auth.sessions').delete().eq('user_id', usuarioId)
+    if (!error) return
+  } catch {
+    // Esquema auth no expuesto vía PostgREST.
+  }
+}
+
 Deno.serve(async (request) => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  const origin = request.headers.get('origin') ?? ''
+  if (!originAllowed(origin)) {
+    return Response.json({ error: 'Origen no autorizado' }, { status: 403, headers: corsErrorHeaders })
+  }
+  const headers = buildCorsHeaders(origin)
+  if (request.method === 'OPTIONS') return new Response('ok', { headers })
   try {
     const token = request.headers.get('Authorization')?.replace('Bearer ', '')
     if (!token) throw new Error('Sesión requerida')
@@ -28,7 +73,7 @@ Deno.serve(async (request) => {
     if (accion === 'listar') {
       const { data, error } = await admin.from('personal').select('id_usuario,nombres,apellidos,correo,rol,activo,creado_en,actualizado_en,anulado_en,motivo_anulacion').order('activo', { ascending: false }).order('nombres')
       if (error) throw error
-      return Response.json({ personal: data ?? [] }, { headers: corsHeaders })
+      return Response.json({ personal: data ?? [] }, { headers })
     }
 
     // Modo temporal sin servicio de correo: solo el jefe registra empleados.
@@ -46,14 +91,24 @@ Deno.serve(async (request) => {
       const { error: perfilError } = await admin.from('personal').insert({ id_usuario: creado.user.id, nombres, apellidos, correo, rol: 'empleado', activo: true })
       if (perfilError) { await admin.auth.admin.deleteUser(creado.user.id); throw perfilError }
       await admin.from('auditoria_personal').insert({ id_usuario: caller.user.id, accion: 'registrar', entidad: 'personal', id_entidad: creado.user.id, detalle: { correo, rol: 'empleado' } })
-      return Response.json({ id_usuario: creado.user.id, correo }, { headers: corsHeaders })
+      return Response.json({ id_usuario: creado.user.id, correo }, { headers })
     }
 
     if (accion === 'invitar') {
       const nombres = texto(cuerpo.nombres), apellidos = texto(cuerpo.apellidos), correo = texto(cuerpo.correo).toLowerCase(), rol = texto(cuerpo.rol)
       if (!nombres || !apellidos || !correo || !rolesValidos.includes(rol)) throw new Error('Datos de personal no válidos')
       const origen = texto(cuerpo.url_redireccion)
-      const redirectTo = /^https:\/\//.test(origen) || /^http:\/\/localhost(?::\d+)?\//.test(origen) ? origen : (Deno.env.get('SITE_URL') || 'http://localhost:5500/admin.html')
+      const destino = origen || (Deno.env.get('SITE_URL') || 'http://localhost:5500/admin.html').split(',')[0].trim()
+      let destinoUrl: URL
+      try {
+        destinoUrl = new URL(destino)
+      } catch {
+        throw new Error('La URL de redirección no está autorizada')
+      }
+      if (destinoUrl.username || destinoUrl.password || !redirectUrlAllowed(destino)) {
+        throw new Error('La URL de redirección no está autorizada')
+      }
+      const redirectTo = destino
       const { data: usuariosAuth, error: usuariosError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
       if (usuariosError) throw usuariosError
       const existente = usuariosAuth.users.find(usuario => usuario.email?.toLowerCase() === correo)
@@ -77,7 +132,7 @@ Deno.serve(async (request) => {
         if (recuperacionError) throw recuperacionError
       }
       await admin.from('auditoria_personal').insert({ id_usuario: caller.user.id, accion: tipoCorreo === 'invitacion' ? 'invitar' : 'vincular', entidad: 'personal', id_entidad: usuarioId, detalle: { correo, rol } })
-      return Response.json({ id_usuario: usuarioId, correo, rol, tipo_correo: tipoCorreo }, { headers: corsHeaders })
+      return Response.json({ id_usuario: usuarioId, correo, rol, tipo_correo: tipoCorreo }, { headers })
     }
 
     if (!idUsuario) throw new Error('Falta identificar al personal')
@@ -91,7 +146,7 @@ Deno.serve(async (request) => {
       const { error } = await admin.from('personal').update({ nombres, apellidos, actualizado_en: new Date().toISOString() }).eq('id_usuario', idUsuario)
       if (error) throw error
       await admin.from('auditoria_personal').insert({ id_usuario: caller.user.id, accion: 'editar', entidad: 'personal', id_entidad: idUsuario, detalle: {} })
-      return Response.json({ ok: true }, { headers: corsHeaders })
+      return Response.json({ ok: true }, { headers })
     }
 
     if (accion === 'cambiar_contrasena') {
@@ -100,7 +155,7 @@ Deno.serve(async (request) => {
       const { error: authError } = await admin.auth.admin.updateUserById(idUsuario, { password: nuevaContrasena })
       if (authError) throw new Error('No se pudo cambiar la contraseña: ' + authError.message)
       await admin.from('auditoria_personal').insert({ id_usuario: caller.user.id, accion: 'cambiar_contrasena', entidad: 'personal', id_entidad: idUsuario, detalle: { correo: objetivo.correo } })
-      return Response.json({ ok: true }, { headers: corsHeaders })
+      return Response.json({ ok: true }, { headers })
     }
 
     if (accion === 'cambiar_estado') {
@@ -110,8 +165,9 @@ Deno.serve(async (request) => {
       if (error) throw error
       const { error: authError } = await admin.auth.admin.updateUserById(idUsuario, { ban_duration: activo ? 'none' : '876000h' })
       if (authError) throw authError
+      if (!activo) await revocarSesiones(admin, idUsuario)
       await admin.from('auditoria_personal').insert({ id_usuario: caller.user.id, accion: activo ? 'reactivar' : 'anular', entidad: 'personal', id_entidad: idUsuario, detalle: { motivo } })
-      return Response.json({ ok: true }, { headers: corsHeaders })
+      return Response.json({ ok: true }, { headers })
     }
 
     if (accion === 'eliminar') {
@@ -120,10 +176,10 @@ Deno.serve(async (request) => {
       await admin.from('auditoria_personal').insert({ id_usuario: caller.user.id, accion: 'eliminar', entidad: 'personal', id_entidad: idUsuario, detalle: {} })
       const { error } = await admin.auth.admin.deleteUser(idUsuario)
       if (error) throw error
-      return Response.json({ ok: true }, { headers: corsHeaders })
+      return Response.json({ ok: true }, { headers })
     }
     throw new Error('Acción no válida')
   } catch (error) {
-    return Response.json({ error: error.message || 'Error inesperado' }, { status: 400, headers: corsHeaders })
+    return Response.json({ error: error.message || 'Error inesperado' }, { status: 400, headers })
   }
 })

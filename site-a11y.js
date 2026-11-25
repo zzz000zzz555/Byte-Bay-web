@@ -3,7 +3,10 @@
    aún no lo implementan. No interfiere con los modales de site-privacy.js. */
 (function () {
   'use strict';
-  var SELECTOR = '#checkoutModal, #cartDrawer, #productModal, #accountModal';
+  var SELECTOR = '#checkoutModal, #cartDrawer, #productModal, #accountModal, ' +
+    '#ordersModal, #claimsModal, #settingsDrawer, #privacyDisableModal, ' +
+    '#privacyReactivateModal, #personalizationConsent, #cookieConsent, ' +
+    '.bb-wardrobe, dialog';
   var focoPrevio = null;
   var abierto = null;
 
@@ -16,9 +19,13 @@
   }
 
   function esVisible(modal) {
-    return modal.classList.contains('open') &&
-      modal.getAttribute('aria-hidden') !== 'true' &&
-      getComputedStyle(modal).display !== 'none';
+    if (modal.tagName === 'DIALOG') {
+      return modal.open && getComputedStyle(modal).display !== 'none';
+    }
+    if (modal.getAttribute('aria-hidden') === 'true' || modal.classList.contains('hidden')) return false;
+    var shown = modal.classList.contains('open') || modal.classList.contains('is-open') ||
+      modal.id === 'personalizationConsent' || modal.id === 'cookieConsent';
+    return shown && getComputedStyle(modal).display !== 'none';
   }
 
   function abrir(modal) {
@@ -74,11 +81,16 @@
         if (esVisible(modal)) abrir(modal);
         else if (abierto === modal) cerrar(modal);
       });
-      observer.observe(modal, { attributes: true, attributeFilter: ['class', 'aria-hidden'] });
+      observer.observe(modal, { attributes: true, attributeFilter: ['class', 'aria-hidden', 'open'] });
       if (esVisible(modal)) abrir(modal);
     });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observar);
   else observar();
+
+  /* El vestidor se crea después de cargar este módulo: lo detectamos al insertarse. */
+  if (window.MutationObserver) {
+    new MutationObserver(observar).observe(document.body, { childList: true });
+  }
 })();

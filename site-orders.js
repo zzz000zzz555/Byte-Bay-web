@@ -3,6 +3,12 @@
 let pedidosCache=[];
 let filtroPedidos='all';
   function escHtml(v){return (window.BBStore?.escapeHtml||function(x){return String(x).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));})(v);}
+  function urlSegura(v){
+    try{
+      const u=new URL(String(v||''),window.location.href);
+      return u.protocol==='https:'?u.href:'';
+    }catch(error){return '';}
+  }
   function moneyFn(v){return (window.BBStore?.money||function(x){return 'S/ '+Number(x).toFixed(2)})(v);}
   function etiquetaEstado(estado){return ({pendiente:'Pendiente',confirmado:'Confirmado',preparando:'Preparando',enviado:'Enviado',entregado:'Entregado',cancelado:'Cancelado',aprobado:'Aprobado',rechazado:'Rechazado'})[estado]||estado;}
   function iconoEstado(estado){return ({pendiente:'Pend.',confirmado:'Conf.',preparando:'Prep.',enviado:'Env.',entregado:'Ent.',cancelado:'Can.'})[estado]||'—';}
@@ -16,6 +22,18 @@ let filtroPedidos='all';
   function renderizarPedidos(){
     const cont=document.querySelector('#ordersList');
     if(!cont) return;
+    if(!cont.dataset.orderActionsBound){
+      cont.dataset.orderActionsBound='1';
+      cont.addEventListener('click',event=>{
+        const btn=event.target.closest('[data-order-action]');
+        if(!btn) return;
+        const id=String(btn.dataset.id||'');
+        if(!/^[A-Za-z0-9_-]{1,64}$/.test(id)) return;
+        const acciones={detalle:window.verDetallePedido,boleta:window.descargarBoleta,comprar:window.volverAComprar};
+        const fn=acciones[btn.dataset.orderAction];
+        if(typeof fn==='function') fn(id);
+      });
+    }
     const busqueda=(document.querySelector('#ordersSearch')?.value||'').toLowerCase();
     let lista=pedidosCache.filter(p=>{
       if(filtroPedidos!=='all' && estadoGrupo(p.estado)!==filtroPedidos) return false;
@@ -31,8 +49,9 @@ let filtroPedidos='all';
         if(!cancelado){if(i<idx)cls='done';else if(i===idx)cls='active';}
         return `<div class="timeline-step ${cls} ${cancelado&&i===0?'cancelled':''}"><div class="timeline-dot">${iconoEstado(cancelado&&i===0?'cancelado':e)}</div><span>${etiquetaEstado(cancelado&&i===0?'cancelado':e)}</span></div>`;
       }).join('');
-      const items=(p.items||[]).map(it=>`<div class="order-item"><img src="${escHtml(it.imagen||'imagen-producto-predeterminada.svg')}" alt="Imagen de ${escHtml(it.nombre)}" loading="lazy" decoding="async"><div><strong>${escHtml(it.nombre)}</strong><small>${escHtml(it.variante||'')} x${it.cantidad}</small></div><span>${moneyFn(Number(it.precio)*Number(it.cantidad))}</span></div>`).join('');
-      const trackingInfo = p.tracking_number ? `<div class="order-tracking-info"><strong>Tracking:</strong> ${escHtml(p.carrier||'')} ${escHtml(p.tracking_number)}${p.tracking_url?` <a href="${escHtml(p.tracking_url)}" target="_blank" rel="noopener">Ver seguimiento</a>`:''}</div>` : '';
+      const items=(p.items||[]).map(it=>`<div class="order-item"><img src="${escHtml(it.imagen||'imagen-producto-predeterminada.svg')}" alt="Imagen de ${escHtml(it.nombre)}" width="64" height="64" loading="lazy" decoding="async"><div><strong>${escHtml(it.nombre)}</strong><small>${escHtml(it.variante||'')} x${it.cantidad}</small></div><span>${moneyFn(Number(it.precio)*Number(it.cantidad))}</span></div>`).join('');
+      const trackingUrl=urlSegura(p.tracking_url);
+      const trackingInfo = p.tracking_number ? `<div class="order-tracking-info"><strong>Tracking:</strong> ${escHtml(p.carrier||'')} ${escHtml(p.tracking_number)}${trackingUrl?` <a href="${escHtml(trackingUrl)}" target="_blank" rel="noopener noreferrer">Ver seguimiento</a>`:''}</div>` : '';
       const whatsappMsg = p.estado==='enviado' ? `<div class="order-whatsapp-alert"><span>WhatsApp</span><div><strong>Tu pedido está en camino</strong><p>Estate atento a WhatsApp para coordinar la entrega.</p></div></div>` : '';
       return `<article class="order-card">
         <div class="order-head">
@@ -45,9 +64,9 @@ let filtroPedidos='all';
         ${whatsappMsg}
         ${cancelado?'':`<div class="order-timeline">${pasos}</div>`}
         <div class="order-actions">
-          <button class="btn secondary" onclick="verDetallePedido('${p.id}')">Ver detalle</button>
-          <button class="btn secondary" onclick="descargarBoleta('${p.id}')">Imprimir resumen</button>
-          <button class="btn primary" onclick="volverAComprar('${p.id}')">Volver a comprar</button>
+          <button class="btn secondary" type="button" data-order-action="detalle" data-id="${escHtml(p.id)}">Ver detalle</button>
+          <button class="btn secondary" type="button" data-order-action="boleta" data-id="${escHtml(p.id)}">Imprimir resumen</button>
+          <button class="btn primary" type="button" data-order-action="comprar" data-id="${escHtml(p.id)}">Volver a comprar</button>
         </div>
       </article>`;
     }).join('');

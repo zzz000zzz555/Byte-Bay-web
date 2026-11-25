@@ -1,38 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { corsErrorHeaders, corsHeaders as buildCorsHeaders, originAllowed } from '../_shared/cors.ts'
 
 const MP_ORDERS_URL = 'https://api.mercadopago.com/v1/orders'
 const RESERVA_MINUTOS = 15
-
-const allowedOrigins = new Set(
-  (Deno.env.get('SITE_URL') ?? '')
-    .split(',')
-    .map(value => value.trim())
-    .filter(Boolean)
-    .map(value => {
-      try { return new URL(value).origin } catch { return '' }
-    })
-    .filter(Boolean)
-)
-
-function originAllowed(origin: string): boolean {
-  if (!origin) return true
-  try {
-    const url = new URL(origin)
-    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return true
-    return allowedOrigins.has(url.origin)
-  } catch {
-    return false
-  }
-}
-
-function corsHeaders(origin: string) {
-  return {
-    'Access-Control-Allow-Origin': origin || '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Vary': 'Origin'
-  }
-}
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
@@ -43,6 +13,24 @@ const json = (body: unknown, status = 200, headers: Record<string, string> = {})
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : ''
 const money = (cents: number) => (cents / 100).toFixed(2)
 const cents = (value: unknown) => Math.round(Number(value) * 100)
+
+// Logs de proveedor: solo status/type/code y un id seguro, nunca bodies ni tokens.
+function logRespuestaProveedor(
+  proveedor: 'mp' | 'culqi',
+  respuesta: Response,
+  datos: Record<string, unknown> | null,
+  identificador = ''
+) {
+  const seguro = (valor: unknown, limite: number) =>
+    text(valor).replace(/[^A-Za-z0-9_.:-]/g, '').slice(0, limite) || null
+  const id = seguro(identificador || datos?.id, 80)
+  console.error(JSON.stringify({
+    status: respuesta.status,
+    type: seguro(datos?.type, 40),
+    code: seguro(datos?.code, 40),
+    id: id ? `${proveedor}:${id}` : null
+  }))
+}
 
 function validEmail(value: string) {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)
@@ -154,10 +142,12 @@ function buildMpItems(pedido: Record<string, unknown>) {
 
 Deno.serve(async request => {
   const origin = request.headers.get('origin') ?? ''
-  const headers = corsHeaders(originAllowed(origin) ? origin : 'null')
+  if (!originAllowed(origin)) {
+    return json({ error: 'Origen no autorizado' }, 403, corsErrorHeaders)
+  }
+  const headers = buildCorsHeaders(origin)
 
   if (request.method === 'OPTIONS') return new Response('ok', { headers })
-  if (!originAllowed(origin)) return json({ error: 'Origen no autorizado' }, 403, headers)
   if (request.method !== 'POST') return json({ error: 'Método no permitido' }, 405, headers)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -366,7 +356,7 @@ Deno.serve(async request => {
     const mpData = await mpResponse.json().catch(() => null) as Record<string, unknown> | null
 
     if (!mpResponse.ok || !mpData) {
-      console.error('crear-pago: Mercado Pago respondió', mpResponse.status, mpData)
+      logRespuestaProveedor('mp', mpResponse, mpData)
       await admin.rpc('bb_liberar_pedido_mp', {
         p_pago_id: pedidoData.pago_id,
         p_motivo: `error_mp_${mpResponse.status}`,
@@ -381,7 +371,7 @@ Deno.serve(async request => {
     const mpOrderId = text(mpData.id)
 
     if (!mpOrderId || !checkoutUrl || !checkoutUrlIsSafe(checkoutUrl)) {
-      console.error('crear-pago: respuesta de Mercado Pago sin checkout_url válido', mpData)
+      logRespuestaProveedor('mp', mpResponse, mpData, mpOrderId)
       await admin.rpc('bb_liberar_pedido_mp', {
         p_pago_id: pedidoData.pago_id,
         p_motivo: 'checkout_url_invalido',

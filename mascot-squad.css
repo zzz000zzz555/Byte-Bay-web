@@ -16,7 +16,7 @@ body.bb-squad-ready .bb-squad[data-active="true"]{display:block}
 body.bb-mascot-hidden .bb-squad,
 body.checkout-open .bb-squad,
 body.bb-wardrobe-open .bb-squad,
-body:has(#aiAssistantPanel:not(.hidden),.cart-drawer.open,.bb-wardrobe.is-open,.cookie-banner:not(.hidden),.bb-consent-banner:not(.hidden),.settings-drawer.is-open,.settings-backdrop.is-open,.claims-modal.open,.orders-modal.open,.modal.open,.account-modal.open,dialog[open]) .bb-squad{display:none!important}
+body.ui-blocking .bb-squad{display:none!important}
 @media(max-width:479px){.bb-squad[data-mascot="pixel"],.bb-squad[data-mascot="nano"]{display:none!important}}
 body.bb-squad-dragging,body.bb-squad-dragging *{cursor:grabbing!important;user-select:none!important;-webkit-user-select:none!important}
 .bb-squad:focus-visible{outline:3px solid var(--sq-accent);outline-offset:4px;border-radius:20px}

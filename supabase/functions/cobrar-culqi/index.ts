@@ -1,38 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { corsErrorHeaders, corsHeaders as buildCorsHeaders, originAllowed } from '../_shared/cors.ts'
 
 const CULQI_CHARGES_URL = 'https://api.culqi.com/v2/charges'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-const allowedOrigins = new Set(
-  (Deno.env.get('SITE_URL') ?? '')
-    .split(',')
-    .map(value => value.trim())
-    .filter(Boolean)
-    .map(value => {
-      try { return new URL(value).origin } catch { return '' }
-    })
-    .filter(Boolean)
-)
-
-function originAllowed(origin: string): boolean {
-  if (!origin) return true
-  try {
-    const url = new URL(origin)
-    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return true
-    return allowedOrigins.has(url.origin)
-  } catch {
-    return false
-  }
-}
-
-function corsHeaders(origin: string) {
-  return {
-    'Access-Control-Allow-Origin': origin || '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Vary': 'Origin'
-  }
-}
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
@@ -44,6 +14,19 @@ const text = (value: unknown) => typeof value === 'string' ? value.trim() : ''
 const digits = (value: unknown) => text(value).replace(/\D/g, '')
 
 type Json = Record<string, unknown>
+
+// Logs de proveedor: solo status/type/code y un id seguro, nunca bodies ni tokens.
+function logRespuestaProveedor(respuesta: Response, datos: Json | null, identificador = '') {
+  const seguro = (valor: unknown, limite: number) =>
+    text(valor).replace(/[^A-Za-z0-9_.:-]/g, '').slice(0, limite) || null
+  const id = seguro(identificador || datos?.id, 80)
+  console.error(JSON.stringify({
+    status: respuesta.status,
+    type: seguro(datos?.type, 40),
+    code: seguro(datos?.code, 40),
+    id: id ? `culqi:${id}` : null
+  }))
+}
 
 function safeChargePayload(charge: Json) {
   return {
@@ -75,10 +58,12 @@ function chargeSucceeded(charge: Json) {
 
 Deno.serve(async request => {
   const origin = request.headers.get('origin') ?? ''
-  const headers = corsHeaders(originAllowed(origin) ? origin : 'null')
+  if (!originAllowed(origin)) {
+    return json({ error: 'Origen no autorizado' }, 403, corsErrorHeaders)
+  }
+  const headers = buildCorsHeaders(origin)
 
   if (request.method === 'OPTIONS') return new Response('ok', { headers })
-  if (!originAllowed(origin)) return json({ error: 'Origen no autorizado' }, 403, headers)
   if (request.method !== 'POST') return json({ error: 'Método no permitido' }, 405, headers)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -242,7 +227,7 @@ Deno.serve(async request => {
         text(errorData.merchant_message) ||
         'El pago no se pudo completar. Revisa los datos de tu tarjeta e inténtalo nuevamente.'
 
-      console.error('cobrar-culqi: Culqi respondió', culqiResponse.status, errorData)
+      logRespuestaProveedor(culqiResponse, culqiData)
 
       if (culqiResponse.status === 401 || culqiResponse.status === 403 || tipo === 'authentication_error') {
         await admin.rpc('bb_liberar_pedido_culqi', {
@@ -287,16 +272,12 @@ Deno.serve(async request => {
     const currency = text(culqiData.currency_code).toUpperCase()
 
     if (!chargeId) {
-      console.error('cobrar-culqi: Culqi devolvió un cargo sin id', culqiData)
+      logRespuestaProveedor(culqiResponse, culqiData)
       return json({ error: 'Culqi devolvió una respuesta no válida. Intenta nuevamente.' }, 502, headers)
     }
 
     if (amount !== montoCentimos || (currency && currency !== 'PEN')) {
-      console.error('cobrar-culqi: el monto o la moneda del cargo no coinciden', {
-        esperado: montoCentimos,
-        recibido: amount,
-        moneda: currency
-      })
+      logRespuestaProveedor(culqiResponse, culqiData, chargeId)
       await admin.from('pagos_culqi')
         .update({
           culqi_charge_id: chargeId,

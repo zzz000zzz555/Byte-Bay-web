@@ -51,8 +51,17 @@
     return Boolean(personalization && !personalization.classList.contains('hidden'));
   }
 
+  /* El propio banner no cuenta como bloqueo: solo evitamos superponernos a
+     diálogos, paneles y checkout ajenos. */
+  function otherOverlayVisible() {
+    return Boolean(document.body.classList.contains('checkout-open') ||
+      document.querySelector('.settings-drawer.is-open, .settings-backdrop.is-open, ' +
+        '.claims-modal.open, .orders-modal.open, .modal.open, .account-modal.open, ' +
+        '.bb-wardrobe.is-open, dialog[open]'));
+  }
+
   function maybeShow() {
-    if (readConsent() || personalizationVisible() || document.body.classList.contains('checkout-open')) {
+    if (readConsent() || personalizationVisible() || otherOverlayVisible()) {
       hide();
       return;
     }
@@ -79,6 +88,10 @@
   if (personalization && window.MutationObserver) {
     new MutationObserver(maybeShow).observe(personalization, { attributes: true, attributeFilter: ['class'] });
   }
+  window.addEventListener('bytebay:companion-busy', function (event) {
+    if (event && event.detail && event.detail.blocking) hide();
+    else maybeShow();
+  });
   [250, 900, 2500].forEach(function (delay) { window.setTimeout(maybeShow, delay); });
 
   window.ByteBayCookieConsent = {

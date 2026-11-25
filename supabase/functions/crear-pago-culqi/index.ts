@@ -1,37 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { corsErrorHeaders, corsHeaders as buildCorsHeaders, originAllowed } from '../_shared/cors.ts'
 
 const RESERVA_MINUTOS = 15
-
-const allowedOrigins = new Set(
-  (Deno.env.get('SITE_URL') ?? '')
-    .split(',')
-    .map(value => value.trim())
-    .filter(Boolean)
-    .map(value => {
-      try { return new URL(value).origin } catch { return '' }
-    })
-    .filter(Boolean)
-)
-
-function originAllowed(origin: string): boolean {
-  if (!origin) return true
-  try {
-    const url = new URL(origin)
-    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return true
-    return allowedOrigins.has(url.origin)
-  } catch {
-    return false
-  }
-}
-
-function corsHeaders(origin: string) {
-  return {
-    'Access-Control-Allow-Origin': origin || '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Vary': 'Origin'
-  }
-}
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
@@ -47,10 +17,12 @@ function validEmail(value: string) {
 
 Deno.serve(async request => {
   const origin = request.headers.get('origin') ?? ''
-  const headers = corsHeaders(originAllowed(origin) ? origin : 'null')
+  if (!originAllowed(origin)) {
+    return json({ error: 'Origen no autorizado' }, 403, corsErrorHeaders)
+  }
+  const headers = buildCorsHeaders(origin)
 
   if (request.method === 'OPTIONS') return new Response('ok', { headers })
-  if (!originAllowed(origin)) return json({ error: 'Origen no autorizado' }, 403, headers)
   if (request.method !== 'POST') return json({ error: 'Método no permitido' }, 405, headers)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')

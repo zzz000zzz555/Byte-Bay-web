@@ -521,6 +521,10 @@
 
     tick(time) {
       var stamp = typeof time === 'number' ? time : now();
+      if (!this.visible) {
+        this.physics.lastTime = stamp;
+        return;
+      }
       var elapsed = (stamp - this.physics.lastTime) / 1000;
       this.physics.lastTime = stamp;
       if (!isFinite(elapsed) || elapsed <= 0) elapsed = FIXED_STEP;
@@ -789,6 +793,9 @@
         self.suppressUntil = self.lastMeet + MEET_COOLDOWN;
         self.abort();
       }, true);
+      window.addEventListener('bytebay:companion-busy', function (event) {
+        if (event && event.detail && event.detail.blocking) self.abort();
+      });
     }
 
     abort() {
@@ -975,6 +982,7 @@
       this.lastTime = now();
       this.rafId = 0;
       this.intervalId = 0;
+      this.everTicked = false;
       this.ready = false;
       this.init();
     }
@@ -1110,6 +1118,7 @@
       var self = this;
       var frame = function (time) {
         if (self.intervalId) return;
+        self.everTicked = true;
         if (document.visibilityState !== 'hidden') {
           self.entities.forEach(function (entity) { if (entity.id !== 'byte') entity.tick(time); });
           self.social.tick();
@@ -1120,7 +1129,7 @@
       if (typeof window.requestAnimationFrame === 'function') {
         this.rafId = window.requestAnimationFrame(frame);
         window.setTimeout(function () {
-          if (!self.rafId && !self.intervalId) {
+          if (!self.everTicked && !self.intervalId) {
             self.intervalId = window.setInterval(function () {
               self.entities.forEach(function (entity) { if (entity.id !== 'byte') entity.tick(now()); });
               self.social.tick();

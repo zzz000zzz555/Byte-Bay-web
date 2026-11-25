@@ -19,9 +19,10 @@
 body.bb-streak-ready .bb-streak{display:block}
 body.bb-mascot-hidden .bb-streak,
 body.checkout-open .bb-streak,
-body:has(.cookie-banner:not(.hidden),.bb-consent-banner:not(.hidden),.settings-drawer.is-open,.settings-backdrop.is-open,.claims-modal.open,.orders-modal.open,dialog[open]) .bb-streak{display:none!important}
+body.ui-blocking .bb-streak{display:none!important}
 body.bb-streak-dragging{cursor:grabbing}
 .bb-streak:focus-visible{outline:3px solid #FFB84D;outline-offset:5px;border-radius:26px}
+.bb-streak.is-dragging,.bb-streak.is-editing{z-index:109}
 .bb-streak.is-editing{cursor:default}
 
 .bb-streak__motion{position:absolute;inset:0;display:block;transform:scale(var(--st-scale,1)) rotate(var(--st-tilt,0deg));transform-origin:50% 100%;will-change:transform}

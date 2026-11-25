@@ -4,6 +4,7 @@
   'use strict';
 
   var KEY_VOICE = 'bytebay_mascot_voice';
+  var BUSY_EVENT = 'bytebay:companion-busy';
   var KEY_ACTIVE = 'bytebay_mascot_active';
   var KEY_POCKET = 'bytebay_mascot_pocket';
   var KEY_POS = 'byte_mascot_pos';
@@ -286,6 +287,7 @@
       this.rafId = 0;
       this.intervalId = 0;
       this.watchdog = null;
+      this.blocked = null;
       this.activities = new IdleActivityManager(this);
 
       this.init();
@@ -442,6 +444,10 @@
         var nombre = event && event.detail ? event.detail.nombre : '';
         if (nombre) self.showBubble('¡Qué buen nombre, ' + nombre + '! Queda guardado.', 1900);
       });
+      window.addEventListener('bytebay:streak-rename-failed', function (event) {
+        var nombre = event && event.detail ? event.detail.nombre : '';
+        if (nombre) self.showBubble('Guardé "' + nombre + '" en este dispositivo; aún no sincroniza.', 1900);
+      });
       document.addEventListener('bytebay:ai-response', function (event) {
         if (event.detail && event.detail.respuesta && !self.panel.classList.contains('hidden')) {
           self.speak(event.detail.respuesta);
@@ -454,7 +460,8 @@
         var observed = [
           this.panel, document.body,
           document.querySelector('#productModal'), document.querySelector('#accountModal'),
-          document.querySelector('#checkoutModal'), document.querySelector('#claimsModal'),
+          document.querySelector('#checkoutModal'), document.querySelector('#cartDrawer'),
+          document.querySelector('#claimsModal'),
           document.querySelector('#ordersModal'), document.querySelector('#settingsDrawer'),
           document.querySelector('#settingsBackdrop'), document.querySelector('#personalizationConsent'),
           document.querySelector('.cookie-banner'), document.querySelector('dialog')
@@ -573,9 +580,17 @@
       var expanded = !this.panel.classList.contains('hidden');
       this.trigger.setAttribute('aria-expanded', String(expanded));
       this.mascot.setAttribute('aria-expanded', String(expanded));
-      var blocking = document.body.classList.contains('checkout-open') || expanded ||
-        Boolean(document.querySelector('.modal.open, .account-modal.open, .info-modal.open, .bb-modal.open, .claims-modal.open, .orders-modal.open, .settings-drawer.is-open, .settings-backdrop.is-open, .cookie-banner:not(.hidden), .bb-consent-banner:not(.hidden), dialog[open]'));
-      document.body.classList.toggle('bb-mascot-hidden', blocking);
+      var consentVisible = Boolean(document.querySelector('.cookie-banner:not(.hidden), .bb-consent-banner:not(.hidden)'));
+      var blocking = document.body.classList.contains('checkout-open') ||
+        document.body.classList.contains('bb-wardrobe-open') || expanded ||
+        Boolean(document.querySelector('.modal.open, .account-modal.open, .info-modal.open, .bb-modal.open, .claims-modal.open, .orders-modal.open, .cart-drawer.open, .settings-drawer.is-open, .settings-backdrop.is-open, dialog[open]'));
+      var previouslyBlocked = this.blocked;
+      document.body.classList.toggle('bb-mascot-hidden', blocking || consentVisible);
+      document.body.classList.toggle('ui-blocking', blocking || consentVisible);
+      this.blocked = blocking;
+      if (previouslyBlocked !== blocking) {
+        window.dispatchEvent(new CustomEvent(BUSY_EVENT, { detail: { blocking: blocking } }));
+      }
       if (blocking) {
         this.hideBubble();
         this.mascot.classList.remove('is-curious', 'is-happy', 'is-landing');

@@ -12,7 +12,7 @@
 .bb-whatsapp-product{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 13px;border:1px solid #bfe3d1;border-radius:10px;background:#eff8f2;color:#12603f;font:800 12px/1 Manrope,"DM Sans",sans-serif}
 .bb-whatsapp-product:hover{background:#dff0e6}
 body.checkout-open .bb-whatsapp,
-body:has(.cookie-banner:not(.hidden),.bb-consent-banner:not(.hidden),.claims-modal.open,.orders-modal.open,.settings-drawer.is-open,.settings-backdrop.is-open,dialog[open]) .bb-whatsapp{display:none!important}
+body.ui-blocking .bb-whatsapp{display:none!important}
 
 /* Campos señuelo: invisibles para personas, visibles para bots que rellenan todo. */
 .bb-honeypot{position:absolute!important;left:-10000px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important}

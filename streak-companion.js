@@ -7,6 +7,7 @@
   var KEY_POS = 'bytebay_streak_pos';
   var KEY_VOICE = 'bytebay_mascot_voice';
   var CACHE_PREFIX = 'bytebay_streak_cache_';
+  var BUSY_EVENT = 'bytebay:companion-busy';
   var DRAG_THRESHOLD = 5;
   var MEET_DISTANCE = 165;
   var MEET_COOLDOWN = 5500;
@@ -145,6 +146,8 @@
       this.intervalId = 0;
       this.refreshing = false;
       this.visible = false;
+      this.blocking = false;
+      this.paused = true;
       this.session = null;
       this.size = { w: 72, h: 80 };
 
@@ -225,9 +228,24 @@
       window.addEventListener('resize', function () { self.normalizePosition(); }, { passive: true });
       window.addEventListener('bb:account-updated', function () { self.refresh(true); });
       window.addEventListener('bb:privacy-updated', function () { self.refresh(); });
+      window.addEventListener(BUSY_EVENT, function (event) {
+        self.blocking = Boolean(event && event.detail && event.detail.blocking);
+        self.updatePaused();
+        if (self.blocking) {
+          self.cancelDrag();
+          self.closeEditor();
+          self.hideBubble();
+          self.stopAudio();
+        }
+      });
       document.addEventListener('visibilitychange', function () {
-        if (document.visibilityState === 'visible') self.refresh();
-        else self.stopAudio();
+        if (document.visibilityState === 'visible') {
+          self.refresh();
+          self.updatePaused();
+        } else {
+          self.stopAudio();
+          self.updatePaused();
+        }
       });
 
       if (this.editButton) {
@@ -270,6 +288,35 @@
       return document.body.classList.contains('bb-mascot-inactive') ||
         fx === 'off' || fx === 'reduced' ||
         Boolean(this.mediaQuery && this.mediaQuery.matches);
+    }
+
+    /* Byte coordina los modales y el checkout; cuando la tienda está ocupada,
+       la racha detiene su bucle en lugar de seguir calculando física oculta. */
+    isBlocked() {
+      return this.blocking || document.visibilityState === 'hidden' ||
+        document.body.classList.contains('bb-mascot-hidden') ||
+        document.body.classList.contains('checkout-open');
+    }
+
+    updatePaused() {
+      var next = !this.visible || this.isBlocked();
+      if (next === this.paused) return;
+      this.paused = next;
+      if (!next) {
+        this.physics.lastTime = now();
+        this.physics.accumulator = 0;
+      }
+    }
+
+    cancelDrag() {
+      if (!this.drag.active) return;
+      this.drag.active = false;
+      this.drag.moved = false;
+      this.drag.pointerId = null;
+      this.state.dragging = false;
+      this.physics.tiltTarget = 0;
+      this.mascot.classList.remove('is-dragging');
+      document.body.classList.remove('bb-streak-dragging');
     }
 
     /* ---------- Sesión, racha y nombre ---------- */
@@ -446,6 +493,7 @@
       this.mascot.classList.add('is-visible');
       this.measure();
       this.refreshCenter();
+      this.updatePaused();
       this.render();
     }
 
@@ -454,6 +502,7 @@
       document.body.classList.remove('bb-streak-ready');
       this.mascot.classList.remove('is-visible', 'is-meet', 'is-happy', 'is-levelup', 'is-landing', 'is-hatching', 'has-bubble');
       clearNode(this.bubble);
+      this.updatePaused();
     }
 
     preview(days, name) {
@@ -498,11 +547,17 @@
       this.renderName();
       this.saveCache(this.state.customerId, this.state.days, this.state.best, name, dayKey(new Date()));
       this.playClass('is-levelup', 950);
-      this.showBubble('¡Desde ahora me llamo ' + name + '!', 2300);
+      this.showBubble(this.state.stage === 'egg'
+        ? 'Guardé "' + name + '" para cuando eclosione.'
+        : '¡Desde ahora me llamo ' + name + '!', 2300);
       this.playTone('level');
-      window.dispatchEvent(new CustomEvent('bytebay:streak-renamed', { detail: { nombre: name } }));
 
-      if (!this.session || typeof supabaseClient === 'undefined' || !supabaseClient) return;
+      if (!this.session || typeof supabaseClient === 'undefined' || !supabaseClient) {
+        window.dispatchEvent(new CustomEvent('bytebay:streak-rename-failed', {
+          detail: { nombre: name, motivo: 'sin-sesion' }
+        }));
+        return;
+      }
       try {
         var response = await withTimeout(
           supabaseClient.rpc('bb_renombrar_racha', {
@@ -516,11 +571,15 @@
           this.state.name = confirmed;
           this.renderName();
           this.saveCache(this.state.customerId, this.state.days, this.state.best, confirmed, dayKey(new Date()));
+          window.dispatchEvent(new CustomEvent('bytebay:streak-renamed', { detail: { nombre: confirmed } }));
           return;
         }
       } catch (error) {
         /* Se conserva el nombre local; el RPC puede no estar aplicado aún. */
       }
+      window.dispatchEvent(new CustomEvent('bytebay:streak-rename-failed', {
+        detail: { nombre: name, motivo: 'sin-sincronizacion' }
+      }));
       this.state.name = previous;
       this.renderName();
       this.saveCache(this.state.customerId, this.state.days, this.state.best, previous, dayKey(new Date()));
@@ -633,6 +692,10 @@
 
     tick(time) {
       var stamp = typeof time === 'number' ? time : now();
+      if (this.paused || this.isBlocked()) {
+        this.physics.lastTime = stamp;
+        return;
+      }
       var elapsed = (stamp - this.physics.lastTime) / 1000;
       this.physics.lastTime = stamp;
       if (!isFinite(elapsed) || elapsed <= 0) elapsed = FIXED_STEP;
