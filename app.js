@@ -1784,7 +1784,7 @@ document.querySelector('#productCommentForm').onsubmit=async event=>{
    const parametros=cuenta.provider==='google'?{p_id_producto:lastViewedProduct.id,p_calificacion:Number(document.querySelector('input[name="commentRating"]:checked').value),p_comentario:document.querySelector('#commentText').value.trim()}:{p_id_producto:lastViewedProduct.id,p_access_token:sesionComentario?.access_token,p_calificacion:Number(document.querySelector('input[name="commentRating"]:checked').value),p_comentario:document.querySelector('#commentText').value.trim()};
   const {error}=await supabaseClient.rpc(rpc,parametros);
   boton.disabled=false;
-  if(error){estado.textContent=error.message||'No se pudo guardar el comentario.';return;}
+  if(error){console.warn('Supabase comentario:',error?.code||'ERROR');estado.textContent='No se pudo guardar el comentario. Inténtalo nuevamente.';return;}
   event.target.reset();
   actualizarCalificacionComentario();
   actualizarContadorComentario();
@@ -1908,7 +1908,7 @@ function configurarAsistenteIA(){
       esperando.textContent=data.respuesta;
       document.dispatchEvent(new CustomEvent('bytebay:ai-response',{detail:{respuesta:data.respuesta}}));
       agregarProductosRecomendados(data.productos);
-    }catch(error){esperando.textContent=`No puedo responder ahora: ${String(error.message||'').replace(/[.\s]+$/,'')}. Intenta nuevamente en unos minutos.`;}
+    }catch(error){console.warn('Asistente Byte-Bay:',error?.estado||'ERROR');esperando.textContent='No puedo responder ahora. Intenta nuevamente en unos minutos.';}
     document.dispatchEvent(new CustomEvent('bytebay:ai-done'));
   };
   formulario.onsubmit=evento=>{evento.preventDefault();preguntar(entrada.value);};
