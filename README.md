@@ -4,7 +4,7 @@ Tienda e-commerce de producción (vanilla JS + HTML/CSS + Supabase/PostgreSQL/Ed
 
 - **Sitio público:** https://zzz000zzz555.github.io/Byte-Bay-web/
 - **Panel admin:** `admin.html` (acceso con cuenta de personal de Supabase Auth)
-- **Pagos:** Culqi (principal) y Mercado Pago (secundario), confirmación por webhook/API
+- **Pagos:** Mercado Pago activo; Culqi desactivado temporalmente en el cliente hasta aprobar los tokens de producción (el código del servidor se conserva)
 - **Envío:** gratis a todo el Perú
 
 ## Despliegue

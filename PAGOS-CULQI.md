@@ -1,5 +1,7 @@
 # Pagos con Culqi (tarjetas y Yape)
 
+> Estado actual: **desactivado temporalmente en el cliente**. Culqi aún no aprueba los tokens de producción. El checkout solo ofrece Mercado Pago y el script, la opción de pago y los orígenes de CSP de Culqi están comentados. No reactivar hasta recibir la aprobación y completar la rotación de credenciales.
+
 Byte Bay cobra en PEN con **Culqi Checkout v4** para tarjetas y Yape. El cliente
 ingresa el celular y código de aprobación de Yape únicamente en el formulario
 seguro de Culqi. El servidor recibe el token y crea el cargo; nunca simula pagos.

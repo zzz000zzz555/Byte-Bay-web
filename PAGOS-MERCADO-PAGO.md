@@ -1,6 +1,6 @@
 # Pagos con Mercado Pago
 
-El checkout ofrece Mercado Pago como opción principal y Culqi como alternativa.
+El checkout ofrece Mercado Pago como único método activo. Culqi permanece desactivado temporalmente hasta que se aprueben sus tokens de producción.
 El cliente paga en el checkout alojado de Mercado Pago; Byte Bay no recibe ni
 almacena datos de tarjeta. Un pedido solo se confirma después de verificar el
 estado de la orden con Mercado Pago o recibir su webhook.
