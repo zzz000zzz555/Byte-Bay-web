@@ -6,6 +6,12 @@ const adminEscape = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
 }[char]));
 const adminDate = value => value ? new Date(value).toLocaleString('es-PE') : '—';
+// Las evidencias nunca se abren por URL pública: solo se admite la ruta del
+// bucket privado y se resuelve con createSignedUrl en la Edge Function.
+const rutaEvidenciaSegura = value => {
+  const coincidencia = String(value || '').trim().match(/([0-9a-f-]{36}\.(?:jpg|png|webp|pdf))(?:[?#].*)?$/i);
+  return coincidencia ? coincidencia[1] : '';
+};
 
 function mostrarErrorMejoras(error) {
   const estado = document.querySelector('#adminStatus');
@@ -115,9 +121,7 @@ function renderizarReclamos() {
         <span>${adminDate(reclamo.created_at)}</span>
       </div>
       <p class="admin-claim-description">${adminEscape(reclamo.descripcion_reclamo)}</p>
-      ${reclamo.evidencia_url ? (reclamo.evidencia_url.startsWith('https://')
-        ? `<a class="admin-claim-evidence" href="${adminEscape(reclamo.evidencia_url)}" target="_blank" rel="noopener noreferrer">Abrir evidencia externa</a>`
-        : `<button class="admin-claim-evidence" type="button" data-evidence-path="${adminEscape(reclamo.evidencia_url)}">Ver evidencia privada</button>`) : ''}
+      ${rutaEvidenciaSegura(reclamo.evidencia_url) ? `<button class="admin-claim-evidence" type="button" data-evidence-path="${adminEscape(rutaEvidenciaSegura(reclamo.evidencia_url))}">Ver evidencia privada</button>` : ''}
       <form class="admin-claim-form" data-claim-id="${Number(reclamo.id)}">
         <label>Estado<select name="estado">
           <option value="pendiente" ${reclamo.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
@@ -208,6 +212,7 @@ async function cargarAuditoria() {
   `).join('') || '<span>No hay responsables en los resultados.</span>';
   renderizarAuditoria();
 }
+window.bbCargarAuditoria = cargarAuditoria;
 
 function renderizarAuditoria() {
   const lista = document.querySelector('#adminAuditList');
@@ -448,7 +453,6 @@ document.querySelectorAll('[data-admin-tab]').forEach(button => {
   button.addEventListener('click', () => {
     if (button.dataset.adminTab === 'resumen' && adminEsJefe) cargarCicloUsuarios();
     if (button.dataset.adminTab === 'reclamos') cargarReclamos();
-    if (button.dataset.adminTab === 'auditoria') cargarAuditoria();
     if (button.dataset.adminTab === 'marca') cargarConfiguracionMarca();
   });
 });

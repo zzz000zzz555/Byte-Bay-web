@@ -115,8 +115,12 @@ body.bb-streak-dragging{cursor:grabbing}
 .bb-streak:hover .bb-streak__plate,
 .bb-streak:focus-visible .bb-streak__plate,
 .bb-streak.is-dragging .bb-streak__plate{border-color:#FF9E45;box-shadow:0 9px 22px rgba(244,123,32,.3)}
-.bb-streak__plate-name{overflow:hidden;text-overflow:ellipsis;max-width:96px;letter-spacing:.01em}
+.bb-streak__plate-tag{flex:none;padding:2px 5px;border-radius:999px;background:#F4732B;color:#FFF7D6;font-size:8px;letter-spacing:.08em;text-transform:uppercase}
+.bb-streak__plate-name{overflow:hidden;text-overflow:ellipsis;max-width:86px;letter-spacing:.01em}
 .bb-streak__plate-days{flex:none;padding:2px 6px;border-radius:999px;background:#2B1B0A;color:#FFE9B8;font-size:9px;letter-spacing:.03em}
+/* Anillo de incubación: muestra cuántos días faltan para la eclosión. */
+.bb-streak__progress{position:absolute;left:50%;bottom:4px;z-index:1;width:58px;height:58px;transform:translateX(-50%);border-radius:50%;background:conic-gradient(var(--st-mid) 0 calc(var(--st-progress,0) * 1%),rgba(255,255,255,.18) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));opacity:.75;pointer-events:none;transition:opacity .25s ease}
+.bb-streak[data-stage="hatched"] .bb-streak__progress{opacity:0}
 .bb-streak__edit{pointer-events:auto;display:grid;flex:none;width:19px;height:19px;place-items:center;border:0;border-radius:50%;background:#FFD98A;color:#5A3410;font:800 11px/1 Manrope,sans-serif;cursor:pointer;transition:background .16s ease,transform .16s ease}
 .bb-streak__edit:hover{background:#FFB84D;transform:rotate(-8deg) scale(1.08)}
 .bb-streak__edit:focus-visible{outline:2px solid #F4732B;outline-offset:2px}

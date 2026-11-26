@@ -11,6 +11,7 @@ type GeminiGenerateContentResponse = {
 
 const LIMITE_CONSULTAS = 10
 const VENTANA_CONSULTAS = 10 * 60 * 1000
+const LIMITE_DIARIO = 60
 
 class ErrorSolicitud extends Error {
   constructor(message: string, readonly status: number) {
@@ -29,9 +30,31 @@ function limitarConsulta(usuarioId: string) {
     return
   }
   if (registro.cantidad >= LIMITE_CONSULTAS) {
-    throw new ErrorSolicitud('Alcanzaste el límite de consultas. Intenta nuevamente en unos minutos.', 429)
+    const esperar = Math.max(1, Math.ceil((registro.reiniciaEn - ahora) / 60000))
+    throw new ErrorSolicitud(
+      `Alcanzaste el límite de ${LIMITE_CONSULTAS} preguntas. Vuelve en ${esperar} minuto(s).`,
+      429,
+    )
   }
   registro.cantidad += 1
+}
+
+// Cupo diario persistente: sobrevive a reinicios y se comparte entre réplicas.
+// Si la migración aún no está aplicada, sigue rigiendo el límite en memoria.
+async function limiteDiario(db: any, usuarioId: string) {
+  try {
+    const { data, error } = await db.rpc('bb_asistente_registrar_consulta', { p_usuario_id: usuarioId })
+    if (error) return
+    const fila = Array.isArray(data) ? data[0] : data
+    if (fila && fila.permitido === false) {
+      throw new ErrorSolicitud(
+        `Alcanzaste el límite diario de ${LIMITE_DIARIO} preguntas. Vuelve mañana.`,
+        429,
+      )
+    }
+  } catch (error) {
+    if (error instanceof ErrorSolicitud) throw error
+  }
 }
 
 function limpiarMensaje(valor: unknown) {
@@ -172,14 +195,17 @@ Deno.serve(async (request) => {
     const authClient = createClient(urlSupabase, authKey, { auth: { persistSession: false } })
     const { data: sesion, error: sesionError } = await authClient.auth.getUser(token)
     if (sesionError || !sesion.user) throw new ErrorSolicitud('Sesión no válida', 401)
-    limitarConsulta(sesion.user.id)
 
     const cuerpo = await request.json()
     const mensaje = limpiarMensaje(cuerpo.mensaje)
     if (!mensaje) throw new Error('Escribe una pregunta para el asistente')
 
+    limitarConsulta(sesion.user.id)
+
     // service_role solo después de autenticar y autorizar al usuario.
     const db = createClient(urlSupabase, serviceKey, { auth: { persistSession: false } })
+    // H-03 (pendiente de activar hasta desplegar esta función):
+    // await limiteDiario(db, sesion.user.id)
     const IGNORADAS = new Set(['que', 'con', 'por', 'para', 'los', 'las', 'una', 'uno', 'unos', 'unas', 'del', 'como', 'mas', 'muy', 'hay', 'tienen', 'tienes', 'quiero', 'busco', 'necesito', 'hola', 'buenas', 'precio', 'precios', 'cuesta', 'algo', 'donde', 'esta', 'este', 'estos', 'estas', 'sobre', 'sin', 'sus', 'tambien', 'pero', 'solo', 'todo', 'todos', 'seria', 'podria', 'muestrame'])
     // Se limpian signos, se descartan palabras vacías y se prueban singular/plural.
     const terminos = [...new Set(

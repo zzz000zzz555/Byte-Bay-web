@@ -9,7 +9,8 @@
   var CACHE_PREFIX = 'bytebay_streak_cache_';
   var BUSY_EVENT = 'bytebay:companion-busy';
   var DRAG_THRESHOLD = 5;
-  var MEET_DISTANCE = 165;
+  /* La racha y Byte son mascotas distintas: nunca se acercan ni se fusionan. */
+  var PERSONAL_SPACE = 180;
   var MEET_COOLDOWN = 5500;
   var FIXED_STEP = 1 / 240;
   var MAX_SUBSTEPS = 8;
@@ -440,6 +441,8 @@
       this.mascot.dataset.tier = String(tier);
       this.mascot.dataset.stage = stage;
       this.mascot.dataset.eggDays = String(stage === 'egg' ? days : HATCH_DAYS);
+      this.mascot.style.setProperty('--st-progress',
+        String(Math.round(Math.min(1, days / HATCH_DAYS) * 100)));
       if (stage === 'egg') {
         this.mascot.setAttribute('aria-label',
           EGG_NAME + ': llevas ' + days + ' de ' + HATCH_DAYS +
@@ -711,7 +714,7 @@
       }
       if (steps === MAX_SUBSTEPS) this.physics.accumulator = 0;
       if (steps) this.refreshCenter();
-      this.checkMeet();
+      this.separate();
       this.render();
     }
 
@@ -950,41 +953,62 @@
       }
     }
 
-    checkMeet() {
-      if (!this.visible || this.state.dragging || this.motionOff() ||
-          document.body.classList.contains('bb-mascot-hidden') ||
-          document.visibilityState === 'hidden') return;
-      if (!document.body.classList.contains('bb-mascot-ready')) return;
-      var byte = window.ByteBayCompanion;
-      var bx, by;
-      if (byte && byte.center && isFinite(byte.center.x) && isFinite(byte.center.y)) {
-        bx = byte.center.x;
-        by = byte.center.y;
-      } else {
-        var node = document.querySelector('#bbMascot');
-        if (!node) return;
-        var rect = node.getBoundingClientRect();
-        if (!rect.width) return;
-        bx = rect.left + rect.width / 2;
-        by = rect.top + rect.height / 2;
+    /* Byte pertenece a la tienda; la racha tiene su propio espacio. Si el
+       usuario arrastra una mascota hacia la otra, se separan sin perseguirse. */
+    otherCenter() {
+      if (document.body.classList.contains('bb-mascot-hidden')) return null;
+      var companion = window.ByteBayCompanion;
+      if (companion && companion.center && isFinite(companion.center.x) && isFinite(companion.center.y)) {
+        return { x: companion.center.x, y: companion.center.y };
       }
-      var distance = Math.hypot(bx - this.center.x, by - this.center.y);
-      if (distance < MEET_DISTANCE && Date.now() - this.state.lastMeet > MEET_COOLDOWN) {
-        this.meet((bx + this.center.x) / 2, (by + this.center.y) / 2);
-      }
+      var node = document.querySelector('#bbMascot');
+      if (!node || !node.offsetWidth) return null;
+      var rect = node.getBoundingClientRect();
+      if (!rect.width) return null;
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     }
 
-    meet(x, y) {
+    separate() {
+      if (!this.visible || document.visibilityState === 'hidden') return;
+      var other = this.otherCenter();
+      if (!other) return;
+      var dx = this.center.x - other.x;
+      var dy = this.center.y - other.y;
+      var distance = Math.hypot(dx, dy);
+      if (distance >= PERSONAL_SPACE) return;
+      if (distance < 1) {
+        dx = this.physics.current.x <= other.x ? -1 : 1;
+        dy = 0;
+        distance = 1;
+      }
+      var push = (PERSONAL_SPACE - distance) / distance;
+      var point = this.clampPoint(
+        this.physics.current.x + dx * push,
+        this.physics.current.y + dy * push
+      );
+      this.physics.current.x = point.x;
+      this.physics.current.y = point.y;
+      this.physics.target.x = point.x;
+      this.physics.target.y = point.y;
+      this.physics.velocity.x = 0;
+      this.physics.velocity.y = 0;
+      this.refreshCenter();
+    }
+
+    /* Saludo explícito de la API pública: se queda en su sitio, sin fusión. */
+    meet() {
+      if (!this.visible || Date.now() - this.state.lastMeet < MEET_COOLDOWN) return;
       this.state.lastMeet = Date.now();
       this.playClass('is-meet', 1600);
-      this.showBubble('¡Hola, Byte! Soy ' + this.state.name, 2300);
-      this.burst(x, y);
+      this.showBubble('Soy ' + this.state.name + ' · racha en marcha', 2300);
+      this.burst(this.center.x, this.center.y);
       this.playTone('meet');
       window.dispatchEvent(new CustomEvent('bytebay:streak-meet', {
         detail: {
           dias: this.state.days,
           tier: this.state.tier,
-          nombre: this.state.name
+          nombre: this.state.name,
+          saludoDistante: true
         }
       }));
     }

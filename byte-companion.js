@@ -13,6 +13,8 @@
   var CART_TEXT = '¡Excelente elección!';
   var DRAG_TEXTS = ['¡Wiii!', '¡A volar!'];
   var DRAG_THRESHOLD = 5;
+  /* Byte es la mascota de la tienda; la racha mantiene su propio espacio. */
+  var PERSONAL_SPACE = 180;
   var CURIOUS_AFTER = 15000;
   var SLEEP_AFTER = 90000;
   var ACTIVITY_MIN = 18000;
@@ -540,6 +542,47 @@
       this.mascot.style.setProperty('--bb-cup-base-x', this.bounds.right ? '-50px' : '0px');
     }
 
+    /* La racha es otra mascota: si se acercan demasiado, Byte se aparta. */
+    streakCenter() {
+      if (document.body.classList.contains('bb-mascot-hidden')) return null;
+      var streak = window.ByteBayStreak;
+      var instance = streak && streak.instance;
+      if (instance && instance.center && isFinite(instance.center.x) && isFinite(instance.center.y)) {
+        return { x: instance.center.x, y: instance.center.y };
+      }
+      var node = document.querySelector('#bbStreak');
+      if (!node || !node.offsetWidth || !document.body.classList.contains('bb-streak-ready')) return null;
+      var rect = node.getBoundingClientRect();
+      if (!rect.width) return null;
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    }
+
+    separate() {
+      var other = this.streakCenter();
+      if (!other) return;
+      var dx = this.center.x - other.x;
+      var dy = this.center.y - other.y;
+      var distance = Math.hypot(dx, dy);
+      if (distance >= PERSONAL_SPACE) return;
+      if (distance < 1) {
+        dx = this.physics.current.x <= other.x ? -1 : 1;
+        dy = 0;
+        distance = 1;
+      }
+      var push = (PERSONAL_SPACE - distance) / distance;
+      var point = this.clampPoint(
+        this.physics.current.x + dx * push,
+        this.physics.current.y + dy * push
+      );
+      this.physics.current.x = point.x;
+      this.physics.current.y = point.y;
+      this.physics.target.x = point.x;
+      this.physics.target.y = point.y;
+      this.physics.velocity.x = 0;
+      this.physics.velocity.y = 0;
+      this.refreshBoundsAndCenter();
+    }
+
     setClass(name, on) {
       this.mascot.classList.toggle(name, Boolean(on));
     }
@@ -894,20 +937,17 @@
       this.setThinking(true);
     }
 
-    /* La mascota de racha se acerca: saludo coreografiado entre las dos. */
+    /* Saludo explícito desde la API de racha: Byte saluda sin desplazarse. */
     onStreakMeet(event) {
-      this.userTouched();
-      if (this.activities.current) this.abortActivity();
-      this.flashHands(1500);
-      this.playClass('is-meet', 1500);
+      if (document.body.classList.contains('bb-mascot-hidden')) return;
       var detail = event && event.detail ? event.detail : {};
       var days = Number(detail.dias) || 0;
       var name = typeof detail.nombre === 'string' && detail.nombre ? detail.nombre : 'tu racha';
+      this.playClass('is-meet', 1200);
       this.showBubble(days > 0
-        ? '¡' + name + ' y sus ' + days + ' días!'
-        : '¡Hola, ' + name + '!', 2300);
+        ? '¡Vas ' + days + ' días con ' + name + '!'
+        : '¡Hola, ' + name + '!', 2100);
       this.playTone('bubble');
-      this.noteActivity();
     }
 
     reactToCart() {
@@ -1174,6 +1214,7 @@
       }
       if (steps === MAX_SUBSTEPS) this.physics.accumulator = 0;
       if (steps) this.refreshBoundsAndCenter();
+      this.separate();
       this.activities.tick(stamp, steps * FIXED_STEP * 60);
       this.render();
     }

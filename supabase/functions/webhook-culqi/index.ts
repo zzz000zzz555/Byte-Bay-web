@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsErrorHeaders, corsHeaders as buildCorsHeaders, originAllowed } from '../_shared/cors.ts'
+// H-06 (pendiente de activar): import { culqiHabilitado } from '../_shared/culqi.ts'
 
 const CULQI_CHARGES_URL = 'https://api.culqi.com/v2/charges'
 const SIGNATURE_HEADERS = ['x-culqi-signature', 'x-signature', 'x-hub-signature-256']
@@ -146,6 +147,10 @@ Deno.serve(async request => {
   const responder = (body: unknown, status = 200) => json(body, status, cors)
   if (origin && request.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (request.method !== 'POST') return responder({ error: 'Método no permitido' }, 405)
+  // H-06 (pendiente de activar):
+  // if (!culqiHabilitado()) {
+  //   return responder({ error: 'Culqi desactivado temporalmente' }, 503)
+  // }
 
   const webhookSecret = Deno.env.get('CULQI_WEBHOOK_SECRET')
   if (!webhookSecret) {

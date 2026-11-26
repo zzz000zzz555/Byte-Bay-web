@@ -306,6 +306,22 @@ const EMAILJS_CONFIG={
   verificationTemplateId:'template_5spm32r'
 };
 const emailjsReady=()=>typeof window.emailjs?.send==='function' && !EMAILJS_CONFIG.publicKey.startsWith('PEGA_') && !EMAILJS_CONFIG.templateId.startsWith('PEGA_');
+// La clave pública de EmailJS es verificable por navegador: además de la
+// restricción de dominios en el panel de EmailJS, el cliente solo envía desde
+// los orígenes propios y aplica un tope local por correo.
+const EMAILJS_HOSTS=new Set(['zzz000zzz555.github.io','localhost','127.0.0.1']);
+const emailjsDominioPermitido=()=>EMAILJS_HOSTS.has(window.location.hostname);
+function emailjsCupoDisponible(email){
+  try{
+    const clave='beruEmailJS:'+String(email).trim().toLowerCase();
+    const ahora=Date.now();
+    const envios=JSON.parse(localStorage.getItem(clave)||'[]').filter(momento=>Number.isFinite(momento)&&ahora-momento<3600000);
+    if(envios.length>=3) return false;
+    envios.push(ahora);
+    localStorage.setItem(clave,JSON.stringify(envios));
+    return true;
+  }catch(error){return true;}
+}
 if(emailjsReady()) emailjs.init({publicKey:EMAILJS_CONFIG.publicKey});
 const SUPABASE_URL='https://inwugycvtaaceugvtfpv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5cTHcYI6byM03VSffW0OlQ_JlBB8D9u';
@@ -469,6 +485,8 @@ async function cargarComentariosProducto(idProducto, filtro='all'){
 
 async function sendNotificationEmail({email,wants}){
   if(!emailjsReady()) return {configured:false,reason:'EmailJS no está disponible. Comprueba tu conexión a internet y recarga la página.'};
+  if(!emailjsDominioPermitido()) return {configured:false,reason:'Las confirmaciones por correo solo se envían desde el sitio oficial de Byte Bay.'};
+  if(!emailjsCupoDisponible(email)) return {configured:false,reason:'Demasiados envíos para este correo. Inténtalo de nuevo en una hora.'};
   const preferences=wants.length?wants.join(', '):'ofertas';
   await emailjs.send(EMAILJS_CONFIG.serviceId,EMAILJS_CONFIG.templateId,{
     to_email:email,
@@ -855,13 +873,9 @@ document.querySelector('#accountForm').onsubmit=async e=>{
   if(accountMode==='login'){
     if(!email||!password){status.textContent='Escribe tu correo y contraseña.';return;}
     setAccountBusy(true,'Ingresando…');
-    let resultado;
-    if(window.BBPrivacy?.iniciarSesion){
-      resultado=await window.BBPrivacy.iniciarSesion(email,password);
-    }else{
-      const {data,error}=await supabaseClient.rpc('iniciar_sesion_cliente',{p_correo:email,p_contrasena:password});
-      resultado=error?{ok:false,message:'Correo o contraseña incorrectos.'}:{ok:true,cuenta:data,token:false};
-    }
+    const resultado=window.BBPrivacy?.iniciarSesion
+      ? await window.BBPrivacy.iniciarSesion(email,password)
+      : {ok:false,message:'La sesión segura no está disponible. Recarga la página.'};
     setAccountBusy(false,'Iniciar sesión');
     if(!resultado.ok){status.textContent=resultado.message||'Correo o contraseña incorrectos.';return;}
     if(!resultado.token){
@@ -881,13 +895,9 @@ document.querySelector('#accountForm').onsubmit=async e=>{
   if(!/[A-Za-z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){status.textContent='La contraseña debe incluir letras, números y al menos un símbolo.';return;}
   setAccountBusy(true,'Creando…');
   const payload={email,first_name:firstName||null,last_name:lastName||null,username:username||null};
-  let registrado;
-  if(window.BBPrivacy?.registrarCuenta){
-    registrado=await window.BBPrivacy.registrarCuenta({...payload,password});
-  }else{
-    const {error}=await supabaseClient.rpc('registrar_cuenta_cliente',{p_correo:email,p_nombres:payload.first_name,p_apellidos:payload.last_name,p_nombre_usuario:payload.username,p_contrasena:password});
-    registrado=error?{ok:false,error}:{ok:true};
-  }
+  const registrado=window.BBPrivacy?.registrarCuenta
+    ? await window.BBPrivacy.registrarCuenta({...payload,password})
+    : {ok:false,message:'El registro seguro no está disponible. Recarga la página.'};
   if(!registrado.ok){
     setAccountBusy(false,'Crear cuenta');
     const error=registrado.error;
@@ -965,7 +975,7 @@ if(newsletterForm) newsletterForm.onsubmit=async e=>{
   const input=e.target.querySelector('input[type="email"]');
   const button=e.target.querySelector('button');
   const email=input.value.trim();
-  if(!email){showToast('Escribe un correo válido para continuar.');input.focus();return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){showToast('Escribe un correo válido para continuar.');input.focus();return;}
   button.disabled=true;
   button.textContent='Enviando...';
   try{
@@ -1884,8 +1894,9 @@ function configurarAsistenteIA(){
     if(error||data?.error){
       let detalle=data?.error||error?.message||'El asistente no pudo responder.';
       let estado=Number(error?.context?.status)||0;
-      try{const cuerpo=await error?.context?.clone()?.json();detalle=cuerpo?.error||detalle;if(cuerpo?.reintentar&&!estado) estado=503;}catch(e){}
-      const fallo=new Error(detalle);fallo.estado=estado;throw fallo;
+      let reintentar=false;
+      try{const cuerpo=await error?.context?.clone()?.json();detalle=cuerpo?.error||detalle;reintentar=Boolean(cuerpo?.reintentar);if(reintentar&&!estado) estado=503;}catch(e){}
+      const fallo=new Error(detalle);fallo.estado=estado;fallo.reintentar=reintentar;throw fallo;
     }
     return data;
   };
@@ -1899,8 +1910,9 @@ function configurarAsistenteIA(){
       let data;
       try{data=await consultarAsistente(texto.trim());}
       catch(error){
-        // Reintento silencioso si Gemini está saturado (503) o sin cuota momentánea (429).
-        if(![429,503].includes(error.estado)) throw error;
+        // Solo se reintenta cuando el backend indica que Gemini está saturado;
+        // el límite por usuario (429) se muestra sin consumir otra consulta.
+        if(!error.reintentar) throw error;
         esperando.textContent='La IA está ocupada, reintentando…';
         await new Promise(resolver=>setTimeout(resolver,1500));
         data=await consultarAsistente(texto.trim());
@@ -1908,7 +1920,7 @@ function configurarAsistenteIA(){
       esperando.textContent=data.respuesta;
       document.dispatchEvent(new CustomEvent('bytebay:ai-response',{detail:{respuesta:data.respuesta}}));
       agregarProductosRecomendados(data.productos);
-    }catch(error){console.warn('Asistente Byte-Bay:',error?.estado||'ERROR');esperando.textContent='No puedo responder ahora. Intenta nuevamente en unos minutos.';}
+    }catch(error){console.warn('Asistente Byte-Bay:',error?.estado||'ERROR');esperando.textContent=error?.message||'No puedo responder ahora. Intenta nuevamente en unos minutos.';}
     document.dispatchEvent(new CustomEvent('bytebay:ai-done'));
   };
   formulario.onsubmit=evento=>{evento.preventDefault();preguntar(entrada.value);};

@@ -97,9 +97,11 @@ document.querySelector('#claimsForm').addEventListener('submit', async event => 
       console.error('No se pudo interpretar la respuesta del Libro de Reclamaciones:', parseError);
     }
     claimsStatus.textContent = `No se pudo registrar: ${mensaje}`;
+    claimsStatus.setAttribute('data-error', 'true');
     return;
   }
   claimsStatus.textContent = `Reclamación registrada. Guarda este código: ${data.codigo_reclamacion}`;
+  claimsStatus.setAttribute('data-error', 'false');
   form.reset();
 });
 

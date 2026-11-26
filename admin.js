@@ -67,6 +67,7 @@ function mostrarSeccion(seccion){
   if(seccion==='pedidos') cargarPedidosAdmin();
   if(seccion==='movimientos'){if(window.bbCargarMovimientosFiltrados) window.bbCargarMovimientosFiltrados(); else cargarMovimientos();}
   if(seccion==='personal'&&rolPersonal==='jefe') cargarPersonal();
+  if(seccion==='auditoria') window.bbCargarAuditoria?.();
 }
 
 $('#adminLoginForm').onsubmit=async event=>{

@@ -312,34 +312,25 @@
       return { ok: true, token: true, cuenta: result.data.cuenta };
     }
 
-    if (result.error && !isFunctionMissing(result.error)) {
-      return { ok: false, message: result.error.message || 'No se pudo iniciar sesión.' };
-    }
-
-    // Compatibilidad con instalaciones sin el delta aplicado.
-    const legacy = await rpc('iniciar_sesion_cliente', { p_correo: email, p_contrasena: password });
-    if (legacy.error) return { ok: false, message: legacy.error.message || 'Correo o contraseña incorrectos.' };
-    persistSession(null);
-    await cargarConsentimiento();
-    return { ok: true, token: false, cuenta: legacy.data };
+    return { ok: false, message: result.error?.message || 'Correo o contraseña incorrectos.' };
   }
 
   async function registrarCuenta(payload) {
+    const password = String(payload.password || '');
+    if (password.length < 8 || !/[A-Za-z]/.test(password) ||
+        !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+      return { ok: false, message: 'La contraseña debe tener al menos 8 caracteres e incluir letras, números y un símbolo.' };
+    }
     const params = {
       p_correo: payload.email,
       p_nombres: payload.firstName || null,
       p_apellidos: payload.lastName || null,
       p_nombre_usuario: payload.username || null,
-      p_contrasena: payload.password
+      p_contrasena: password
     };
     const result = await rpc('bb_registrar_cuenta_cliente', params);
     if (result.data && result.data.id) return { ok: true, id: result.data.id };
-    if (result.error && !isFunctionMissing(result.error)) {
-      return { ok: false, error: result.error, message: result.error.message };
-    }
-    const legacy = await rpc('registrar_cuenta_cliente', params);
-    if (legacy.error) return { ok: false, error: legacy.error, message: legacy.error.message };
-    return { ok: true };
+    return { ok: false, error: result.error, message: result.error?.message || 'No se pudo crear la cuenta.' };
   }
 
   async function sincronizarSesionGoogle() {

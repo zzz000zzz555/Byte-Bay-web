@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsErrorHeaders, corsHeaders as buildCorsHeaders, originAllowed } from '../_shared/cors.ts'
+// H-06 (pendiente de activar): import { culqiHabilitado } from '../_shared/culqi.ts'
 
 const CULQI_CHARGES_URL = 'https://api.culqi.com/v2/charges'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -59,6 +60,10 @@ Deno.serve(async request => {
 
   if (request.method === 'OPTIONS') return new Response('ok', { headers })
   if (request.method !== 'POST') return json({ error: 'Método no permitido' }, 405, headers)
+  // H-06 (pendiente de activar):
+  // if (!culqiHabilitado()) {
+  //   return json({ error: 'Culqi desactivado temporalmente. Paga con Mercado Pago.' }, 503, headers)
+  // }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
