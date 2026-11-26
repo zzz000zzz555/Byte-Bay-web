@@ -48,5 +48,14 @@ jobs:
           sys.exit(1 if fallo else 0)
           PY
 
+      - name: Sin archivos internos en el árbol servido
+        run: |
+          patron='^(supabase/|generador_afiches/|vercel\.json$|_headers$|QR YAPE BERU \.jpeg$|[^/]*\.(sql|ps1|md)$)'
+          if git ls-files | grep -Eq "$patron"; then
+            echo "ERROR: hay archivos internos versionados en main; GitHub Pages los serviría"
+            git ls-files | grep -E "$patron"
+            exit 1
+          fi
+
       - name: Diff limpio
         run: git diff --check

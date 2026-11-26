@@ -33,8 +33,7 @@ jobs:
           cp index.html 404.html admin.html privacidad.html aviso-legal.html reclamaciones.html .public-site/
           cp *.css *.js .public-site/
           cp -R assets img .public-site/
-          cp favicon.svg og-image.jpg imagen-categoria-predeterminada.svg imagen-producto-predeterminada.svg .public-site/
-          cp yape-qr.png yape-qr-pendiente.svg .public-site/
+          find . -maxdepth 1 -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.svg' -o -name '*.webp' -o -name '*.ico' \) -exec cp {} .public-site/ \;
           cp robots.txt sitemap.xml .public-site/
 
           # Demos y plantillas no forman parte del sitio público.
@@ -43,7 +42,7 @@ jobs:
                 .public-site/email-template.html
 
           echo "Archivos publicados: $(find .public-site -type f | wc -l)"
-          if find .public-site -type f \( -name '*.sql' -o -name '*.md' -o -name '*.ps1' \) | grep -q .; then
+          if find .public-site -type f \( -name '*.sql' -o -name '*.md' -o -name '*.ps1' -o -name '*.py' -o -name '*.csv' -o -name '*.toml' -o -name '*.ts' -o -name '_headers' -o -name 'vercel.json' \) | grep -q .; then
             echo "ERROR: quedaron archivos internos en el árbol público"
             exit 1
           fi

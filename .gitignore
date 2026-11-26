@@ -4,19 +4,22 @@
 node_modules/
 output/
 tmp/
-
-# SQL canónico: solo supabase/migrations/. El resto queda en local y no se publica.
-*.sql
-!supabase/migrations/*.sql
 *.log
 
-# Documentación, scripts y demos internos: GitHub Pages publica todo el repo.
-# Se conservan en disco, pero dejan de versionarse y de servirse públicamente.
+# Infraestructura y archivos internos: GitHub Pages sirve todo el repo desde main.
+# Se conservan en disco (y en la rama infra-bytebay), pero no se versionan en main
+# ni se sirven desde la tienda.
+*.sql
+*.ps1
 /*.md
-/*.ps1
 /combo-cards-demo.html
 /verification-template.html
 /email-template.html
+/supabase/
+/generador_afiches/
+/_headers
+/vercel.json
+/QR YAPE BERU .jpeg
 
 # Artefactos generados y de herramientas (no se publican ni se versionan)
 generador_afiches/afiches_generados/
