@@ -1,0 +1,60 @@
+name: Publicar Pages (solo archivos web)
+
+# GitHub Pages publica TODO el repositorio si el origen es la rama main.
+# Este workflow construye una rama gh-pages únicamente con lo que necesita la
+# tienda. Tras cambiar una vez Settings > Pages > Source a gh-pages / (root),
+# las auditorías, SQL y scripts internos dejan de estar accesibles por curl.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-curado
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar árbol público
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .public-site
+          mkdir -p .public-site
+
+          cp index.html 404.html admin.html privacidad.html aviso-legal.html reclamaciones.html .public-site/
+          cp *.css *.js .public-site/
+          cp -R assets img .public-site/
+          cp favicon.svg og-image.jpg imagen-categoria-predeterminada.svg imagen-producto-predeterminada.svg .public-site/
+          cp yape-qr.png yape-qr-pendiente.svg .public-site/
+          cp robots.txt sitemap.xml .public-site/
+
+          # Demos y plantillas no forman parte del sitio público.
+          rm -f .public-site/combo-cards-demo.html \
+                .public-site/verification-template.html \
+                .public-site/email-template.html
+
+          echo "Archivos publicados: $(find .public-site -type f | wc -l)"
+          if find .public-site -type f \( -name '*.sql' -o -name '*.md' -o -name '*.ps1' \) | grep -q .; then
+            echo "ERROR: quedaron archivos internos en el árbol público"
+            exit 1
+          fi
+
+      - name: Publicar rama gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .public-site
+          publish_branch: gh-pages
+          force_orphan: true
+          enable_jekyll: false
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com

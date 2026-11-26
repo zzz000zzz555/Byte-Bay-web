@@ -4,17 +4,19 @@
 node_modules/
 output/
 tmp/
-# SQL: se versionan todas las migraciones y seeds del proyecto.
-# Cualquier SQL nuevo debe añadirse a supabase/migrations/ (ya permitido abajo).
+
+# SQL canónico: solo supabase/migrations/. El resto queda en local y no se publica.
 *.sql
-!database_schema_master.sql
-!seed_100_productos.sql
-!insert_productos_prueba_mercado_pago.sql
-!producto-prueba-3-soles.sql
-!migrations_*.sql
-!supabase/migrations/
 !supabase/migrations/*.sql
 *.log
+
+# Documentación, scripts y demos internos: GitHub Pages publica todo el repo.
+# Se conservan en disco, pero dejan de versionarse y de servirse públicamente.
+/*.md
+/*.ps1
+/combo-cards-demo.html
+/verification-template.html
+/email-template.html
 
 # Artefactos generados y de herramientas (no se publican ni se versionan)
 generador_afiches/afiches_generados/
