@@ -248,7 +248,8 @@
       var producto = parametros.get('producto');
       var busqueda = parametros.get('q');
       if (producto && /^[0-9]{1,12}$/.test(producto) &&
-          document.querySelector('#productGrid .product-card[data-id="' + producto + '"]')) {
+          (document.querySelector('#productGrid .product-card') ||
+           document.querySelector('#productGrid .empty-cart'))) {
         enlaceProfundoHecho = true;
         if (typeof window.openProductModal === 'function') window.openProductModal(Number(producto));
       } else if (busqueda && document.querySelector('#searchForm')) {
@@ -309,6 +310,10 @@
       observador.observe(grid, { childList: true, subtree: true });
     }
     document.addEventListener('bb:catalogo-actualizado', realzarVisibles);
+    if (!enlaceProfundoHecho) {
+      window.setTimeout(realzarVisibles, 1500);
+      window.setTimeout(realzarVisibles, 3500);
+    }
     cargarEstado().then(registrarVista);
   }
 
