@@ -25,9 +25,13 @@ jobs:
 
       - name: Sin secretos versionados
         run: |
-          if grep -rEn --include='*.js' --include='*.ts' --include='*.html' --include='*.css' \
-            'sk_live_[A-Za-z0-9]{10,}|sb_secret_[A-Za-z0-9]{10,}|AIza[A-Za-z0-9_-]{30,}' \
-            --exclude-dir=.git --exclude-dir=node_modules --exclude='AUDITORIA*.md' .; then
+          if git ls-files | grep -E '(^|/)\.env' | grep -v '\.env\.example$'; then
+            echo "ERROR: hay un .env real versionado"
+            exit 1
+          fi
+          if grep -rEn --include='*.js' --include='*.ts' --include='*.html' --include='*.css' --include='*.env' \
+            'sk_test_[A-Za-z0-9]{10,}|sk_live_[A-Za-z0-9]{10,}|sb_secret_[A-Za-z0-9]{10,}|AIza[A-Za-z0-9_-]{20,}|APP_USR-[A-Za-z0-9_-]{10,}|TEST-[A-Za-z0-9_-]{10,}|whsec_[A-Za-z0-9]{10,}|xoxb-[A-Za-z0-9-]{10,}|AKIA[A-Z0-9]{12,}|SG\.[A-Za-z0-9_-]{10,}\.|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}' \
+            --exclude-dir=.git --exclude-dir=node_modules .; then
             echo "ERROR: posible secreto real versionado"; exit 1
           fi
 
