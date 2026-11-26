@@ -1,0 +1,253 @@
+/* Ajustes finales de contraste. Se carga después de los temas para garantizar
+   texto legible en modo claro, modo noche y temas estacionales oscuros. */
+
+:root {
+  --bb-contrast-accent: #075985;
+  --bb-contrast-accent-soft: #e0f2fe;
+  --bb-contrast-danger: #9f1239;
+  --bb-contrast-danger-soft: #fce7f3;
+}
+
+html.dark-mode,
+:root.dark-mode {
+  --bb-contrast-accent: #67e8f9;
+  --bb-contrast-accent-soft: rgba(8, 145, 178, .22);
+  --bb-contrast-danger: #fda4af;
+  --bb-contrast-danger-soft: rgba(190, 18, 60, .24);
+}
+
+/* Tienda: botones de cabecera, contadores, badges y CTA secundario. */
+.market-world .header-action {
+  border: 0;
+  background: transparent;
+}
+
+.market-world .cart-count {
+  border-color: #fff;
+  background: #b23d32;
+  color: #fff;
+}
+
+.market-world .sale-badge {
+  background: #b23d32;
+  border-color: #ffd9d4;
+  color: #fff;
+}
+
+.market-world .sale-badge strong,
+.market-world .sale-badge b,
+.market-world .sale-badge span {
+  color: #fff;
+}
+
+html.dark-mode .market-world .btn.secondary,
+html.dark-mode .market-world .hero-actions .btn.secondary {
+  border-color: #3a5146;
+  background: #1d312b;
+  color: #e5eee4;
+}
+
+html.dark-mode .market-world .nav a {
+  color: #e5eee4;
+}
+
+html.dark-mode .market-world .nav a:hover,
+html.dark-mode .market-world .nav a:focus-visible {
+  color: #d9f45b;
+}
+
+html.dark-mode .market-world .settings-drawer small {
+  color: #c0cec2;
+}
+
+html.dark-mode .settings-drawer .settings-quicknav a,
+html.dark-mode .settings-drawer .settings-links button,
+html.dark-mode .settings-drawer .settings-links a {
+  color: #e5eee4;
+}
+
+/* Sellos estacionales sobre fondos claros del hero. */
+body.theme-black_friday .bb-seal {
+  border-color: #fbbf24;
+  background: rgba(10, 10, 10, .9);
+  color: #fde68a;
+}
+
+body.theme-cyber_days .bb-seal {
+  border-color: #a78bfa;
+  background: rgba(15, 15, 35, .9);
+  color: #ddd6fe;
+}
+
+body.theme-halloween .bb-seal,
+body.theme-dia_de_muertos .bb-seal {
+  border-color: #fb923c;
+  background: rgba(28, 25, 23, .9);
+  color: #fed7aa;
+}
+
+body.theme-ano_nuevo .bb-seal {
+  border-color: #fcd34d;
+  background: rgba(15, 23, 42, .9);
+  color: #fde68a;
+}
+
+/* Panel de configuración y preferencias de privacidad. */
+.settings-drawer .settings-head {
+  background: #fff;
+}
+
+.settings-eyebrow {
+  color: #31544f;
+}
+
+.bb-link-btn {
+  background: var(--bg-surface, #fff);
+  color: #31544f;
+}
+
+html.dark-mode .settings-drawer .settings-head {
+  background: var(--bg-surface, #111827);
+}
+
+html.dark-mode .settings-eyebrow,
+html.dark-mode .bb-link-btn {
+  color: #d9f45b;
+}
+
+/* Banner de consentimiento: el tema de mercado lo mantenía claro en modo noche. */
+html.dark-mode .market-world .bb-consent-banner {
+  border-color: #374151;
+  background: #111827;
+  color: #f9fafb;
+}
+
+html.dark-mode .market-world .bb-consent-banner p,
+html.dark-mode .market-world .bb-consent-kicker {
+  color: #cbd5e1;
+}
+
+/* Panel interno. */
+.admin-login-form .admin-login-title {
+  color: var(--receipt-ink, #1b1916);
+}
+
+/* Páginas informativas: base clara y variante oscura coherente. */
+.legal-page {
+  background: #f7fbf9;
+  color: #15343b;
+}
+
+.legal-page .section-kicker {
+  color: #1d4ed8;
+}
+
+html.dark-mode .legal-page {
+  background: #0b0f19;
+  color: #f9fafb;
+}
+
+html.dark-mode .legal-header,
+html.dark-mode .legal-card {
+  border-color: #374151;
+  background: #111827;
+  color: #f9fafb;
+}
+
+html.dark-mode .legal-hero h1,
+html.dark-mode .legal-card h2,
+html.dark-mode .legal-card h3,
+html.dark-mode .legal-card strong,
+html.dark-mode .legal-brand {
+  color: #f9fafb;
+}
+
+html.dark-mode .legal-page .section-kicker {
+  color: #93c5fd;
+}
+
+html.dark-mode .legal-card a {
+  color: #86efac;
+}
+
+html.dark-mode .legal-hero p,
+html.dark-mode .legal-card p,
+html.dark-mode .legal-card li,
+html.dark-mode .legal-footer,
+html.dark-mode .legal-nav a {
+  color: #cbd5e1;
+}
+
+html.dark-mode .legal-updated {
+  background: #1e293b;
+  color: #fde68a;
+}
+
+html.dark-mode .legal-actions a.secondary {
+  background: #111827;
+  color: #f9fafb;
+}
+
+/* Reacciones, visitas y compartir: colores del tema, no fijos. */
+.bb-engage-card {
+  border-top-color: var(--border-subtle, #e5e7eb);
+}
+
+.bb-engage-btn {
+  border-color: var(--border-strong, #d1d5db);
+  background: var(--bg-elevated, #f8fafc);
+  color: var(--text-primary, #111827);
+}
+
+.bb-engage-btn:hover {
+  border-color: var(--bb-contrast-accent);
+}
+
+.bb-engage-btn:focus-visible {
+  outline-color: var(--bb-contrast-accent);
+}
+
+.bb-engage-btn b {
+  background: var(--bg-surface, #fff);
+  color: var(--text-primary, #111827);
+}
+
+.bb-engage-btn[aria-pressed="true"] {
+  border-color: var(--bb-contrast-accent);
+  background: var(--bb-contrast-accent-soft);
+  color: var(--text-primary, #111827);
+}
+
+.bb-engage-btn[data-reaccion="dislike"][aria-pressed="true"] {
+  border-color: var(--bb-contrast-danger);
+  background: var(--bb-contrast-danger-soft);
+}
+
+.bb-share {
+  border-color: var(--border-strong, #d1d5db);
+  color: var(--text-secondary, #475569);
+}
+
+.bb-share:hover,
+.bb-share:focus-visible {
+  border-color: var(--bb-contrast-accent);
+  color: var(--text-primary, #111827);
+}
+
+.bb-engage-page {
+  border-color: var(--border-subtle, #e5e7eb);
+  background: var(--bg-surface, #fff);
+}
+
+.bb-engage-page__texto strong {
+  color: var(--text-primary, #111827);
+}
+
+.bb-engage-page__texto span,
+.bb-engage-visitas {
+  color: var(--text-secondary, #475569);
+}
+
+.bb-engage-visitas b {
+  color: var(--bb-contrast-accent);
+}

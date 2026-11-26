@@ -9,6 +9,7 @@
 const PREFS_KEY = 'byteBayPreferences';
 const NOTIFICATIONS_KEY = 'beruNotifications';
 const LEGACY_THEME_KEY = 'beruTema';
+const TEMPORADAS_OSCURAS = ['black_friday', 'halloween', 'ano_nuevo', 'cyber_days', 'dia_de_muertos'];
 
 const DEFAULT_PREFS = {
   theme: 'auto',
@@ -62,10 +63,11 @@ function temaResuelto() {
 }
 
 function aplicarTema() {
-  const resuelto = temaResuelto();
-  document.documentElement.classList.toggle('dark-mode', resuelto === 'dark');
+  const temporalOscura = TEMPORADAS_OSCURAS.some(clave => document.body.classList.contains('theme-' + clave));
+  const resuelto = temporalOscura || temaResuelto() === 'dark';
+  document.documentElement.classList.toggle('dark-mode', resuelto);
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', resuelto === 'dark' ? '#10191c' : '#0d2b31');
+  if (meta) meta.setAttribute('content', resuelto ? '#10191c' : '#0d2b31');
   document.querySelectorAll('input[name="bbTheme"]').forEach(input => {
     input.checked = input.value === prefs.theme;
   });
@@ -467,6 +469,8 @@ window.addEventListener('bb:privacy-updated', () => {
   refrescarCuenta();
   window.BBPrivacy?.actualizarSesionUI?.();
 });
+
+window.addEventListener('bb:theme-changed', aplicarTema);
 
 window.addEventListener('online', () => renderizarAvisosSistema('Conexión restablecida.'));
 window.addEventListener('offline', () => renderizarAvisosSistema('Sin conexión a internet.'));

@@ -12,6 +12,9 @@
     'vuelta_clases', 'san_patricio', 'dia_de_la_bandera', 'dia_del_trabajo',
     'dia_del_nino', 'primavera', 'verano', 'otonio', 'dia_de_muertos'
   ];
+  const DARK_THEMES = [
+    'black_friday', 'halloween', 'ano_nuevo', 'cyber_days', 'dia_de_muertos'
+  ];
   const LABELS = {
     default: 'Sin tema (clásico)', navidad: 'Navidad', halloween: 'Halloween',
     ano_nuevo: 'Año Nuevo', black_friday: 'Black Friday', cyber_days: 'Cyber Days',
@@ -62,7 +65,8 @@
   function applyTheme(key, t, persistir) {
     THEMES.forEach(k => document.body.classList.remove('theme-' + k));
     document.body.classList.add('theme-' + key);
-    if (key !== 'default') document.documentElement.classList.remove('dark-mode');
+    if (DARK_THEMES.indexOf(key) > -1) document.documentElement.classList.add('dark-mode');
+    else if (key !== 'default') document.documentElement.classList.remove('dark-mode');
     document.documentElement.setAttribute('data-theme', key);
     // Solo la elección persistente (tema del administrador) se guarda en bb-theme.
     // La vista previa ?theme= debe ser temporal para no colonizar la preferencia del usuario.
