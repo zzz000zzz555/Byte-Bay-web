@@ -1036,14 +1036,14 @@
       return null;
     }
 
+    /* Solo Byte y la racha están en pantalla. Pixel/Nano siguen en el
+       vestidor para no romper la API pública, pero nunca se muestran. */
     activeIds() {
-      return this.wardrobe.squad === 'byte' ? ['byte']
-        : this.wardrobe.squad === 'byte+pixel' ? ['byte', 'pixel'] : ['byte', 'pixel', 'nano'];
+      return ['byte'];
     }
 
     applySquad(mode, persist) {
-      if (SQUADS.indexOf(mode) < 0) mode = 'byte';
-      this.wardrobe.squad = mode;
+      this.wardrobe.squad = 'byte';
       var active = this.activeIds();
       this.entities.forEach(function (entity) { entity.setVisible(active.indexOf(entity.id) >= 0); });
       if (persist) this.wardrobe = saveWardrobe(this.wardrobe);
@@ -1195,10 +1195,7 @@
         }).join('');
         return '<section class="bb-wardrobe__cat"><h4>' + entry[1] + '</h4><div class="bb-wardrobe__chips">' + chips + '</div></section>';
       }).join('');
-      var squadButtons = SQUADS.map(function (mode) {
-        var label = mode === 'byte' ? 'Solo Byte' : mode === 'byte+pixel' ? 'Byte + Pixel' : 'Escuadrón completo';
-        return '<button class="bb-wardrobe__tabbtn" type="button" data-wardrobe-squad="' + mode + '" aria-pressed="false">' + label + '</button>';
-      }).join('');
+      var squadButtons = '<span class="bb-wardrobe__squad-note">Byte y tu racha acompañan en la tienda</span>';
       var node = document.createElement('div');
       node.id = 'bbWardrobe';
       node.className = 'bb-wardrobe';

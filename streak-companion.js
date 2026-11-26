@@ -9,8 +9,11 @@
   var CACHE_PREFIX = 'bytebay_streak_cache_';
   var BUSY_EVENT = 'bytebay:companion-busy';
   var DRAG_THRESHOLD = 5;
-  /* La racha y Byte son mascotas distintas: nunca se acercan ni se fusionan. */
+  /* La racha y Byte son mascotas distintas: se mantienen a 180 px, pero al
+     acercarlas se saludan a distancia sin fusionarse. */
   var PERSONAL_SPACE = 180;
+  var GREET_DISTANCE = 270;
+  var GREET_RESET = 340;
   var MEET_COOLDOWN = 5500;
   var FIXED_STEP = 1 / 240;
   var MAX_SUBSTEPS = 8;
@@ -163,6 +166,8 @@
         dragging: false,
         quiet: false,
         lastMeet: 0,
+        lastNearGreet: 0,
+        nearGreetArmed: true,
         lastRefreshDay: '',
         lastTap: 0
       };
@@ -975,6 +980,7 @@
       var dx = this.center.x - other.x;
       var dy = this.center.y - other.y;
       var distance = Math.hypot(dx, dy);
+      this.maybeGreetNear(distance);
       if (distance >= PERSONAL_SPACE) return;
       if (distance < 1) {
         dx = this.physics.current.x <= other.x ? -1 : 1;
@@ -993,6 +999,39 @@
       this.physics.velocity.x = 0;
       this.physics.velocity.y = 0;
       this.refreshCenter();
+    }
+
+    /* Al acercar la racha a Byte, ambos saludan sin juntarse ni perseguirse.
+       Searma al alejarlos para que cada acercamiento produzca una sola animación. */
+    maybeGreetNear(distance) {
+      if (!this.visible || this.state.quiet || this.motionOff()) return;
+      if (document.body.classList.contains('bb-mascot-hidden') ||
+          document.body.classList.contains('checkout-open') ||
+          document.body.classList.contains('ui-blocking')) return;
+      var stamp = Date.now();
+      if (distance > GREET_RESET) {
+        this.state.nearGreetArmed = true;
+        return;
+      }
+      if (distance > GREET_DISTANCE || !this.state.nearGreetArmed) return;
+      if (stamp - this.state.lastNearGreet < MEET_COOLDOWN) return;
+      this.state.nearGreetArmed = false;
+      this.state.lastNearGreet = stamp;
+      this.state.lastMeet = stamp;
+      this.playClass('is-meet', 1600);
+      this.showBubble('¡Hola, Byte! ' + this.state.days +
+        (this.state.days === 1 ? ' día' : ' días') + ' de racha', 2300);
+      this.burst(this.center.x, this.center.y);
+      this.playTone('meet');
+      window.dispatchEvent(new CustomEvent('bytebay:streak-meet', {
+        detail: {
+          dias: this.state.days,
+          tier: this.state.tier,
+          nombre: this.state.name,
+          saludoDistante: true,
+          origen: 'cercania'
+        }
+      }));
     }
 
     /* Saludo explícito de la API pública: se queda en su sitio, sin fusión. */
