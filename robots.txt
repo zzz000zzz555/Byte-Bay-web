@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /generador_afiches/
+Disallow: /.codex-finalizer-byte-bay/
+Disallow: /.presentation-build/
+Disallow: /.docx-work/
+Disallow: /AUDITORIA*
+Disallow: /ANALISIS_COMERCIAL*
+
+Sitemap: https://zzz000zzz555.github.io/Byte-Bay-web/sitemap.xml

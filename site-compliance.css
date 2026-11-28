@@ -1,0 +1,77 @@
+/* Cumplimiento legal, WhatsApp, consentimiento de cookies y accesibilidad.
+   Se carga después de styles.css para no alterar el motor visual de la tienda. */
+
+/* Canal directo de atención. Se ubica a la izquierda para no competir con Byte,
+   Chispa y el escuadrón, que viven en la esquina inferior derecha. */
+.bb-whatsapp{position:fixed;left:18px;bottom:18px;z-index:103;display:inline-flex;align-items:center;gap:8px;padding:11px 15px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:#177a56;color:#fff;box-shadow:0 10px 26px rgba(9,74,49,.28);font:800 12px/1 Manrope,"DM Sans",sans-serif;letter-spacing:.01em;transition:transform .2s,background .2s}
+.bb-whatsapp:hover{transform:translateY(-2px);background:#0f6849}
+.bb-whatsapp:focus-visible{outline:3px solid #38FEDC;outline-offset:3px}
+.bb-whatsapp svg{width:18px;height:18px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bb-whatsapp-quick{display:block;width:100%;padding:8px 10px;border:1px solid #bfe3d1;border-radius:999px;background:#eff8f2;color:#12603f;font:800 10px/1.35 Manrope,"DM Sans",sans-serif;text-align:center}
+.bb-whatsapp-quick:hover{background:#dff0e6}
+.bb-whatsapp-product{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 13px;border:1px solid #bfe3d1;border-radius:10px;background:#eff8f2;color:#12603f;font:800 12px/1 Manrope,"DM Sans",sans-serif}
+.bb-whatsapp-product:hover{background:#dff0e6}
+body.checkout-open .bb-whatsapp,
+body.ui-blocking .bb-whatsapp{display:none!important}
+
+/* Campos señuelo: invisibles para personas, visibles para bots que rellenan todo. */
+.bb-honeypot{position:absolute!important;left:-10000px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important}
+.cookie-config{margin-top:12px;padding:12px 14px;border:1px solid #d7e2bd;border-radius:12px;background:#f7faef;color:var(--ink,#15343b);font-size:12px;line-height:1.5}
+.cookie-config[hidden]{display:none}
+.cookie-config label{display:flex;align-items:flex-start;gap:9px;margin:8px 0;cursor:pointer}
+.cookie-config input{margin-top:2px;accent-color:#177a56}
+.cookie-config button{margin-top:6px;padding:7px 12px;border:0;border-radius:9px;background:var(--navy,#103940);color:#fff;font:800 11px Manrope,"DM Sans",sans-serif}
+.cookie-banner{min-width:0}
+.cookie-banner h2{color:var(--ink,#15343b)}
+.cookie-banner a{color:#2d6a4f;font-weight:800;text-decoration:underline}
+.dark-mode .cookie-config{background:#223238;border-color:#3a4c50;color:#e7f0ed}
+.dark-mode .cookie-banner a{color:#9be7c4}
+
+/* Páginas informativas y 404. */
+.legal-page{min-height:100vh;background:linear-gradient(180deg,#f7fbf9 0,#fff 320px)}
+.legal-header{border-bottom:1px solid var(--line,#dfe5e3);background:#fff}
+.legal-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:74px;flex-wrap:wrap}
+.legal-brand{display:flex;align-items:center;gap:10px;font:800 21px Manrope,"DM Sans",sans-serif;color:var(--navy,#103940);letter-spacing:-.6px}
+.legal-brand img{width:46px;height:46px;object-fit:contain}
+.legal-nav{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;font-weight:700}
+.legal-nav a{color:#31544f}
+.legal-nav a:hover{color:#177a56;text-decoration:underline}
+.legal-main{padding:44px 0 70px}
+.legal-hero{max-width:820px;margin-bottom:28px}
+.legal-hero h1{margin:6px 0 10px;font:800 clamp(28px,5vw,42px)/1.12 Manrope,"DM Sans",sans-serif;color:var(--navy,#103940);letter-spacing:-1.3px}
+.legal-hero p{margin:0;color:#43575b;font-size:15px;line-height:1.65}
+.legal-updated{display:inline-block;margin-top:12px;padding:6px 10px;border-radius:999px;background:#eef3dc;color:#405414;font-size:11px;font-weight:800}
+.legal-card{max-width:920px;margin:0 0 18px;padding:26px;border:1px solid var(--line,#dfe5e3);border-radius:18px;background:#fff;box-shadow:0 12px 32px rgba(20,52,59,.06)}
+.legal-card h2{margin:0 0 12px;font:800 22px Manrope,"DM Sans",sans-serif;color:var(--navy,#103940)}
+.legal-card h3{margin:20px 0 8px;font:800 15px Manrope,"DM Sans",sans-serif;color:var(--ink,#15343b)}
+.legal-card p,.legal-card li{color:#3e5357;font-size:14px;line-height:1.7}
+.legal-card p{margin:8px 0}
+.legal-card ul,.legal-card ol{padding-left:22px;margin:10px 0}
+.legal-card a{color:#256c4b;font-weight:800;text-decoration:underline}
+.legal-card strong{color:var(--ink,#15343b)}
+.legal-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.legal-actions a,.legal-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border:1px solid var(--navy,#103940);border-radius:10px;background:var(--navy,#103940);color:#fff;font:800 12px Manrope,"DM Sans",sans-serif}
+.legal-actions a.secondary{background:#fff;color:var(--navy,#103940)}
+.legal-form{display:grid;gap:14px;max-width:760px}
+.legal-form .claims-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.legal-form label{display:grid;gap:6px;font-size:12px;font-weight:700;color:var(--ink,#15343b)}
+.legal-form input,.legal-form select,.legal-form textarea{width:100%;min-height:42px;padding:9px 11px;border:1px solid #cfdbd7;border-radius:10px;background:#fff;color:var(--ink,#15343b);font:500 13px "DM Sans",sans-serif}
+.legal-form textarea{min-height:130px;resize:vertical}
+.legal-form input:focus,.legal-form select:focus,.legal-form textarea:focus{outline:0;border-color:#7fa93a;box-shadow:0 0 0 3px rgba(217,244,91,.24)}
+.legal-form small{color:#52656b;font-weight:500;line-height:1.5}
+.legal-status{min-height:20px;color:#256c4b;font-size:13px;font-weight:700;line-height:1.5}
+.legal-status[data-error="true"]{color:#b64235}
+.legal-footer{padding:26px 0 40px;border-top:1px solid var(--line,#dfe5e3);background:#f7f9f6;color:#52656b;font-size:12px;line-height:1.6}
+.not-found{max-width:720px;margin:auto;text-align:center;padding:64px 20px}
+.not-found svg{width:132px;height:132px;margin-bottom:10px}
+.not-found h1{margin:0 0 10px;font:800 clamp(30px,6vw,46px) Manrope,"DM Sans",sans-serif;color:var(--navy,#103940)}
+.not-found p{margin:0 auto 22px;max-width:560px;color:#43575b;font-size:15px;line-height:1.7}
+
+@media(max-width:600px){
+  .legal-main{padding:28px 0 50px}
+  .legal-card{padding:18px;border-radius:14px}
+  .legal-form .claims-form-grid{grid-template-columns:1fr}
+  .legal-nav{gap:10px;font-size:11px}
+  .legal-actions a,.legal-actions button{width:100%}
+  .not-found{padding:42px 16px}
+}

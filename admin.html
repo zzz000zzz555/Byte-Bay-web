@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.emailjs.com; frame-src 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Gestión interna | Byte Bay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="styles.css?v=15">
+  <link rel="stylesheet" href="admin.css?v=4">
+  <link rel="stylesheet" href="admin-enhancements.css?v=1">
+  <link rel="stylesheet" href="admin-pro.css?v=4">
+  <link rel="stylesheet" href="receipt-world.css?v=1">
+  <link rel="stylesheet" href="contrast-fixes.css?v=1">
+  <script>try{if(localStorage.getItem('beruTema')==='noche')document.documentElement.classList.add('dark-mode')}catch(e){}</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
+</head>
+<body class="admin-body">
+  <main id="adminLogin" class="admin-login-shell">
+    <section class="admin-login-card">
+      <div class="admin-login-art">
+        <img src="byte-bay-logo-transparent.png" alt="Byte Bay">
+        <div class="admin-login-art-copy">
+          <h2>Todo tu negocio, bajo control.</h2>
+          <p>Catálogo, inventario, ofertas, reclamos y equipo en un solo panel.</p>
+        </div>
+        <ul class="admin-login-trust">
+          <li>Sesión cifrada</li>
+          <li>Accesos por rol</li>
+          <li>Auditoría de cambios</li>
+        </ul>
+      </div>
+      <div class="admin-login-form">
+        <h2 class="admin-login-title">Panel de gestión</h2>
+        <p>Ingresa con tu cuenta laboral. Solo personal autorizado.</p>
+        <form id="adminLoginForm">
+          <label><span>Correo laboral</span><input id="adminEmail" type="email" autocomplete="username" required></label>
+          <label><span>Contraseña</span><input id="adminPassword" type="password" autocomplete="current-password" required></label>
+          <button class="btn primary" type="submit">Ingresar</button>
+        </form>
+        <button id="adminForgotPassword" class="admin-store-link" type="button">Olvidé mi contraseña</button>
+        <form id="adminRecoveryForm" class="hidden">
+          <label><span>Nueva contraseña</span><input id="adminNewPassword" type="password" autocomplete="new-password" minlength="10" required></label>
+          <label><span>Confirmar contraseña</span><input id="adminConfirmPassword" type="password" autocomplete="new-password" minlength="10" required></label>
+          <button class="btn primary" type="submit">Guardar contraseña</button>
+        </form>
+        <div id="adminLoginStatus" class="admin-status" aria-live="polite"></div>
+        <button class="theme-toggle admin-theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche"><span aria-hidden="true">☾</span></button>
+        <a href="index.html" class="admin-store-link admin-back-store">← Volver a la tienda</a>
+      </div>
+    </section>
+  </main>
+
+  <div id="adminApp" class="admin-app hidden">
+    <aside class="admin-sidebar">
+      <a href="index.html" class="admin-brand"><img src="byte-bay-logo-transparent.png" alt="Byte Bay"></a>
+      <div class="admin-user-chip">
+        <span class="admin-avatar" id="adminAvatar" aria-hidden="true">BB</span>
+        <div>
+          <strong id="adminUserName">Personal Byte Bay</strong>
+          <small id="adminUserRole">Cargando…</small>
+        </div>
+      </div>
+      <p id="adminRole"></p>
+      <nav class="admin-nav" aria-label="Gestión interna">
+        <button class="active" data-admin-tab="resumen">Resumen</button>
+        <button data-admin-tab="productos">Productos</button>
+        <button data-admin-tab="inventario">Inventario</button>
+        <button data-admin-tab="ofertas">Ofertas</button>
+        <button data-admin-tab="avisos" id="adminNotificationsTab">Avisos</button>
+        <button data-admin-tab="clientes" id="adminClientsTab">Clientes</button>
+        <button data-admin-tab="pedidos" id="adminOrdersTab">Pedidos</button>
+        <button data-admin-tab="movimientos">Movimientos</button>
+        <button data-admin-tab="reclamos">Reclamaciones</button>
+        <button data-admin-tab="auditoria" id="adminAuditTab">Auditoría</button>
+        <button data-admin-tab="marca" id="adminBrandTab">Marca</button>
+        <button data-admin-tab="personal" id="adminPeopleTab">Personal</button>
+        <button data-admin-tab="temas" id="adminThemesTab">Temas</button>
+        <button data-admin-tab="packs" id="adminPacksTab">Packs</button>
+        <button data-admin-tab="analisis" id="adminAnalisisTab">Análisis</button>
+        <button data-admin-tab="roles" id="adminRolesTab">Roles y credenciales</button>
+      </nav>
+      <button id="adminChangePassword" class="admin-logout" type="button" style="margin-bottom:8px">Cambiar contraseña</button>
+      <button id="adminLogout" class="admin-logout">Cerrar sesión</button>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <div>
+          <span class="admin-breadcrumb" id="adminBreadcrumb">Resumen</span>
+          <h1 id="adminPageTitle">Resumen operativo</h1>
+        </div>
+        <div class="admin-header-actions">
+          <div id="adminStatus" class="admin-status" aria-live="polite"></div>
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Activar modo noche"><span aria-hidden="true">☾</span></button>
+        </div>
+      </header>
+
+      <section data-admin-section="resumen">
+        <div class="admin-section-head"><div><h2>Resumen operativo</h2><p>Ventas, clientes e inventario en tiempo real.</p></div><button class="btn secondary" id="adminRefreshReports">Actualizar</button></div>
+
+        <div class="dash-toolbar" id="dashboardFilters" role="group" aria-label="Filtros del panel">
+          <div class="dash-presets" role="group" aria-label="Periodos rápidos">
+            <button type="button" class="dash-preset" data-dashboard-preset="today">Hoy</button>
+            <button type="button" class="dash-preset" data-dashboard-preset="7">7 días</button>
+            <button type="button" class="dash-preset is-active" data-dashboard-preset="30">30 días</button>
+            <button type="button" class="dash-preset" data-dashboard-preset="month">Este mes</button>
+            <button type="button" class="dash-preset" data-dashboard-preset="year">Este año</button>
+          </div>
+          <label class="dash-date">Desde<input id="dashboardFrom" type="date"></label>
+          <label class="dash-date">Hasta<input id="dashboardTo" type="date"></label>
+          <button class="btn secondary" id="dashboardApply" type="button">Aplicar</button>
+        </div>
+
+        <div class="dash-kpis" id="dashboardKpis" aria-live="polite"></div>
+
+        <div class="dash-grid">
+          <article class="admin-card dash-card dash-card-wide">
+            <div class="dash-card-head"><div><h3>Pedidos por día</h3><p id="dashboardSalesCaption">Pedidos confirmados y pendientes del periodo.</p></div><span class="dash-legend"><i class="legend-sales"></i>Pedidos</span></div>
+            <div id="dashboardSalesChart" class="dash-chart"></div>
+          </article>
+          <article class="admin-card dash-card">
+            <div class="dash-card-head"><div><h3>Clientes registrados</h3><p>Altas por día en el periodo.</p></div></div>
+            <div id="dashboardClientsChart" class="dash-chart"></div>
+          </article>
+        </div>
+
+        <div class="dash-grid">
+          <article class="admin-card dash-card">
+            <div class="dash-card-head"><div><h3>Estado de pedidos</h3><p>Distribución por estado operativo.</p></div></div>
+            <div id="dashboardStatusChart" class="dash-status-chart"></div>
+          </article>
+          <article class="admin-card dash-card">
+            <div class="dash-card-head"><div><h3>Productos más vendidos</h3><p>Top 5 por unidades del periodo.</p></div></div>
+            <div id="dashboardTopProducts" class="dash-rank"></div>
+          </article>
+        </div>
+
+        <article class="admin-card dash-card dash-offers">
+          <div class="dash-card-head">
+            <div><h3>Ofertas automáticas del sistema</h3><p>Avisos generados al marcar super ofertas o liquidaciones.</p></div>
+            <button class="btn secondary" id="dashboardRefreshOffers" type="button">Actualizar</button>
+          </div>
+          <div id="dashboardAutoOffers" class="dash-offers-list" aria-live="polite"></div>
+        </article>
+
+        <div class="admin-metrics" id="managementSummary" hidden></div>
+        <div id="userLifecyclePanel" class="user-lifecycle-panel hidden">
+          <div class="admin-section-head"><div><h3>Ciclo de vida de clientes</h3><p>Altas y solicitudes de baja lógica.</p></div></div>
+          <div class="admin-filters admin-filters-wide">
+            <label>Desde<input id="userLifecycleFrom" type="date"></label>
+            <label>Hasta<input id="userLifecycleTo" type="date"></label>
+            <button class="btn secondary" id="refreshUserLifecycle" type="button">Consultar</button>
+          </div>
+          <div class="admin-metrics" id="userLifecycleSummary"></div>
+        </div>
+        <div class="admin-metrics" id="inventorySummary"></div>
+        <div class="admin-filters"><input id="inventorySearch" type="search" placeholder="Buscar producto o lote"><select id="inventoryStatusFilter"><option value="">Todos los estados</option><option value="disponible">Disponible</option><option value="daniado">Dañado</option><option value="agotado">Agotado</option><option value="vencido">Vencido</option><option value="devuelto">Devuelto</option></select></div>
+        <div id="inventoryReportList" class="admin-list"></div>
+      </section>
+
+      <section class="hidden" data-admin-section="productos">
+        <div class="admin-section-head"><div><h2>Productos</h2><p>Registra, consulta y edita el catálogo.</p></div><button class="btn secondary" id="adminRefreshCatalog">Actualizar</button></div>
+        <div class="admin-two-columns">
+          <form id="adminProductForm" class="admin-card admin-form"><h3 id="adminProductHeading">Nuevo producto</h3><input id="adminProductId" type="hidden">
+            <label><span>Código</span><input id="adminProductCode" required></label><label><span>Producto</span><input id="adminProductName" required></label>
+            <div class="admin-form-row"><label><span>Género</span><select id="adminProductGender"><option value="Mixto">Mixto/Unisex</option><option value="Hombre">Hombre</option><option value="Mujer">Mujer</option></select></label></div>
+            <label><span>¿Qué es? (Presentación)</span><textarea id="adminShortPresentation" rows="2"></textarea></label>
+            <label><span>¿Qué ofrece? (Características verificables)</span><textarea id="adminVerifiableFeatures" rows="3"></textarea></label>
+            <label><span>Beneficios (Categoría y Marca)</span><textarea id="adminBenefitsSummary" rows="2"></textarea></label>
+            <div class="admin-form-row"><label><span>Categoría</span><select id="adminProductCategory" required></select></label><label><span>Marca</span><select id="adminProductBrand"></select></label></div>
+            <label><span>URL imagen frontal (principal)</span><input id="adminProductImage" type="url"></label>
+            <div class="admin-form-row"><label><span>Foto lado derecho</span><input id="adminImgRight" type="url"></label><label><span>Foto lado izquierdo</span><input id="adminImgLeft" type="url"></label></div>
+            <div class="admin-form-row"><label><span>Foto espalda / posterior</span><input id="adminImgBack" type="url"></label><label><span>Foto detalle / empaque</span><input id="adminImgDetail" type="url"></label></div>
+            <label><span>Video de presentación (URL)</span><input id="adminProductVideo" type="url"></label><div class="admin-product-preview"><img id="adminProductPreview" src="imagen-producto-predeterminada.svg" alt="Vista previa del producto" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"><span id="adminProductPreviewEmpty">Selecciona un producto o escribe la URL de su imagen</span></div><div class="admin-form-row"><label><span>Precio</span><input id="adminProductPrice" type="number" min="0" step="0.01" required></label><label><span>Existencias</span><input id="adminProductStock" type="number" min="0" required></label>
+            <label><span>Pack</span><input id="adminProductPack" type="checkbox"></label></div>
+            <label><span>Fecha de vencimiento</span><input id="adminProductExpiry" type="date"></label><button class="btn primary" type="submit">Guardar producto</button>
+          </form>
+          <div><div class="admin-filters"><input id="productSearch" type="search" placeholder="Buscar código, producto o marca"><select id="productCategoryFilter"><option value="">Todas las categorías</option></select></div><div id="adminCatalogList" class="admin-list admin-card"></div></div>
+        </div>
+      </section>
+
+      <section class="hidden" data-admin-section="inventario">
+        <div class="admin-section-head"><div><h2>Inventario y proveedores</h2><p>Registra entradas por lote y controla vencimientos.</p></div></div>
+        <div class="admin-two-columns">
+          <form id="adminProviderForm" class="admin-card admin-form"><h3>Nuevo proveedor</h3><label><span>Razón social</span><input id="providerName" required></label><label><span>RUC o documento</span><input id="providerDocument"></label><label><span>Teléfono</span><input id="providerPhone"></label><label><span>Correo</span><input id="providerEmail" type="email"></label><button class="btn primary" type="submit">Guardar proveedor</button></form>
+          <form id="adminLotForm" class="admin-card admin-form"><h3>Registrar lote</h3><label><span>Producto</span><select id="lotProduct" required></select></label><label><span>Proveedor</span><select id="lotProvider"></select></label><div class="admin-form-row"><label><span>Código de lote</span><input id="lotCode" required></label><label><span>Cantidad</span><input id="lotQuantity" type="number" min="1" required></label></div><div class="admin-form-row"><label><span>Costo unitario</span><input id="lotCost" type="number" min="0" step="0.01"></label><label><span>Vencimiento</span><input id="lotExpiry" type="date"></label></div><label><span>Estado</span><select id="lotStatus"><option value="disponible">Disponible</option><option value="daniado">Dañado</option><option value="devuelto">Devuelto</option></select></label><label><span>Observación</span><input id="lotNote"></label><button class="btn primary" type="submit">Registrar lote</button></form>
+        </div>
+      </section>
+
+      <section class="hidden" data-admin-section="ofertas">
+        <div class="admin-section-head"><div><h2>Ofertas</h2><p>Programa descuentos y revisa las ofertas que activan avisos automáticos.</p></div></div>
+        <div id="automaticOffersDashboard" class="admin-card automatic-offers-dashboard hidden">
+          <div class="admin-section-head"><div><h3>Ofertas automáticas del sistema</h3><p>Avisos creados al marcar una oferta como super oferta o liquidación.</p></div><div class="admin-head-actions"><button class="btn secondary" id="refreshAutomaticOffers" type="button">Actualizar</button><button class="btn secondary hidden" id="regenerateAutomaticOffers" type="button">Regenerar avisos</button></div></div>
+          <div id="automaticOffersMetrics" class="admin-metrics"></div>
+          <div id="automaticOffersList" class="admin-list" aria-live="polite"></div>
+        </div>
+        <div class="admin-two-columns offers-layout">
+          <form id="adminOfferForm" class="admin-card admin-form offers-form"><h3>Nueva oferta</h3><label><span>Producto</span><select id="offerProduct" required></select></label><div class="admin-product-preview admin-product-preview-small"><img id="offerProductPreview" src="imagen-producto-predeterminada.svg" alt="Producto de la oferta" onerror="this.onerror=null;this.src='imagen-producto-predeterminada.svg'"><span id="offerProductPreviewEmpty">Selecciona un producto</span></div><label><span>Nombre de la oferta</span><input id="offerName" required></label><label><span>Precio de oferta</span><input id="offerPrice" type="number" min="0" step="0.01" required></label><div class="admin-form-row"><label><span>Inicia</span><input id="offerStart" type="datetime-local" required></label><label><span>Termina</span><input id="offerEnd" type="datetime-local"></label></div><fieldset id="specialOfferOptions" class="admin-checkboxes"><legend>Oferta especial (solo jefe)</legend><label><input id="offerSuperSale" type="checkbox"> Super oferta</label><label><input id="offerClearance" type="checkbox"> Liquidación de stock</label></fieldset><button class="btn primary" type="submit">Guardar oferta</button></form><div class="offers-results"><div class="admin-filters"><input id="offerSearch" type="search" placeholder="Buscar producto u oferta"><select id="offerStatusFilter"><option value="">Todas</option><option value="activa">Activas</option><option value="inactiva">Inactivas</option></select></div><div id="adminOffersList" class="admin-list admin-card"></div></div></div>
+      </section>
+
+      <section class="hidden" data-admin-section="avisos">
+        <div class="admin-section-head"><div><h2>Avisos y promociones</h2><p>Programa mensajes visibles en la tienda. El envío por correo requiere un proveedor configurado.</p></div></div>
+        <form id="adminNotificationForm" class="admin-card admin-form admin-form-narrow">
+          <label><span>Título</span><input id="notificationTitle" maxlength="200" required></label>
+          <label><span>Mensaje</span><textarea id="notificationMessage" maxlength="5000" rows="4" required></textarea></label>
+          <div class="admin-form-row"><label><span>Publicar desde</span><input id="notificationStart" type="datetime-local"></label><label><span>Válido hasta</span><input id="notificationEnd" type="datetime-local"></label></div>
+          <label><span>Banner HTTPS (opcional)</span><input id="notificationBanner" type="url"></label>
+          <button class="btn primary" type="submit">Programar aviso</button>
+          <p id="notificationStatus" class="admin-status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="hidden" data-admin-section="pedidos">
+        <div class="admin-section-head">
+          <div><h2>Pedidos</h2><p>Gestiona el estado logístico, tracking y auditoría de cada pedido.</p></div>
+          <div class="admin-head-actions">
+            <button class="btn secondary" id="refreshOrders" type="button">Actualizar</button>
+            <button class="btn primary" id="exportOrders" type="button">Exportar Excel</button>
+          </div>
+        </div>
+        <div class="admin-filters admin-filters-wide">
+          <label>Buscar<input id="orderSearch" type="search" placeholder="Número de pedido o correo"></label>
+          <label>Estado<select id="orderStatusFilter"><option value="">Todos</option><option value="pendiente">Pendiente</option><option value="confirmado">Confirmado</option><option value="preparando">Preparando</option><option value="enviado">Enviado</option><option value="entregado">Entregado</option><option value="cancelado">Cancelado</option></select></label>
+        </div>
+        <div class="admin-card">
+          <div class="admin-table-wrap">
+            <table class="admin-table admin-table-orders">
+              <thead>
+                <tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Pago</th><th>Tracking</th><th>Acciones</th></tr>
+              </thead>
+              <tbody id="adminOrdersList"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="admin-card" id="orderDetailCard" style="display:none;margin-top:16px">
+          <h3 id="orderDetailTitle">Detalle del pedido</h3>
+          <div id="orderDetailBody"></div>
+          <div id="orderAuditLog" style="margin-top:16px"></div>
+        </div>
+      </section>
+
+      <section class="hidden" data-admin-section="movimientos">
+        <div class="admin-section-head">
+          <div><h2>Movimientos de inventario</h2><p>Entradas, ventas, ajustes y devoluciones con trazabilidad.</p></div>
+          <div class="admin-head-actions">
+            <button class="btn secondary" id="adminRefreshMovements">Actualizar</button>
+            <button class="btn primary" id="exportMovements" type="button">Exportar Excel</button>
+          </div>
+        </div>
+        <div class="dash-toolbar">
+          <div class="dash-presets" role="group" aria-label="Periodos rápidos de movimientos">
+            <button type="button" class="dash-preset" data-movement-preset="today">Hoy</button>
+            <button type="button" class="dash-preset" data-movement-preset="7">7 días</button>
+            <button type="button" class="dash-preset is-active" data-movement-preset="30">30 días</button>
+            <button type="button" class="dash-preset" data-movement-preset="month">Este mes</button>
+            <button type="button" class="dash-preset" data-movement-preset="all">Todo</button>
+          </div>
+          <label class="dash-date">Desde<input id="movementFromFilter" type="date"></label>
+          <label class="dash-date">Hasta<input id="movementToFilter" type="date"></label>
+          <button class="btn secondary" id="movementApplyFilters" type="button">Aplicar</button>
+        </div>
+        <div class="admin-filters admin-filters-wide">
+          <label>Buscar<input id="movementSearch" type="search" placeholder="Producto, código, pedido, lote o nota"></label>
+          <label>Tipo<select id="movementTypeFilter"><option value="">Todos los tipos</option><option value="entrada">Entrada</option><option value="venta">Venta</option><option value="ajuste">Ajuste</option><option value="devolucion">Devolución</option></select></label>
+        </div>
+        <div class="dash-kpis dash-kpis-compact" id="movementSummary" aria-live="polite"></div>
+        <div id="adminMovementsList" class="admin-list admin-card" aria-live="polite"></div>
+      </section>
+
+      <section class="hidden" data-admin-section="reclamos">
+        <div class="admin-section-head"><div><h2>Libro de reclamaciones</h2><p>Revisa, responde y exporta las solicitudes recibidas.</p></div><button class="btn secondary" id="exportClaims" type="button">Exportar Excel</button></div>
+        <div class="admin-filters admin-filters-wide">
+          <label>Estado<select id="claimStatusFilter"><option value="">Todos</option><option value="pendiente">Pendiente</option><option value="en_revision">En revisión</option><option value="resuelto">Resuelto</option></select></label>
+          <label>Categoría<select id="claimCategoryFilter"><option value="">Todas</option><option value="servicio">Servicio</option><option value="producto">Producto</option><option value="facturacion">Facturación</option><option value="entrega">Entrega</option></select></label>
+          <label>Desde<input id="claimFromFilter" type="date"></label><label>Hasta<input id="claimToFilter" type="date"></label>
+          <button class="btn secondary" id="refreshClaims" type="button">Aplicar filtros</button>
+        </div>
+        <div id="adminClaimsList" class="admin-list admin-card" aria-live="polite"></div>
+      </section>
+
+      <section class="hidden" data-admin-section="auditoria">
+        <div class="admin-section-head"><div><h2>Auditoría</h2><p>Trazabilidad de cambios en productos y reclamaciones.</p></div><button class="btn secondary" id="exportAudit" type="button">Exportar Excel</button></div>
+        <div class="admin-filters admin-filters-wide">
+          <label>Desde<input id="auditFromFilter" type="date"></label><label>Hasta<input id="auditToFilter" type="date"></label>
+          <label>Acción<select id="auditActionFilter"><option value="">Todas</option><option value="REGISTRO_PRODUCTO">Alta de producto</option><option value="EDICION_PRODUCTO">Edición de producto</option><option value="ELIMINACION_LOGICA_USUARIO">Baja lógica de cliente</option><option value="RESPUESTA_RECLAMO">Respuesta a reclamo</option></select></label>
+          <label>Módulo<select id="auditModuleFilter"><option value="">Todos</option><option value="productos">Productos</option><option value="cuentas_clientes">Clientes</option><option value="libro_reclamaciones">Reclamaciones</option></select></label>
+          <button class="btn secondary" id="refreshAudit" type="button">Aplicar filtros</button>
+        </div>
+        <details class="admin-user-filter"><summary>Seleccionar responsables</summary><div id="auditUserOptions"></div></details>
+        <div id="adminAuditList" class="admin-list admin-card" aria-live="polite"></div>
+      </section>
+
+      <section class="hidden" data-admin-section="marca">
+        <div class="admin-section-head"><div><h2>Marca y empresa</h2><p>Configuración maestra exclusiva del jefe.</p></div></div>
+        <form id="adminBrandForm" class="admin-card admin-form admin-form-narrow">
+          <label><span>Nombre comercial</span><input id="brandName" maxlength="100" required></label>
+          <label><span>URL del logotipo (HTTPS)</span><input id="brandLogo" type="url" placeholder="https://..." required></label>
+          <label><span>Subir logotipo</span><input id="brandLogoFile" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG o WEBP. Se ajusta y comprime antes de guardarlo.</small></label>
+          <label><span>URL del favicon (HTTPS)</span><input id="brandFavicon" type="url" placeholder="https://..."></label>
+          <label><span>Subir favicon</span><input id="brandFaviconFile" type="file" accept="image/jpeg,image/png,image/webp"><small>Imagen cuadrada PNG, JPG o WEBP.</small></label>
+          <label><span>Título SEO</span><input id="brandSeoTitle" maxlength="160"></label>
+          <label><span>Lema</span><input id="brandSlogan" maxlength="200"></label>
+          <label><span>Contacto de soporte</span><input id="brandSupport" maxlength="200" placeholder="correo o teléfono"></label>
+          <label><span>Texto de pie de página</span><textarea id="brandFooter" maxlength="2000" rows="4"></textarea></label>
+          <button class="btn primary" type="submit">Guardar configuración</button>
+          <p id="brandStatus" class="admin-status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="hidden" data-admin-section="personal">
+        <div class="admin-section-head"><div><h2>Gestión de personal</h2><p>Acceso exclusivo del jefe. Las cuentas se crean mediante invitación segura.</p></div><button class="btn secondary" id="adminRefreshStaff" type="button">Actualizar lista</button></div>
+        <div class="admin-two-columns staff-layout">
+          <form id="adminStaffForm" class="admin-card admin-form">
+            <h3 id="adminStaffHeading">Registrar empleado</h3><input id="staffUserId" type="hidden">
+            <p class="admin-help">Registro interno temporal: crea las credenciales del empleado sin enviar correo. Entrégale la contraseña inicial de forma privada.</p>
+            <div class="admin-form-row"><label><span>Nombres</span><input id="newStaffNames" required></label><label><span>Apellidos</span><input id="newStaffLastNames" required></label></div>
+            <label><span>Correo laboral</span><input id="newStaffEmail" type="email" required></label>
+            <label id="newStaffPasswordLabel"><span>Contraseña inicial</span><input id="newStaffPassword" type="password" minlength="10" autocomplete="new-password" aria-describedby="staffPasswordHelp staffPasswordStrength" required></label>
+            <div id="staffPasswordFeedback" class="staff-password-feedback"><p id="staffPasswordHelp" class="admin-help">Mínimo 10 caracteres, con mayúscula, minúscula, número y símbolo (@$!%*#?&amp;.).</p><p id="staffPasswordStrength" class="admin-help" aria-live="polite">Aún no cumple los requisitos.</p></div>
+            <label><span>Rol asignado</span><input value="Empleado" disabled></label>
+            <div class="staff-form-actions"><button class="btn primary" id="staffSubmit" type="submit">Registrar empleado</button><button class="btn secondary hidden" id="staffCancelEdit" type="button">Cancelar edición</button></div>
+          </form>
+          <div class="admin-card"><div class="admin-filters"><input id="staffSearch" type="search" placeholder="Buscar nombre, correo o rol"><select id="staffStatusFilter"><option value="">Todos los estados</option><option value="activo">Activos</option><option value="anulado">Anulados</option></select></div><div id="adminStaffList" class="admin-list"></div></div>
+        </div>
+      </section>
+      <section class="hidden" data-admin-section="temas">
+        <div class="admin-section-head"><div><h2>Temas estacionales</h2><p>Cambia el diseño de la tienda para todos los usuarios.</p></div><button class="btn secondary" id="adminRefreshThemes" type="button">Actualizar</button></div>
+        <div id="adminThemesList" class="admin-list"></div>
+      </section>
+
+      <section class="hidden" data-admin-section="packs">
+        <div class="admin-section-head"><div><h2>Packs y Combos</h2><p>Crea packs de productos con precio especial.</p></div><button class="btn secondary" id="adminRefreshPacks" type="button">Actualizar</button></div>
+        <div class="admin-two-columns">
+          <div class="admin-card">
+            <h3>Nuevo pack</h3>
+            <form id="adminPackForm" class="admin-form">
+              <label><span>Nombre</span><input id="packName" required></label>
+              <label><span>Descripción</span><input id="packDesc"></label>
+              <label><span>Precio especial (S/)</span><input id="packPrice" type="number" min="0" step="0.01" required></label>
+              <label><span>Stock de packs</span><input id="packStock" type="number" min="0" required></label>
+              <label><span>Inicio</span><input id="packStart" type="datetime-local"></label>
+              <label><span>Fin (opcional)</span><input id="packEnd" type="datetime-local"></label>
+              <label><span>Buscar producto para agregar</span><input id="packProductSearch" type="search" placeholder="Escribe nombre o código"></label>
+              <div id="packProductResults" class="admin-list" style="max-height:160px;overflow:auto;"></div>
+              <div id="packSelectedProducts" class="admin-list"></div>
+              <div id="packSummary" class="admin-list"></div>
+              <button class="btn primary" type="submit">Guardar pack</button>
+            </form>
+          </div>
+          <div class="admin-card">
+            <h3>Packs registrados</h3>
+            <div id="adminPacksList" class="admin-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="hidden" data-admin-section="analisis">
+        <div class="admin-section-head"><div><h2>Análisis de productos</h2><p>Descuentos, packs y margen.</p></div><button class="btn secondary" id="adminRefreshAnalisis" type="button">Actualizar</button></div>
+        <div class="admin-card"><h3>Top 20 productos con descuento</h3><div id="analisisDescuentos" class="admin-list"></div></div>
+        <div class="admin-card"><h3>Productos pack (10)</h3><div id="analisisPacks" class="admin-list"></div></div>
+        <div class="admin-card"><h3>Top 10 por precio (margen estimado)</h3><div id="analisisMargen" class="admin-list"></div></div>
+      </section>
+
+      <section class="hidden" data-admin-section="roles">
+        <div class="admin-section-head"><div><h2>Roles y credenciales (RBAC)</h2><p>Gestiona módulos, roles y permisos granulares.</p></div><button class="btn secondary" id="adminRefreshRoles" type="button">Actualizar</button></div>
+        <div class="admin-two-columns">
+          <div class="admin-card">
+            <h3>Módulos del sistema</h3>
+            <div id="adminModulesList" class="admin-list"></div>
+            <form id="adminModuleForm" class="admin-form">
+              <label><span>Clave</span><input id="moduleKey" required></label>
+              <label><span>Nombre</span><input id="moduleName" required></label>
+              <label><span>Descripción</span><input id="moduleDesc"></label>
+              <button class="btn primary" type="submit">Guardar módulo</button>
+            </form>
+          </div>
+          <div class="admin-card">
+            <h3>Roles</h3>
+            <select id="roleSelector" class="admin-select"></select>
+            <form id="adminRoleForm" class="admin-form">
+              <label><span>Nombre del rol</span><input id="roleName" required></label>
+              <label><span>Descripción</span><input id="roleDesc"></label>
+              <button class="btn primary" type="submit">Guardar rol</button>
+            </form>
+            <h3>Matriz de permisos</h3>
+            <div id="permissionMatrix" class="admin-list"></div>
+            <button class="btn primary" id="savePermissions" type="button">Guardar permisos</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="hidden" data-admin-section="clientes">
+        <div class="admin-section-head">
+          <div><h2>Clientes</h2><p>Consulta, filtra por fecha de registro y administra el estado de las cuentas.</p></div>
+          <div class="admin-head-actions">
+            <button class="btn secondary" id="refreshClients" type="button">Actualizar</button>
+            <button class="btn primary" id="exportClients" type="button">Exportar Excel</button>
+          </div>
+        </div>
+        <div class="dash-kpis dash-kpis-compact" id="clientKpis" aria-live="polite"></div>
+        <div class="dash-toolbar">
+          <div class="dash-presets" role="group" aria-label="Periodos rápidos de clientes">
+            <button type="button" class="dash-preset" data-client-preset="today">Hoy</button>
+            <button type="button" class="dash-preset" data-client-preset="7">7 días</button>
+            <button type="button" class="dash-preset" data-client-preset="30">30 días</button>
+            <button type="button" class="dash-preset" data-client-preset="month">Este mes</button>
+            <button type="button" class="dash-preset is-active" data-client-preset="all">Todo</button>
+          </div>
+          <label class="dash-date">Desde<input id="clientFromFilter" type="date"></label>
+          <label class="dash-date">Hasta<input id="clientToFilter" type="date"></label>
+          <button class="btn secondary" id="clientApplyFilters" type="button">Aplicar</button>
+        </div>
+        <div class="admin-filters admin-filters-wide">
+          <label>Buscar<input id="clientSearch" type="search" placeholder="Correo, nombre, apellido o usuario"></label>
+          <label>Estado<select id="clientStatusFilter"><option value="">Todos</option><option value="activo">Activo</option><option value="inactivo">Inactivo</option><option value="anulado">Anulado</option></select></label>
+        </div>
+        <div class="admin-card">
+          <div class="admin-table-wrap">
+            <table class="admin-table admin-table-clients">
+              <thead>
+                <tr><th>Cliente</th><th>Correo</th><th>Estado</th><th>Registro</th><th>Último acceso</th><th class="num">Pedidos</th><th class="num">Total gastado</th><th class="actions">Acciones</th></tr>
+              </thead>
+              <tbody id="adminClientsList"></tbody>
+            </table>
+          </div>
+          <p class="admin-help" id="clientsHint">Solo el jefe puede administrar cuentas de clientes. Las fechas filtran por fecha de registro; usa «Todo» para ver el historial completo.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="clientStatusDialog" class="admin-dialog" aria-labelledby="clientStatusTitle">
+    <form id="clientStatusForm" method="dialog" novalidate>
+      <div class="admin-dialog-head">
+        <h3 id="clientStatusTitle">Cambiar estado del cliente</h3>
+        <button type="button" class="admin-dialog-close" id="clientStatusCancel" aria-label="Cerrar">×</button>
+      </div>
+      <p id="clientStatusDescription" class="admin-dialog-copy"></p>
+      <input type="hidden" id="clientStatusId">
+      <label><span>Nuevo estado</span><select id="clientStatusSelect"><option value="activo">Activo</option><option value="inactivo">Inactivo</option><option value="anulado">Anulado</option></select></label>
+      <label id="clientStatusReasonLabel"><span>Motivo <small>(obligatorio para anular)</small></span><textarea id="clientStatusReason" rows="3" maxlength="500" placeholder="Describe el motivo del cambio"></textarea></label>
+      <p class="admin-dialog-warning" id="clientStatusWarning" hidden>La anulación es una baja lógica: la cuenta no se elimina, pero el cliente no podrá iniciar sesión ni registrarse con ese correo.</p>
+      <div class="admin-dialog-actions">
+        <button type="button" class="btn secondary" id="clientStatusDismiss">Cancelar</button>
+        <button type="submit" class="btn primary" id="clientStatusConfirm">Confirmar cambio</button>
+      </div>
+      <p class="admin-status" id="clientStatusMessage" aria-live="polite"></p>
+    </form>
+  </dialog>
+  <dialog id="adminChangePasswordDialog" class="admin-dialog" aria-labelledby="adminChangePasswordTitle">
+    <form id="adminChangePasswordForm" method="dialog" novalidate>
+      <div class="admin-dialog-head">
+        <h3 id="adminChangePasswordTitle">Cambiar contraseña</h3>
+        <button type="button" class="admin-dialog-close" id="adminChangePasswordCancel" aria-label="Cerrar">×</button>
+      </div>
+      <p class="admin-dialog-copy">Ingresa tu nueva contraseña. Debe tener al menos 10 caracteres.</p>
+      <label><span>Nueva contraseña</span><input id="adminNewPasswordValue" type="password" autocomplete="new-password" minlength="10" required></label>
+      <label><span>Confirmar contraseña</span><input id="adminConfirmPasswordValue" type="password" autocomplete="new-password" minlength="10" required></label>
+      <label id="adminPasswordReauthField" hidden><span>Código enviado a tu correo</span><input id="adminPasswordReauthCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12"></label>
+      <div class="admin-dialog-actions">
+        <button type="button" class="btn secondary" id="adminChangePasswordCancel2">Cancelar</button>
+        <button type="submit" class="btn primary">Guardar</button>
+      </div>
+      <div id="adminChangePasswordStatus" class="admin-status" aria-live="polite"></div>
+    </form>
+  </dialog>
+  <dialog id="orderStatusDialog" class="admin-dialog" aria-labelledby="orderStatusTitle">
+    <form id="orderStatusForm" method="dialog" novalidate>
+      <div class="admin-dialog-head">
+        <h3 id="orderStatusTitle">Cambiar estado del pedido</h3>
+        <button type="button" class="admin-dialog-close" id="orderStatusCancel" aria-label="Cerrar" onclick="document.querySelector('#orderStatusDialog').close()">×</button>
+      </div>
+      <input type="hidden" id="orderStatusId">
+      <p id="orderStatusDescription" class="admin-dialog-copy"></p>
+      <label><span>Nuevo estado</span><select id="orderStatusSelect" required>
+        <option value="pendiente">Pendiente</option>
+        <option value="confirmado">Confirmado</option>
+        <option value="preparando">Preparando / Empaquetado</option>
+        <option value="enviado">Enviado / En camino</option>
+        <option value="entregado">Entregado</option>
+        <option value="cancelado">Cancelado</option>
+      </select></label>
+      <label><span>Número de guía (tracking)</span><input id="orderTrackingNumber" type="text" placeholder="Ej: 1234567890"></label>
+      <label><span>Transportista</span><input id="orderCarrier" type="text" placeholder="Ej: Olva, Shalom, Urbano"></label>
+      <label><span>URL de seguimiento (opcional)</span><input id="orderTrackingUrl" type="url" placeholder="https://..."></label>
+      <label><span>Motivo / Nota interna</span><textarea id="orderStatusMotivo" rows="2" maxlength="500" placeholder="Nota visible solo para admin"></textarea></label>
+      <div class="admin-dialog-actions">
+        <button type="button" class="btn secondary" id="orderStatusCancel2" onclick="document.querySelector('#orderStatusDialog').close()">Cancelar</button>
+        <button type="submit" class="btn primary">Guardar cambios</button>
+      </div>
+      <div id="orderStatusFormStatus" class="admin-status" aria-live="polite"></div>
+    </form>
+  </dialog>
+  <dialog id="orderLogsDialog" class="admin-dialog" aria-labelledby="orderLogsTitle">
+    <div class="admin-dialog-head">
+      <h3 id="orderLogsTitle">Historial de auditoría</h3>
+      <button type="button" class="admin-dialog-close" id="orderLogsCancel" aria-label="Cerrar" onclick="document.querySelector('#orderLogsDialog').close()">×</button>
+    </div>
+    <div id="orderLogsBody" class="admin-dialog-copy" style="white-space:pre-line;max-height:400px;overflow:auto"></div>
+    <div class="admin-dialog-actions">
+      <button type="button" class="btn primary" id="orderLogsOk" onclick="document.querySelector('#orderLogsDialog').close()">Cerrar</button>
+    </div>
+  </dialog>
+  <dialog id="staffPasswordDialog" class="admin-dialog" aria-labelledby="staffPasswordTitle">
+    <form id="staffPasswordForm" method="dialog" novalidate>
+      <div class="admin-dialog-head">
+        <h3 id="staffPasswordTitle">Cambiar contraseña</h3>
+        <button type="button" class="admin-dialog-close" id="staffPasswordCancel" aria-label="Cerrar" onclick="document.querySelector('#staffPasswordDialog').close()">×</button>
+      </div>
+      <input type="hidden" id="staffPasswordUserId">
+      <p id="staffPasswordDescription" class="admin-dialog-copy"></p>
+      <label><span>Nueva contraseña</span><input id="staffPasswordNew" type="password" minlength="10" autocomplete="new-password" required></label>
+      <label><span>Confirmar contraseña</span><input id="staffPasswordConfirm" type="password" minlength="10" autocomplete="new-password" required></label>
+      <div class="admin-dialog-actions">
+        <button type="button" class="btn secondary" id="staffPasswordCancel2" onclick="document.querySelector('#staffPasswordDialog').close()">Cancelar</button>
+        <button type="submit" class="btn primary">Guardar</button>
+      </div>
+      <div id="staffPasswordStatus" class="admin-status" aria-live="polite"></div>
+    </form>
+  </dialog>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <script src="admin.js?v=22"></script>
+  <script src="admin-enhancements.js?v=5"></script>
+  <script src="admin-pro.js?v=2"></script>
+  <script src="admin-dashboard.js?v=2"></script>
+  <script src="site-inspection-guard.js?v=1"></script>
+</body>
+</html>
